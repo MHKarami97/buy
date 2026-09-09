@@ -5,7 +5,7 @@
       "namespace": "android_app",
       "package_name": "mhk.buy",
       "sha256_cert_fingerprints": [
-        ""
+        "C3:AD:9B:EE:FD:10:57:01:D3:2F:2E:E4:67:DB:31:25:D5:8D:C0:7A:99:E5:06:AC:95:C1:0D:50:9C:00:40:9F"
       ]
     }
   },
@@ -15,7 +15,7 @@
       "namespace": "cafebazaar_twa",
       "package_name": "mhk.buy",
       "sha256_cert_fingerprints": [
-        ""
+        "C3:AD:9B:EE:FD:10:57:01:D3:2F:2E:E4:67:DB:31:25:D5:8D:C0:7A:99:E5:06:AC:95:C1:0D:50:9C:00:40:9F"
       ]
     }
   }
