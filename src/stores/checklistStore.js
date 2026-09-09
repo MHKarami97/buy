@@ -129,7 +129,7 @@ export var useChecklistStore = defineStore('checklist', {
           this.quantityNotice = { itemTitle: item.title, quantity: item.quantity }
           this.quantityNoticeTimeoutId = setTimeout(() => {
             this.quantityNotice = null
-          }, 1000)
+          }, 2000)
         }
         this.schedulePersist()
       }

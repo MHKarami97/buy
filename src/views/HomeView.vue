@@ -29,8 +29,8 @@ function handleImport(event) {
   <section class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold">خرید‌های من</h1>
-        <p class="text-sm text-slate-400 mt-1">{{ store.templates.length }} خرید فعال</p>
+        <h1 class="text-xl sm:text-2xl font-bold">خرید‌های خانه من</h1>
+        <p class="text-sm text-slate-400 mt-1">{{ store.templates.length }} لیست فعال</p>
       </div>
 
       <div class="flex items-center gap-2">

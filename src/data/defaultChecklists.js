@@ -1,7 +1,7 @@
 export var defaultChecklistDefinitions = [
   {
     id: "staples",
-    version: 1,
+    version: 2,
     title: "مواد غذایی پایه",
     description: "اقلام خشک و مصرفی که معمولاً هر ماه خریداری می‌شوند",
     icon: "🛒",
@@ -27,14 +27,25 @@ export var defaultChecklistDefinitions = [
           { id: "pickles", title: "ترشی و خیارشور", note: "" },
           { id: "jam", title: "مربا و عسل", note: "" },
           { id: "snacks", title: "تنقلات", note: "" },
-          { id: "drinking-water", title: "آب آشامیدنی", note: "" }
+          { id: "drinking-water", title: "آب آشامیدنی", note: "" },
+          { id: "vermicelli", title: "رشته آش و سوپ", note: "" },
+          { id: "breadcrumbs", title: "آرد سوخاری", note: "" },
+          { id: "corn-starch", title: "نشاسته ذرت", note: "" },
+          { id: "cocoa", title: "پودر کاکائو", note: "" },
+          { id: "baking-powder", title: "بیکینگ پودر و جوش شیرین", note: "" },
+          { id: "vinegar", title: "سرکه", note: "" },
+          { id: "lemon-juice", title: "آبلیمو", note: "" },
+          { id: "saffron", title: "زعفران", note: "" },
+          { id: "dried-herbs", title: "سبزی خشک", note: "" },
+          { id: "nuts", title: "آجیل و مغزها", note: "" },
+          { id: "dried-fruit", title: "خشکبار", note: "" }
         ]
       }
     ]
   },
   {
     id: "produce",
-    version: 1,
+    version: 2,
     title: "میوه و سبزیجات",
     description: "خرید تازه روزانه یا هفتگی خانه",
     icon: "🍎",
@@ -60,14 +71,24 @@ export var defaultChecklistDefinitions = [
           { id: "eggplant", title: "بادمجان", note: "" },
           { id: "zucchini", title: "کدو", note: "" },
           { id: "mushrooms", title: "قارچ", note: "" },
-          { id: "seasonal-fruit", title: "میوه فصل", note: "" }
+          { id: "seasonal-fruit", title: "میوه فصل", note: "" },
+          { id: "peaches", title: "هلو و شلیل", note: "" },
+          { id: "grapes", title: "انگور", note: "" },
+          { id: "watermelon", title: "هندوانه و خربزه", note: "" },
+          { id: "cabbage", title: "کلم", note: "" },
+          { id: "celery", title: "کرفس", note: "" },
+          { id: "spinach", title: "اسفناج", note: "" },
+          { id: "broccoli", title: "کلم بروکلی", note: "" },
+          { id: "green-beans", title: "لوبیا سبز", note: "" },
+          { id: "peas", title: "نخودفرنگی", note: "" },
+          { id: "avocado", title: "آووکادو", note: "" }
         ]
       }
     ]
   },
   {
     id: "dairy-protein",
-    version: 1,
+    version: 2,
     title: "لبنیات و پروتئین",
     description: "مواد تازه و مصرفی یخچال",
     icon: "🥛",
@@ -88,14 +109,23 @@ export var defaultChecklistDefinitions = [
           { id: "fish", title: "ماهی", note: "" },
           { id: "sausage", title: "سوسیس و کالباس", note: "" },
           { id: "frozen-vegetables", title: "سبزیجات منجمد", note: "" },
-          { id: "ice-cream", title: "بستنی", note: "" }
+          { id: "ice-cream", title: "بستنی", note: "" },
+          { id: "kefir", title: "کفیر", note: "" },
+          { id: "doogh", title: "دوغ", note: "" },
+          { id: "cottage-cheese", title: "پنیر خامه‌ای", note: "" },
+          { id: "parmesan", title: "پنیر پیتزا و پارمزان", note: "" },
+          { id: "turkey", title: "بوقلمون", note: "" },
+          { id: "shrimp", title: "میگو", note: "" },
+          { id: "minced-meat", title: "گوشت چرخ‌کرده", note: "" },
+          { id: "liver", title: "جگر", note: "" },
+          { id: "frozen-fries", title: "سیب‌زمینی نیمه‌آماده", note: "" }
         ]
       }
     ]
   },
   {
     id: "personal-care",
-    version: 1,
+    version: 2,
     title: "بهداشت شخصی",
     description: "اقلام مصرفی بهداشت و مراقبت روزانه",
     icon: "🧴",
@@ -122,14 +152,23 @@ export var defaultChecklistDefinitions = [
           { id: "cotton-swabs", title: "گوش‌پاک‌کن", note: "" },
           { id: "cotton-pads", title: "پد بهداشتی", note: "" },
           { id: "sanitary-products", title: "محصولات بهداشت بانوان", note: "" },
-          { id: "razors", title: "تیغ اصلاح", note: "" }
+          { id: "razors", title: "تیغ اصلاح", note: "" },
+          { id: "face-wash", title: "شوینده صورت", note: "" },
+          { id: "moisturizer", title: "کرم مرطوب‌کننده", note: "" },
+          { id: "sunscreen", title: "ضدآفتاب", note: "" },
+          { id: "hair-mask", title: "ماسک مو", note: "" },
+          { id: "hair-gel", title: "ژل یا حالت‌دهنده مو", note: "" },
+          { id: "hand-cream", title: "کرم دست", note: "" },
+          { id: "lip-balm", title: "بالم لب", note: "" },
+          { id: "perfume", title: "عطر و ادکلن", note: "" },
+          { id: "nail-care", title: "لوازم مراقبت ناخن", note: "" }
         ]
       }
     ]
   },
   {
     id: "cleaning-supplies",
-    version: 1,
+    version: 2,
     title: "شوینده و نظافت",
     description: "مواد مصرفی نظافت خانه و لباس",
     icon: "🧽",
@@ -155,14 +194,23 @@ export var defaultChecklistDefinitions = [
           { id: "rubber-gloves", title: "دستکش نظافت", note: "" },
           { id: "trash-bags", title: "کیسه زباله", note: "" },
           { id: "air-freshener", title: "خوشبوکننده هوا", note: "" },
-          { id: "insect-spray", title: "حشره‌کش", note: "" }
+          { id: "insect-spray", title: "حشره‌کش", note: "" },
+          { id: "hand-sanitizer", title: "ژل ضدعفونی‌کننده", note: "" },
+          { id: "drain-cleaner", title: "لوله‌بازکن", note: "" },
+          { id: "washing-machine-cleaner", title: "جرم‌گیر ماشین لباسشویی", note: "" },
+          { id: "dishwasher-cleaner", title: "جرم‌گیر ماشین ظرفشویی", note: "" },
+          { id: "fabric-stain-remover", title: "لکه‌بر لباس", note: "" },
+          { id: "scouring-powder", title: "پودر شوینده سطوح", note: "" },
+          { id: "mop-refill", title: "یدک تی", note: "" },
+          { id: "dust-cloths", title: "دستمال گردگیری", note: "" },
+          { id: "garbage-gloves", title: "دستکش ضخیم نظافت", note: "" }
         ]
       }
     ]
   },
   {
     id: "kitchen-consumables",
-    version: 1,
+    version: 2,
     title: "مصرفی آشپزخانه",
     description: "اقلامی که برای نگهداری و مصرف روزانه غذا تمام می‌شوند",
     icon: "🍽️",
@@ -186,13 +234,17 @@ export var defaultChecklistDefinitions = [
           { id: "napkins", title: "دستمال سفره", note: "" },
           { id: "charcoal", title: "زغال", note: "مصرف مناسبتی" },
           { id: "matches", title: "کبریت و فندک", note: "" }
+          ,{ id: "baking-paper", title: "کاغذ روغنی", note: "" }
+          ,{ id: "wooden-skewers", title: "سیخ چوبی", note: "" }
+          ,{ id: "coffee-filters", title: "فیلتر قهوه", note: "" }
+          ,{ id: "cake-candles", title: "شمع تولد", note: "مصرف مناسبتی" }
         ]
       }
     ]
   },
   {
     id: "home-consumables",
-    version: 1,
+    version: 2,
     title: "مصرفی خانه",
     description: "اقلام کوچک و مصرفی برای استفاده روزمره خانه",
     icon: "🏠",
@@ -214,6 +266,37 @@ export var defaultChecklistDefinitions = [
           { id: "pet-food", title: "غذای حیوان خانگی", note: "در صورت نیاز" },
           { id: "pet-litter", title: "خاک گربه", note: "در صورت نیاز" },
           { id: "first-aid-refill", title: "اقلام مصرفی کمک‌های اولیه", note: "چسب زخم و باند" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "breakfast-drinks",
+    version: 1,
+    title: "صبحانه و نوشیدنی",
+    description: "اقلامی برای صبحانه و نوشیدنی‌های روزانه",
+    icon: "☕",
+    categories: [
+      {
+        id: "breakfast-items",
+        name: "صبحانه و نوشیدنی",
+        icon: "🍯",
+        items: [
+          { id: "breakfast-bread", title: "نان صبحانه", note: "" },
+          { id: "toast-bread", title: "نان تست", note: "" },
+          { id: "honey", title: "عسل", note: "" },
+          { id: "breakfast-jam", title: "مربا", note: "" },
+          { id: "peanut-butter", title: "کره بادام‌زمینی", note: "" },
+          { id: "halva", title: "حلواشکری", note: "" },
+          { id: "cereal", title: "غلات صبحانه", note: "" },
+          { id: "oats", title: "جو دوسر پرک", note: "" },
+          { id: "dates", title: "خرما", note: "" },
+          { id: "walnuts", title: "گردو", note: "" },
+          { id: "black-tea", title: "چای سیاه", note: "" },
+          { id: "green-tea", title: "چای سبز و دمنوش", note: "" },
+          { id: "instant-coffee", title: "قهوه فوری", note: "" },
+          { id: "hot-chocolate", title: "هات‌چاکلت", note: "" },
+          { id: "syrup", title: "شربت و پودر نوشیدنی", note: "" }
         ]
       }
     ]

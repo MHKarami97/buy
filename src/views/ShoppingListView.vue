@@ -1,24 +1,33 @@
 <script setup>
+import { ref } from 'vue'
 import { useChecklistStore } from '../stores/checklistStore'
 
 var store = useChecklistStore()
+var pendingQuantities = ref({})
+
+function entryKey(entry) {
+  return `${entry.template.id}-${entry.category.id}-${entry.item.id}`
+}
+
+function pendingQuantity(entry) {
+  return pendingQuantities.value[entryKey(entry)] ?? entry.item.quantity
+}
 
 function updateQuantity(entry, event) {
-  store.updateItemQuantity(
-    entry.item.id,
-    event.target.value,
-    entry.category.id,
-    entry.template.id
-  )
+  var quantity = Math.max(0, Number(event.target.value) || 0)
+  pendingQuantities.value[entryKey(entry)] = quantity
 }
 
 function changeQuantity(entry, amount) {
-  store.updateItemQuantity(
-    entry.item.id,
-    Math.max(0, entry.item.quantity + amount),
-    entry.category.id,
-    entry.template.id
-  )
+  pendingQuantities.value[entryKey(entry)] = Math.max(0, pendingQuantity(entry) + amount)
+}
+
+function confirmQuantity(entry) {
+  var key = entryKey(entry)
+  var quantity = pendingQuantity(entry)
+  if (quantity <= 0) return
+  store.updateItemQuantity(entry.item.id, quantity, entry.category.id, entry.template.id)
+  delete pendingQuantities.value[key]
 }
 </script>
 
@@ -32,7 +41,7 @@ function changeQuantity(entry, amount) {
     <div class="space-y-2">
       <div
         v-for="entry in store.shoppingItems"
-        :key="`${entry.template.id}-${entry.category.id}-${entry.item.id}`"
+        :key="entryKey(entry)"
         class="flex items-center gap-3 rounded-xl px-3 py-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/60"
       >
         <div class="flex-1 min-w-0">
@@ -44,11 +53,11 @@ function changeQuantity(entry, amount) {
             type="button"
             class="w-10 h-10 flex items-center justify-center text-lg font-semibold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-40 transition-colors"
             aria-label="کاهش تعداد"
-            :disabled="entry.item.quantity === 0"
+            :disabled="pendingQuantity(entry) === 0"
             @click="changeQuantity(entry, -1)"
           >−</button>
           <input
-            :value="entry.item.quantity"
+            :value="pendingQuantity(entry)"
             type="number"
             min="0"
             inputmode="numeric"
@@ -63,6 +72,14 @@ function changeQuantity(entry, amount) {
             @click="changeQuantity(entry, 1)"
           >+</button>
         </div>
+        <button
+          v-if="pendingQuantity(entry) > 0"
+          type="button"
+          class="min-h-[40px] px-3 rounded-xl bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 transition-colors"
+          @click="confirmQuantity(entry)"
+        >
+          تأیید
+        </button>
       </div>
       <p v-if="!store.shoppingItems.length" class="text-center text-sm text-slate-400 py-8">
         لیست خرید خالی است
