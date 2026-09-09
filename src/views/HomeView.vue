@@ -34,6 +34,12 @@ function handleImport(event) {
       </div>
 
       <div class="flex items-center gap-2">
+        <RouterLink
+          to="/shopping-list"
+          class="min-h-[44px] px-4 rounded-xl border border-brand-300 text-brand-600 dark:text-brand-300 text-sm flex items-center"
+        >
+          لیست خرید
+        </RouterLink>
         <button
           type="button"
           class="min-h-[44px] px-4 rounded-xl bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"

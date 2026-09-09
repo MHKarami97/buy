@@ -26,6 +26,6 @@ defineProps({
     </div>
 
     <ProgressBar :percent="template.overallProgress" size="sm" />
-    <p class="text-xs text-slate-400 mt-2">{{ template.completedItems }} از {{ template.totalItems }} مورد انجام‌شده</p>
+    <p class="text-xs text-slate-400 mt-2">{{ template.completedItems }} از {{ template.totalItems }} مورد موجود</p>
   </RouterLink>
 </template>

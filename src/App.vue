@@ -23,5 +23,27 @@ onMounted(() => {
     <AppFooter />
     <BottomNav class="sm:hidden" />
     <UpdatePrompt />
+    <Transition name="toast">
+      <div
+        v-if="store.quantityNotice"
+        class="fixed bottom-5 right-5 z-50 max-w-[calc(100vw-2rem)] rounded-xl bg-emerald-500 px-4 py-3 text-sm font-medium text-white shadow-lg"
+        role="status"
+      >
+        مقدار «{{ store.quantityNotice.itemTitle }}» به {{ store.quantityNotice.quantity }} تغییر کرد
+      </div>
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+</style>

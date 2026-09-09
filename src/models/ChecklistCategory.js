@@ -17,7 +17,7 @@ export class ChecklistCategory {
   }
 
   get completedCount() {
-    return this.items.filter((item) => item.isChecked).length
+    return this.items.filter((item) => item.quantity > 0).length
   }
 
   get progressPercent() {

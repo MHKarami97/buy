@@ -22,7 +22,7 @@ export class ChecklistFactory {
       id: defItem.id,
       title: defItem.title,
       note: defItem.note ?? '',
-      isChecked: false
+      quantity: defItem.quantity ?? 0
     })
   }
 
@@ -67,7 +67,7 @@ export class ChecklistFactory {
   }
 
   static createItem(title, note = '') {
-    return new ChecklistItem({ id: uid(), title, note, isChecked: false, isCustom: true })
+    return new ChecklistItem({ id: uid(), title, note, quantity: 0, isCustom: true })
   }
 
   static createCategory(name, icon = '📁') {

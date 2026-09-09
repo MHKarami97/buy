@@ -51,7 +51,7 @@ export class ChecklistTemplate {
   }
 
   resetProgress() {
-    this.categories.forEach((cat) => cat.items.forEach((item) => (item.isChecked = false)))
+    this.categories.forEach((cat) => cat.items.forEach((item) => (item.quantity = 0)))
   }
 
   toJSON() {

@@ -5,8 +5,8 @@ var store = useChecklistStore()
 
 var filterOptions = [
   { key: 'all', label: 'همه' },
-  { key: 'pending', label: 'باقی‌مانده' },
-  { key: 'completed', label: 'انجام‌شده' }
+  { key: 'pending', label: 'موجود' },
+  { key: 'completed', label: 'تمام شده' }
 ]
 
 var sortOptions = [

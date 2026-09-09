@@ -22,5 +22,13 @@ function goHome() {
       <span class="text-xl">🏠</span>
       <span>خرید‌ها</span>
     </button>
+    <RouterLink
+      to="/shopping-list"
+      class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-4 text-sm"
+      :class="route.name === 'shopping-list' ? 'text-brand-500 font-semibold' : 'text-slate-500 dark:text-slate-400'"
+    >
+      <span class="text-xl">🛒</span>
+      <span>لیست خرید</span>
+    </RouterLink>
   </nav>
 </template>

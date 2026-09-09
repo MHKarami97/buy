@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useChecklistStore } from '../stores/checklistStore'
 import { useConfirm } from '../composables/useConfirm'
-import CategoryCard from '../components/CategoryCard.vue'
 import ProgressBar from '../components/ProgressBar.vue'
 import FilterSortBar from '../components/FilterSortBar.vue'
 import AddItemForm from '../components/AddItemForm.vue'
@@ -26,7 +25,7 @@ function handleRemoveItem(itemId) {
 }
 
 function handleResetTemplate() {
-  requestConfirm('همه تیک‌ها به حالت اولیه برگردند؟', () => store.resetActiveTemplate())
+  requestConfirm('تعداد همه آیتم‌ها صفر شود؟', () => store.resetActiveTemplate())
 }
 
 function handleDeleteTemplate() {
@@ -74,21 +73,12 @@ function handleDeleteTemplate() {
       <ProgressBar :percent="template.overallProgress" />
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      <CategoryCard
-        v-for="category in template.categories"
-        :key="category.id"
-        :category="category"
-        :is-active="store.activeCategoryId === category.id"
-        @select="store.selectCategory"
-      />
-    </div>
-
     <div v-if="store.activeCategory" class="space-y-4">
       <FilterSortBar />
       <VirtualItemList
         :items="store.visibleItems"
         @toggle="store.toggleItem"
+        @update-quantity="store.updateItemQuantity($event.id, $event.quantity)"
         @remove="handleRemoveItem"
       />
       <AddItemForm @add="(title) => store.addItem(title)" />

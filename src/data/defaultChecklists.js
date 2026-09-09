@@ -1,194 +1,221 @@
 export var defaultChecklistDefinitions = [
   {
-    id: "food",
+    id: "staples",
     version: 1,
-    title: "میوه",
-    description: "خرید میوه و سبزیجات تازه",
-    icon: "🚗",
+    title: "مواد غذایی پایه",
+    description: "اقلام خشک و مصرفی که معمولاً هر ماه خریداری می‌شوند",
+    icon: "🛒",
     categories: [
       {
-        id: "cat-0f865443",
-        name: "مدارک و اسناد",
-        icon: "📄",
+        id: "staples-food",
+        name: "مواد غذایی پایه",
+        icon: "🌾",
         items: [
-          { id: "item-3a1b8801", title: "گواهینامه رانندگی", note: "" },
-          { id: "item-3aab0e3d", title: "کارت خودرو", note: "" },
-          { id: "item-c4794c34", title: "بیمه‌نامه شخص ثالث", note: "" },
-          { id: "item-61682d00", title: "کارت ملی", note: "" },
-          { id: "item-eaf7292f", title: "شناسنامه", note: "" },
-          { id: "item-c5022e5d", title: "کارت بانکی و پول نقد", note: "" },
-          { id: "item-230f199b", title: "بیمه بدنه", note: "" },
-          { id: "item-3f68efca", title: "کارت سوخت", note: "" },
-        ],
-      },
-      {
-        id: "cat-91e4635d",
-        name: "خودرو و ابزار",
-        icon: "🔧",
-        items: [
-          { id: "item-fb2ef0bb", title: "لاستیک زاپاس و آچار چرخ", note: "" },
-          { id: "item-ba3bacbe", title: "جک", note: "" },
-          { id: "item-308b52e8", title: "کابل باتری به باتری", note: "" },
-          { id: "item-b22d729b", title: "پمپ باد فندکی", note: "" },
-          { id: "item-5ca4120e", title: "زنجیر چرخ", note: "" },
-          { id: "item-047b2459", title: "سیستم صوتی/کابل AUX", note: "" },
-          { id: "item-be3071b1", title: "شارژر فندکی", note: "" },
-          { id: "item-22dd7ab3", title: "روغن و آب‌ رادیاتور یدک", note: "" },
-          { id: "item-ee90b290", title: "طناب یدک‌کش", note: "" },
-          { id: "item-3a4c02d8", title: "آفتاب‌گیر شیشه", note: "" },
-          { id: "item-4dc6c90f", title: "فیوز یدکی", note: "" },
-          { id: "item-bbf3797e", title: "نقشه آفلاین/کاغذی", note: "" },
-        ],
-      },
-      {
-        id: "cat-7cbe9e6a",
-        name: "ایمنی و اضطراری",
-        icon: "🧯",
-        items: [
-          { id: "item-2be7e297", title: "جعبه کمک‌های اولیه", note: "" },
-          { id: "item-95af033a", title: "چراغ‌قوه و باتری یدک", note: "" },
-          { id: "item-ce883401", title: "کپسول آتش‌نشانی", note: "" },
-          { id: "item-ec7e564a", title: "مثلث خطر و چراغ گردان", note: "" },
-          { id: "item-b238c85f", title: "سه‌راهی برقی خودرو", note: "" },
-          { id: "item-1d9826c4", title: "سوت اضطراری", note: "" },
-          { id: "item-b8d273b8", title: "شیشه شکن اضطراری", note: "" },
-        ],
-      },
-      {
-        id: "cat-31be0ee8",
-        name: "پوشاک",
-        icon: "🧥",
-        items: [
-          { id: "item-86c9b193", title: "بالش و پتوی سفری", note: "" },
-          { id: "item-91661e61", title: "لباس گرم/مناسب آب‌وهوا", note: "" },
-          { id: "item-13072ab6", title: "کفش راحتی", note: "" },
-          { id: "item-6250dc2c", title: "صندل", note: "" },
-          { id: "item-8d67f2e7", title: "عینک آفتابی", note: "" },
-          { id: "item-f27290a3", title: "لباس اضافه برای چند روز", note: "" },
-          { id: "item-ad7b12af", title: "کیسه لباس چرک", note: "" },
-          { id: "item-d66e08ba", title: "ساق دست برای رانندگی", note: "" },
-        ],
-      },
-      {
-        id: "cat-49432990",
-        name: "راحتی",
-        icon: "✨​",
-        items: [
-          { id: "item-db455d05", title: "زیرانداز", note: "" },
-          { id: "item-7316fab0", title: "صندلی و میز تاشو", note: "" },
-          { id: "item-780abfc1", title: "سایه بان", note: "" },
-          { id: "item-7cb46040", title: "منقل", note: "" },
-          { id: "item-3bea0f96", title: "بادبزن", note: "" },
-          { id: "item-c4c74c68", title: "آتش زنه", note: "" },
-          { id: "item-9424915e", title: "ذغال", note: "" },
-          { id: "item-60ac63bf", title: "گاز", note: "" },
-          { id: "item-2aebe562", title: "کپسول گاز اضافه", note: "" },
-          { id: "item-63d8a0b3", title: "ماهیتابه", note: "" },
-          { id: "item-07d1856c", title: "توری کباب ماهی", note: "" },
-          { id: "item-4a56e150", title: "سیخ", note: "" },
-          { id: "item-46712b03", title: "اره", note: "" },
-          { id: "item-50f2c449", title: "طناب", note: "" },
-          { id: "item-544e1d4f", title: "بیل تاشو", note: "" },
-          { id: "item-3468a9aa", title: "کیسه زباله مخصوص خودرو", note: "" },
-        ],
-      },
-      {
-        id: "cat-413bd8be",
-        name: "بهداشت و دارو",
-        icon: "💊",
-        items: [
-          { id: "item-38e5d94a", title: "داروهای شخصی", note: "" },
-          { id: "item-28d04723", title: "ضدآفتاب", note: "" },
-          {
-            id: "item-c3333f6a",
-            title: "دستمال مرطوب یا ژل ضدعفونی",
-            note: "",
-          },
-          { id: "item-e86ee472", title: "دستمال کاغذی", note: "" },
-          { id: "item-60a4abc4", title: "مسواک و خمیردندان", note: "" },
-          { id: "item-aba8a2e8", title: "کیسه زباله سفری", note: "" },
-          { id: "item-6cb70340", title: "قرص سرگیجه/تهوع", note: "" },
-          { id: "item-53e6b58e", title: "شانه", note: "" },
-          { id: "item-83fd3a71", title: "حوله", note: "" },
-          { id: "item-13fde474", title: "شامپو", note: "" },
-          { id: "item-c86eb5e3", title: "آینه", note: "" },
-          { id: "item-161f767d", title: "سشوار", note: "" },
-          { id: "item-1dbe781c", title: "موچین", note: "" },
-          { id: "item-55ff355a", title: "ناخن‌گیر", note: "" },
-          { id: "item-54a202d3", title: "چراغ قوه", note: "" },
-          { id: "item-50246fd2", title: "باند", note: "" },
-          { id: "item-fca59821", title: "چسب زخم", note: "" },
-          { id: "item-c9ca1b3c", title: "نخ دندان", note: "" },
-          { id: "item-620e2385", title: "نخ و سوزن", note: "" },
-        ],
-      },
-      {
-        id: "cat-a848d2be",
-        name: "غذا و آب",
-        icon: "🍎",
-        items: [
-          { id: "item-6ec8b5b2", title: "آب معدنی (نوشیدن)", note: "" },
-          { id: "item-c716366c", title: "آب دبه‌ای (شستشو)", note: "" },
-          { id: "item-f7504df2", title: "خشکبار", note: "" },
-          { id: "item-a2d5eb04", title: "میوه", note: "" },
-          { id: "item-851a2893", title: "نان", note: "" },
-          { id: "item-79fd830c", title: "تن ماهی", note: "" },
-          { id: "item-5ba0acf8", title: "تنقلات", note: "" },
-          { id: "item-e4bade35", title: "تخمه", note: "" },
-          { id: "item-50c9029e", title: "یخ و کلمن", note: "" },
-          { id: "item-e9f301c0", title: "تخم مرغ", note: "" },
-        ],
-      },
-      {
-        id: "cat-93e8ab61",
-        name: "پخت و پز",
-        icon: "🥙​",
-        items: [
-          { id: "item-f67a9e87", title: "قابلمه و ماهیتابه", note: "" },
-          { id: "item-2ed18f40", title: "لیوان", note: "" },
-          { id: "item-97409a60", title: "بشقاب", note: "" },
-          { id: "item-2e38d7c0", title: "اسکاج", note: "" },
-          { id: "item-93a892b6", title: "مایع ظرف‌شویی", note: "" },
-          { id: "item-b4db3533", title: "قاشق و چنگال", note: "" },
-          { id: "item-180dcf54", title: "چاقو تیز", note: "" },
-          { id: "item-27d695bc", title: "ادویه", note: "" },
-          { id: "item-bd6ce527", title: "چای کیسه‌ای", note: "" },
-          { id: "item-e3e56677", title: "دستگیره", note: "" },
-          { id: "item-3c65daf1", title: "فندک و کبریت", note: "" },
-          { id: "item-609fc97d", title: "سفره", note: "" },
-        ],
-      },
-      {
-        id: "cat-8506c21e",
-        name: "تکنولوژی و ناوبری",
-        icon: "🧭",
-        items: [
-          { id: "item-fed61166", title: "پاوربانک", note: "" },
-          { id: "item-584e2151", title: "کاور ضدآب موبایل", note: "" },
-          { id: "item-ae38ed4d", title: "کابل شارژ موبایل", note: "" },
-          { id: "item-542a4e8a", title: "دوربین یا اکشن‌کم", note: "" },
-          { id: "item-6465a8e3", title: "سه پایه عکاسی", note: "" },
-          { id: "item-315d1320", title: "هولدر موبایل برای ماشین", note: "" },
-        ],
-      },
-      {
-        id: "cat-183347fc",
-        name: "سرگرمی",
-        icon: "🎵",
-        items: [
-          { id: "item-8d4a60b2", title: "پلی‌لیست موزیک آفلاین", note: "" },
-          {
-            id: "item-dc080b97",
-            title: "کتاب صوتی یا پادکست دانلود شده",
-            note: "",
-          },
-          {
-            id: "item-80fa2fd9",
-            title: "بازی‌های کارتی/سرگرمی برای توقف‌ها",
-            note: "",
-          },
-        ],
-      },
-    ],
+          { id: "rice", title: "برنج", note: "خرید ماهانه" },
+          { id: "bread", title: "نان", note: "خرید روزانه یا هفتگی" },
+          { id: "pasta", title: "ماکارونی", note: "" },
+          { id: "flour", title: "آرد", note: "" },
+          { id: "sugar", title: "شکر", note: "" },
+          { id: "salt", title: "نمک", note: "" },
+          { id: "tea", title: "چای", note: "" },
+          { id: "coffee", title: "قهوه", note: "" },
+          { id: "cooking-oil", title: "روغن خوراکی", note: "" },
+          { id: "tomato-paste", title: "رب گوجه‌فرنگی", note: "" },
+          { id: "spices", title: "ادویه و چاشنی", note: "" },
+          { id: "beans", title: "حبوبات", note: "عدس، نخود و لوبیا" },
+          { id: "canned-food", title: "کنسرو و غذای آماده", note: "" },
+          { id: "pickles", title: "ترشی و خیارشور", note: "" },
+          { id: "jam", title: "مربا و عسل", note: "" },
+          { id: "snacks", title: "تنقلات", note: "" },
+          { id: "drinking-water", title: "آب آشامیدنی", note: "" }
+        ]
+      }
+    ]
   },
-  ];
+  {
+    id: "produce",
+    version: 1,
+    title: "میوه و سبزیجات",
+    description: "خرید تازه روزانه یا هفتگی خانه",
+    icon: "🍎",
+    categories: [
+      {
+        id: "fresh-produce",
+        name: "میوه و سبزیجات تازه",
+        icon: "🥬",
+        items: [
+          { id: "apples", title: "سیب", note: "" },
+          { id: "bananas", title: "موز", note: "" },
+          { id: "oranges", title: "پرتقال و نارنگی", note: "" },
+          { id: "lemons", title: "لیموترش", note: "" },
+          { id: "cucumbers", title: "خیار", note: "" },
+          { id: "tomatoes", title: "گوجه‌فرنگی", note: "" },
+          { id: "potatoes", title: "سیب‌زمینی", note: "" },
+          { id: "onions", title: "پیاز", note: "" },
+          { id: "garlic", title: "سیر", note: "" },
+          { id: "lettuce", title: "کاهو", note: "" },
+          { id: "herbs", title: "سبزی خوردن", note: "" },
+          { id: "carrots", title: "هویج", note: "" },
+          { id: "bell-peppers", title: "فلفل دلمه‌ای", note: "" },
+          { id: "eggplant", title: "بادمجان", note: "" },
+          { id: "zucchini", title: "کدو", note: "" },
+          { id: "mushrooms", title: "قارچ", note: "" },
+          { id: "seasonal-fruit", title: "میوه فصل", note: "" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "dairy-protein",
+    version: 1,
+    title: "لبنیات و پروتئین",
+    description: "مواد تازه و مصرفی یخچال",
+    icon: "🥛",
+    categories: [
+      {
+        id: "fresh-food",
+        name: "لبنیات و مواد تازه",
+        icon: "🧀",
+        items: [
+          { id: "milk", title: "شیر", note: "خرید هفتگی" },
+          { id: "yogurt", title: "ماست", note: "" },
+          { id: "cheese", title: "پنیر", note: "" },
+          { id: "butter", title: "کره", note: "" },
+          { id: "cream", title: "خامه", note: "" },
+          { id: "eggs", title: "تخم‌مرغ", note: "" },
+          { id: "chicken", title: "مرغ", note: "" },
+          { id: "red-meat", title: "گوشت قرمز", note: "" },
+          { id: "fish", title: "ماهی", note: "" },
+          { id: "sausage", title: "سوسیس و کالباس", note: "" },
+          { id: "frozen-vegetables", title: "سبزیجات منجمد", note: "" },
+          { id: "ice-cream", title: "بستنی", note: "" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "personal-care",
+    version: 1,
+    title: "بهداشت شخصی",
+    description: "اقلام مصرفی بهداشت و مراقبت روزانه",
+    icon: "🧴",
+    categories: [
+      {
+        id: "personal-hygiene",
+        name: "بهداشت و مراقبت شخصی",
+        icon: "🧼",
+        items: [
+          { id: "soap", title: "صابون", note: "" },
+          { id: "shampoo", title: "شامپو", note: "" },
+          { id: "body-wash", title: "شامپو بدن", note: "" },
+          { id: "conditioner", title: "نرم‌کننده مو", note: "" },
+          { id: "toothbrush", title: "مسواک", note: "" },
+          { id: "toothpaste", title: "خمیردندان", note: "" },
+          { id: "dental-floss", title: "نخ دندان", note: "" },
+          { id: "mouthwash", title: "دهان‌شویه", note: "" },
+          { id: "toilet-paper", title: "دستمال توالت", note: "" },
+          { id: "tissues", title: "دستمال کاغذی", note: "" },
+          { id: "wet-wipes", title: "دستمال مرطوب", note: "" },
+          { id: "liquid-soap", title: "مایع دستشویی", note: "" },
+          { id: "deodorant", title: "ضدتعریق", note: "" },
+          { id: "shaving-supplies", title: "لوازم اصلاح", note: "" },
+          { id: "cotton-swabs", title: "گوش‌پاک‌کن", note: "" },
+          { id: "cotton-pads", title: "پد بهداشتی", note: "" },
+          { id: "sanitary-products", title: "محصولات بهداشت بانوان", note: "" },
+          { id: "razors", title: "تیغ اصلاح", note: "" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "cleaning-supplies",
+    version: 1,
+    title: "شوینده و نظافت",
+    description: "مواد مصرفی نظافت خانه و لباس",
+    icon: "🧽",
+    categories: [
+      {
+        id: "cleaning-consumables",
+        name: "مواد شوینده و نظافت",
+        icon: "🫧",
+        items: [
+          { id: "dishwashing-liquid", title: "مایع ظرفشویی", note: "" },
+          { id: "dishwasher-tablets", title: "قرص ماشین ظرفشویی", note: "" },
+          { id: "laundry-detergent", title: "پودر یا مایع لباسشویی", note: "" },
+          { id: "softener", title: "نرم‌کننده لباس", note: "" },
+          { id: "bleach", title: "سفیدکننده", note: "" },
+          { id: "floor-cleaner", title: "مایع زمین‌شوی", note: "" },
+          { id: "multi-purpose-cleaner", title: "پاک‌کننده چندمنظوره", note: "" },
+          { id: "glass-cleaner", title: "شیشه‌پاک‌کن", note: "" },
+          { id: "toilet-cleaner", title: "شوینده سرویس بهداشتی", note: "" },
+          { id: "descaler", title: "جرم‌گیر", note: "" },
+          { id: "sponge", title: "اسکاچ و اسفنج", note: "" },
+          { id: "steel-wool", title: "سیم ظرفشویی", note: "" },
+          { id: "cleaning-cloths", title: "دستمال نظافت", note: "" },
+          { id: "rubber-gloves", title: "دستکش نظافت", note: "" },
+          { id: "trash-bags", title: "کیسه زباله", note: "" },
+          { id: "air-freshener", title: "خوشبوکننده هوا", note: "" },
+          { id: "insect-spray", title: "حشره‌کش", note: "" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "kitchen-consumables",
+    version: 1,
+    title: "مصرفی آشپزخانه",
+    description: "اقلامی که برای نگهداری و مصرف روزانه غذا تمام می‌شوند",
+    icon: "🍽️",
+    categories: [
+      {
+        id: "kitchen-disposables",
+        name: "مصرفی‌های آشپزخانه",
+        icon: "🧻",
+        items: [
+          { id: "paper-towels", title: "حوله کاغذی", note: "" },
+          { id: "aluminum-foil", title: "فویل آلومینیومی", note: "" },
+          { id: "plastic-wrap", title: "سلفون", note: "" },
+          { id: "zipper-bags", title: "کیسه زیپ‌دار", note: "" },
+          { id: "freezer-bags", title: "کیسه فریزر", note: "" },
+          { id: "food-storage-bags", title: "کیسه نگهداری غذا", note: "" },
+          { id: "disposable-gloves", title: "دستکش یک‌بارمصرف", note: "" },
+          { id: "disposable-cups", title: "لیوان یک‌بارمصرف", note: "" },
+          { id: "disposable-plates", title: "ظرف یک‌بارمصرف", note: "" },
+          { id: "straws", title: "نی", note: "" },
+          { id: "toothpicks", title: "خلال دندان", note: "" },
+          { id: "napkins", title: "دستمال سفره", note: "" },
+          { id: "charcoal", title: "زغال", note: "مصرف مناسبتی" },
+          { id: "matches", title: "کبریت و فندک", note: "" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "home-consumables",
+    version: 1,
+    title: "مصرفی خانه",
+    description: "اقلام کوچک و مصرفی برای استفاده روزمره خانه",
+    icon: "🏠",
+    categories: [
+      {
+        id: "daily-home-consumables",
+        name: "مصرفی‌های خانه",
+        icon: "🧺",
+        items: [
+          { id: "laundry-bag", title: "کیسه لباسشویی", note: "" },
+          { id: "sewing-thread", title: "نخ خیاطی", note: "" },
+          { id: "sewing-needles", title: "سوزن", note: "" },
+          { id: "batteries", title: "باتری قلمی", note: "در صورت نیاز" },
+          { id: "light-bulbs", title: "لامپ یدک", note: "در صورت سوختن" },
+          { id: "adhesive-tape", title: "چسب نواری", note: "" },
+          { id: "super-glue", title: "چسب قطره‌ای", note: "" },
+          { id: "shoe-polish", title: "واکس کفش", note: "" },
+          { id: "plant-soil", title: "خاک و کود گیاه", note: "در صورت داشتن گیاه" },
+          { id: "pet-food", title: "غذای حیوان خانگی", note: "در صورت نیاز" },
+          { id: "pet-litter", title: "خاک گربه", note: "در صورت نیاز" },
+          { id: "first-aid-refill", title: "اقلام مصرفی کمک‌های اولیه", note: "چسب زخم و باند" }
+        ]
+      }
+    ]
+  }
+]

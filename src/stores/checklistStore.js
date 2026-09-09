@@ -20,7 +20,9 @@ export var useChecklistStore = defineStore('checklist', {
     searchQuery: '',
     isDarkMode: false,
     saveTimeoutId: null,
-    deletedDefaultIds: []
+    deletedDefaultIds: [],
+    quantityNotice: null,
+    quantityNoticeTimeoutId: null
   }),
 
   getters: {
@@ -43,6 +45,14 @@ export var useChecklistStore = defineStore('checklist', {
         items = items.filter((item) => item.title.toLowerCase().includes(query))
       }
       return applyItemStrategy(items, state.filterKey, state.sortKey)
+    },
+
+    shoppingItems(state) {
+      return state.templates.flatMap((template) => template.categories.flatMap((category) =>
+        category.items
+          .filter((item) => item.quantity === 0)
+          .map((item) => ({ item, template, category }))
+      ))
     }
   },
 
@@ -51,7 +61,11 @@ export var useChecklistStore = defineStore('checklist', {
       if (checklistRepository.exists()) {
         this.templates = checklistRepository.getAll()
         this.deletedDefaultIds = checklistRepository.getDeletedDefaultIds()
+        var legacyDefaultIds = ['food', 'home']
+        var hadLegacyDefaults = this.templates.some((template) => legacyDefaultIds.includes(template.sourceDefinitionId))
+        this.templates = this.templates.filter((template) => !legacyDefaultIds.includes(template.sourceDefinitionId))
         this.reconcileDefaults()
+        if (hadLegacyDefaults) this.persistAll()
       } else {
         this.templates = defaultChecklistDefinitions.map((def) => ChecklistFactory.createFromDefinition(def))
         this.persistAll()
@@ -102,13 +116,31 @@ export var useChecklistStore = defineStore('checklist', {
       this.activeCategoryId = categoryId
     },
 
+    updateItemQuantity(itemId, quantity, categoryId = this.activeCategoryId, templateId = this.activeTemplateId) {
+      var template = this.templates.find((entry) => entry.id === templateId)
+      var category = template?.findCategory(categoryId)
+      var item = category?.findItem(itemId)
+      if (item) {
+        var previousQuantity = item.quantity
+        var nextQuantity = Math.max(0, Number(quantity) || 0)
+        item.setQuantity(nextQuantity)
+        if (previousQuantity !== item.quantity) {
+          clearTimeout(this.quantityNoticeTimeoutId)
+          this.quantityNotice = { itemTitle: item.title, quantity: item.quantity }
+          this.quantityNoticeTimeoutId = setTimeout(() => {
+            this.quantityNotice = null
+          }, 1000)
+        }
+        this.schedulePersist()
+      }
+    },
+
     toggleItem(itemId) {
       var category = this.activeCategory
       if (!category) return
       var item = category.findItem(itemId)
       if (item) {
-        item.toggle()
-        this.schedulePersist()
+        this.updateItemQuantity(itemId, item.quantity > 0 ? 0 : 1)
       }
     },
 

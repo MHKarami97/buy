@@ -20,13 +20,13 @@ class AllItemsStrategy extends BaseStrategy {
 
 class PendingOnlyStrategy extends BaseStrategy {
   filter(items) {
-    return items.filter((item) => !item.isChecked)
+    return items.filter((item) => item.quantity > 0)
   }
 }
 
 class CompletedOnlyStrategy extends BaseStrategy {
   filter(items) {
-    return items.filter((item) => item.isChecked)
+    return items.filter((item) => item.quantity === 0)
   }
 }
 

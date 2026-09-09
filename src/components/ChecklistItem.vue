@@ -1,45 +1,52 @@
 <script setup>
-defineProps({
+var props = defineProps({
   item: { type: Object, required: true }
 })
-var emit = defineEmits(['toggle', 'remove'])
+var emit = defineEmits(['toggle', 'update-quantity', 'remove'])
+
+function changeQuantity(amount) {
+  emit('update-quantity', { id: props.item.id, quantity: Math.max(0, props.item.quantity + amount) })
+}
 </script>
 
 <template>
   <div
     class="group flex items-center gap-3 rounded-xl px-3 py-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/60 animate-fade-in"
   >
-    <button
-      type="button"
-      class="relative w-6 h-6 flex-shrink-0 rounded-md border-2 flex items-center justify-center transition-colors"
-      :class="item.isChecked
-        ? 'bg-brand-500 border-brand-500'
-        : 'border-slate-300 dark:border-slate-600'"
-      :aria-pressed="item.isChecked"
-      @click="emit('toggle', item.id)"
-    >
-      <svg
-        v-if="item.isChecked"
-        class="w-4 h-4 text-white animate-check-pop"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M16.7 5.3a1 1 0 010 1.4l-7.4 7.4a1 1 0 01-1.4 0L3.3 9.5a1 1 0 111.4-1.4l3.2 3.2 6.7-6.7a1 1 0 011.4 0z"
-          clip-rule="evenodd"
-        />
-      </svg>
-    </button>
-
     <div class="flex-1 min-w-0">
-      <p
-        class="text-sm sm:text-base transition-colors"
-        :class="item.isChecked ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-100'"
-      >
+      <p class="text-sm sm:text-base text-slate-800 dark:text-slate-100">
         {{ item.title }}
       </p>
       <p v-if="item.note" class="text-xs text-slate-400 mt-0.5">{{ item.note }}</p>
+    </div>
+
+    <div class="flex items-center rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 overflow-hidden shadow-sm">
+      <button
+        type="button"
+        class="w-10 h-10 flex items-center justify-center text-lg font-semibold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-40 transition-colors"
+        aria-label="کاهش تعداد"
+        :disabled="item.quantity === 0"
+        @click="changeQuantity(-1)"
+      >
+        −
+      </button>
+      <input
+        :value="item.quantity"
+        type="number"
+        min="0"
+        inputmode="numeric"
+        aria-label="تعداد موجود"
+        class="quantity-input w-12 h-10 border-x border-slate-200 dark:border-slate-600 bg-transparent text-center text-sm font-bold text-brand-600 dark:text-brand-300 focus:outline-none"
+        @input="emit('update-quantity', { id: item.id, quantity: $event.target.value })"
+      />
+      <button
+        type="button"
+        class="w-10 h-10 flex items-center justify-center text-lg font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-slate-600 transition-colors"
+        aria-label="افزایش تعداد"
+        @click="changeQuantity(1)"
+      >
+        +
+      </button>
     </div>
 
     <button
@@ -52,3 +59,15 @@ var emit = defineEmits(['toggle', 'remove'])
     </button>
   </div>
 </template>
+
+<style scoped>
+.quantity-input {
+  -moz-appearance: textfield;
+}
+
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+</style>
