@@ -1,7 +1,7 @@
 export var defaultChecklistDefinitions = [
   {
     id: "staples",
-    version: 2,
+    version: 1,
     title: "مواد غذایی پایه",
     description: "اقلام خشک و مصرفی که معمولاً هر ماه خریداری می‌شوند",
     icon: "🛒",
@@ -45,7 +45,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "produce",
-    version: 2,
+    version: 1,
     title: "میوه و سبزیجات",
     description: "خرید تازه روزانه یا هفتگی خانه",
     icon: "🍎",
@@ -88,7 +88,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "dairy-protein",
-    version: 2,
+    version: 1,
     title: "لبنیات و پروتئین",
     description: "مواد تازه و مصرفی یخچال",
     icon: "🥛",
@@ -125,7 +125,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "personal-care",
-    version: 2,
+    version: 1,
     title: "بهداشت شخصی",
     description: "اقلام مصرفی بهداشت و مراقبت روزانه",
     icon: "🧴",
@@ -168,7 +168,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "cleaning-supplies",
-    version: 2,
+    version: 1,
     title: "شوینده و نظافت",
     description: "مواد مصرفی نظافت خانه و لباس",
     icon: "🧽",
@@ -210,7 +210,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "kitchen-consumables",
-    version: 2,
+    version: 1,
     title: "مصرفی آشپزخانه",
     description: "اقلامی که برای نگهداری و مصرف روزانه غذا تمام می‌شوند",
     icon: "🍽️",
@@ -244,7 +244,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "home-consumables",
-    version: 2,
+    version: 1,
     title: "مصرفی خانه",
     description: "اقلام کوچک و مصرفی برای استفاده روزمره خانه",
     icon: "🏠",
@@ -297,6 +297,27 @@ export var defaultChecklistDefinitions = [
           { id: "instant-coffee", title: "قهوه فوری", note: "" },
           { id: "hot-chocolate", title: "هات‌چاکلت", note: "" },
           { id: "syrup", title: "شربت و پودر نوشیدنی", note: "" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "home-office",
+    version: 1,
+    title: "لوازم اداری و تحریر",
+    description: "اقلام مصرفی برای میز کار و یادداشت‌برداری در خانه",
+    icon: "📎",
+    categories: [
+      {
+        id: "stationery",
+        name: "نوشت‌افزار",
+        icon: "🖊️",
+        items: [
+          { id: "pens", title: "خودکار و روان‌نویس" },
+          { id: "printer-paper", title: "کاغذ A4", note: "برای پرینتر خانگی" },
+          { id: "sticky-notes", title: "کاغذ یادداشت چسب‌دار" },
+          { id: "highlighters", title: "ماژیک هایلایت" },
+          { id: "paper-clips", title: "گیره کاغذ و پونز" }
         ]
       }
     ]

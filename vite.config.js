@@ -10,7 +10,7 @@ export default defineConfig({
       includeAssets: ['icons/icon-48.png'],
       manifest: {
         name: 'خرید هوشمند',
-        short_name: 'خرید',
+        short_name: 'خرید هوشمند',
         description: 'خرید هوشمند خانه',
         theme_color: '#0f172a',
         background_color: '#0f172a',
