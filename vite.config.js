@@ -7,11 +7,11 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['icons/icon-48.png'],
       manifest: {
         name: 'خرید هوشمند',
         short_name: 'خرید',
-        description: 'خرید هوشمند چند دسته‌ای برای سفر، کار و زندگی روزمره',
+        description: 'خرید هوشمند خانه',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
