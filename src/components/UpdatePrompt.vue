@@ -1,20 +1,10 @@
 <script setup>
-import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { useRegisterSW } from "virtual:pwa-register/vue";
 
-const {
-  needRefresh,
-  updateServiceWorker,
-} = useRegisterSW({
-  onRegisteredSW(swUrl, registration) {
-    // هر ۶۰ ثانیه چک کن نسخه جدیدی هست یا نه (اختیاری)
-    registration && setInterval(() => {
-      registration.update()
-    }, 60 * 1000)
-  },
-})
+const { needRefresh, updateServiceWorker } = useRegisterSW({});
 
 function reload() {
-  updateServiceWorker(true)
+  updateServiceWorker(true);
 }
 </script>
 
@@ -43,7 +33,9 @@ function reload() {
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
