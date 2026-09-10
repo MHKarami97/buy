@@ -19,7 +19,9 @@ export var defaultChecklistDefinitions = [
           { id: "salt", title: "نمک", note: "" },
           { id: "tea", title: "چای", note: "" },
           { id: "coffee", title: "قهوه", note: "" },
-          { id: "cooking-oil", title: "روغن خوراکی", note: "" },
+          { id: "cooking-oil", title: "روغن سرخ‌کردنی", note: "" },
+          { id: "cooking-oil-rice", title: "روغن پخت‌پز", note: "" },
+          { id: "cooking-oil-zitun", title: "روغن زیتون", note: "" },
           { id: "tomato-paste", title: "رب گوجه‌فرنگی", note: "" },
           { id: "spices", title: "ادویه و چاشنی", note: "" },
           { id: "beans", title: "حبوبات", note: "عدس، نخود و لوبیا" },
@@ -37,8 +39,7 @@ export var defaultChecklistDefinitions = [
           { id: "lemon-juice", title: "آبلیمو", note: "" },
           { id: "saffron", title: "زعفران", note: "" },
           { id: "dried-herbs", title: "سبزی خشک", note: "" },
-          { id: "nuts", title: "آجیل و مغزها", note: "" },
-          { id: "dried-fruit", title: "خشکبار", note: "" }
+          { id: "nuts", title: "آجیل و مغزها", note: "" }
         ]
       }
     ]
@@ -71,10 +72,11 @@ export var defaultChecklistDefinitions = [
           { id: "eggplant", title: "بادمجان", note: "" },
           { id: "zucchini", title: "کدو", note: "" },
           { id: "mushrooms", title: "قارچ", note: "" },
-          { id: "seasonal-fruit", title: "میوه فصل", note: "" },
           { id: "peaches", title: "هلو و شلیل", note: "" },
           { id: "grapes", title: "انگور", note: "" },
-          { id: "watermelon", title: "هندوانه و خربزه", note: "" },
+          { id: "watermelon", title: "هندوانه", note: "" },
+          { id: "cantaloupe", title: "خربزه", note: "" },
+          { id: "tahini", title: "طالبی", note: "" },
           { id: "cabbage", title: "کلم", note: "" },
           { id: "celery", title: "کرفس", note: "" },
           { id: "spinach", title: "اسفناج", note: "" },
@@ -108,9 +110,10 @@ export var defaultChecklistDefinitions = [
           { id: "red-meat", title: "گوشت قرمز", note: "" },
           { id: "fish", title: "ماهی", note: "" },
           { id: "sausage", title: "سوسیس و کالباس", note: "" },
-          { id: "frozen-vegetables", title: "سبزیجات منجمد", note: "" },
+          { id: "frozen-koko", title: "سبزی کوکو", note: "" },
+          { id: "frozen-ghorme", title: "سبزی قرمه", note: "" },
+          { id: "frozen-esfenaj", title: "اسفناج", note: "" },
           { id: "ice-cream", title: "بستنی", note: "" },
-          { id: "kefir", title: "کفیر", note: "" },
           { id: "doogh", title: "دوغ", note: "" },
           { id: "cottage-cheese", title: "پنیر خامه‌ای", note: "" },
           { id: "parmesan", title: "پنیر پیتزا و پارمزان", note: "" },
