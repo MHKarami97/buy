@@ -10,6 +10,13 @@
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-vazir">
     <div id="app"></div>
+    <script>
+      var spaRedirect = sessionStorage.getItem('spa-redirect')
+      if (spaRedirect) {
+        sessionStorage.removeItem('spa-redirect')
+        window.history.replaceState(null, '', spaRedirect)
+      }
+    </script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
