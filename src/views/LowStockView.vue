@@ -71,7 +71,7 @@ function confirmQuantity(entry) {
         </div>
       </section>
     </div>
-    <p v-else class="text-center text-sm text-slate-400 py-8">ماده کم‌ی وجود ندارد</p>
+    <p v-else class="text-center text-sm text-slate-400 py-8">ماده کمی وجود ندارد</p>
   </section>
 </template>
 
