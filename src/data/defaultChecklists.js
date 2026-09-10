@@ -1,7 +1,7 @@
 export var defaultChecklistDefinitions = [
   {
     id: "staples",
-    version: 1,
+    version: 2,
     title: "مواد غذایی پایه",
     description: "اقلام خشک و مصرفی که معمولاً هر ماه خریداری می‌شوند",
     icon: "🛒",
@@ -14,6 +14,7 @@ export var defaultChecklistDefinitions = [
           { id: "rice", title: "برنج", note: "خرید ماهانه" },
           { id: "bread", title: "نان", note: "خرید روزانه یا هفتگی" },
           { id: "pasta", title: "ماکارونی", note: "" },
+          { id: "pizza-dough", title: "خمیر پیتزا", note: "" },
           { id: "flour", title: "آرد", note: "" },
           { id: "sugar", title: "شکر", note: "" },
           { id: "salt", title: "نمک", note: "" },
@@ -22,13 +23,43 @@ export var defaultChecklistDefinitions = [
           { id: "cooking-oil", title: "روغن سرخ‌کردنی", note: "" },
           { id: "cooking-oil-rice", title: "روغن پخت‌پز", note: "" },
           { id: "cooking-oil-zitun", title: "روغن زیتون", note: "" },
+          { id: "abghooreh", title: "آبغوره", note: "" },
           { id: "tomato-paste", title: "رب گوجه‌فرنگی", note: "" },
           { id: "spices", title: "ادویه و چاشنی", note: "" },
+          { id: "salad-seasoning", title: "چاشنی سالاد", note: "" },
           { id: "beans", title: "حبوبات", note: "عدس، نخود و لوبیا" },
+          { id: "corn", title: "ذرت", note: "" },
+          { id: "broad-beans", title: "باقالی", note: "" },
+          { id: "okra", title: "بامیه", note: "" },
           { id: "canned-food", title: "کنسرو و غذای آماده", note: "" },
           { id: "pickles", title: "ترشی و خیارشور", note: "" },
+          { id: "olives", title: "زیتون", note: "" },
+          { id: "fried-onions", title: "پیاز سرخ کرده", note: "" },
+          { id: "sauce", title: "سس", note: "" },
+          { id: "mayonnaise-sauce", title: "سس مایومز", note: "" },
+          { id: "mint-distillate", title: "عرق نعنا", note: "" },
+          { id: "kashk", title: "کشک", note: "" },
+          { id: "lime-dried", title: "لیمو عمانی", note: "" },
+          { id: "rice-noodles", title: "رشته پلویی", note: "" },
+          { id: "almond-slivers", title: "خلال بادام", note: "" },
+          { id: "pistachio-slivers", title: "خلال پسته", note: "" },
+          { id: "sesame", title: "کنجد", note: "" },
           { id: "jam", title: "مربا و عسل", note: "" },
           { id: "snacks", title: "تنقلات", note: "" },
+          { id: "popcorn", title: "پفیلا", note: "" },
+          { id: "jelly-powder", title: "ژله", note: "" },
+          { id: "cake-powder", title: "پودر کیک", note: "" },
+          { id: "pancake-powder", title: "پودر پنکیک", note: "" },
+          { id: "rock-candy", title: "نبات", note: "" },
+          { id: "lasagna", title: "لازانیا", note: "" },
+          { id: "chocolate-sauce", title: "سس کاکائو", note: "" },
+          { id: "chocolate", title: "شکلات", note: "" },
+          { id: "lavashak", title: "لواشک", note: "" },
+          { id: "dry-pastry", title: "شیرینی خشک", note: "" },
+          { id: "seeds", title: "تخمه", note: "" },
+          { id: "khashir", title: "خاکشیر", note: "" },
+          { id: "basil-seeds", title: "تخم شربتی", note: "" },
+          { id: "guest-snacks", title: "تنقلات پذیرایی مهمان", note: "" },
           { id: "drinking-water", title: "آب آشامیدنی", note: "" },
           { id: "vermicelli", title: "رشته آش و سوپ", note: "" },
           { id: "breadcrumbs", title: "آرد سوخاری", note: "" },
@@ -46,7 +77,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "produce",
-    version: 1,
+    version: 2,
     title: "میوه و سبزیجات",
     description: "خرید تازه روزانه یا هفتگی خانه",
     icon: "🍎",
@@ -60,6 +91,11 @@ export var defaultChecklistDefinitions = [
           { id: "bananas", title: "موز", note: "" },
           { id: "oranges", title: "پرتقال و نارنگی", note: "" },
           { id: "lemons", title: "لیموترش", note: "" },
+          { id: "figs", title: "انجیر", note: "" },
+          { id: "pears", title: "گلابی", note: "" },
+          { id: "nectarines", title: "شلیل", note: "" },
+          { id: "plums", title: "آلو", note: "" },
+          { id: "cherries", title: "گیلاس", note: "" },
           { id: "cucumbers", title: "خیار", note: "" },
           { id: "tomatoes", title: "گوجه‌فرنگی", note: "" },
           { id: "potatoes", title: "سیب‌زمینی", note: "" },
@@ -90,7 +126,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "dairy-protein",
-    version: 1,
+    version: 2,
     title: "لبنیات و پروتئین",
     description: "مواد تازه و مصرفی یخچال",
     icon: "🥛",
@@ -122,13 +158,15 @@ export var defaultChecklistDefinitions = [
           { id: "minced-meat", title: "گوشت چرخ‌کرده", note: "" },
           { id: "liver", title: "جگر", note: "" },
           { id: "frozen-fries", title: "سیب‌زمینی نیمه‌آماده", note: "" }
+          ,{ id: "nuggets", title: "ناگت", note: "" }
+          ,{ id: "falafel", title: "فلافل", note: "" }
         ]
       }
     ]
   },
   {
     id: "personal-care",
-    version: 1,
+    version: 2,
     title: "بهداشت شخصی",
     description: "اقلام مصرفی بهداشت و مراقبت روزانه",
     icon: "🧴",
@@ -154,7 +192,6 @@ export var defaultChecklistDefinitions = [
           { id: "shaving-supplies", title: "لوازم اصلاح", note: "" },
           { id: "cotton-swabs", title: "گوش‌پاک‌کن", note: "" },
           { id: "cotton-pads", title: "پد بهداشتی", note: "" },
-          { id: "sanitary-products", title: "محصولات بهداشت بانوان", note: "" },
           { id: "razors", title: "تیغ اصلاح", note: "" },
           { id: "face-wash", title: "شوینده صورت", note: "" },
           { id: "moisturizer", title: "کرم مرطوب‌کننده", note: "" },
@@ -171,7 +208,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "cleaning-supplies",
-    version: 1,
+    version: 2,
     title: "شوینده و نظافت",
     description: "مواد مصرفی نظافت خانه و لباس",
     icon: "🧽",
@@ -204,16 +241,14 @@ export var defaultChecklistDefinitions = [
           { id: "dishwasher-cleaner", title: "جرم‌گیر ماشین ظرفشویی", note: "" },
           { id: "fabric-stain-remover", title: "لکه‌بر لباس", note: "" },
           { id: "scouring-powder", title: "پودر شوینده سطوح", note: "" },
-          { id: "mop-refill", title: "یدک تی", note: "" },
-          { id: "dust-cloths", title: "دستمال گردگیری", note: "" },
-          { id: "garbage-gloves", title: "دستکش ضخیم نظافت", note: "" }
+          { id: "mop-refill", title: "یدک تی", note: "" }
         ]
       }
     ]
   },
   {
     id: "kitchen-consumables",
-    version: 1,
+    version: 2,
     title: "مصرفی آشپزخانه",
     description: "اقلامی که برای نگهداری و مصرف روزانه غذا تمام می‌شوند",
     icon: "🍽️",
@@ -232,6 +267,7 @@ export var defaultChecklistDefinitions = [
           { id: "disposable-gloves", title: "دستکش یک‌بارمصرف", note: "" },
           { id: "disposable-cups", title: "لیوان یک‌بارمصرف", note: "" },
           { id: "disposable-plates", title: "ظرف یک‌بارمصرف", note: "" },
+          { id: "disposable-tablecloth", title: "سفره یک‌بار مصرف", note: "" },
           { id: "straws", title: "نی", note: "" },
           { id: "toothpicks", title: "خلال دندان", note: "" },
           { id: "napkins", title: "دستمال سفره", note: "" },
@@ -275,7 +311,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "breakfast-drinks",
-    version: 1,
+    version: 2,
     title: "صبحانه و نوشیدنی",
     description: "اقلامی برای صبحانه و نوشیدنی‌های روزانه",
     icon: "☕",
@@ -296,10 +332,13 @@ export var defaultChecklistDefinitions = [
           { id: "dates", title: "خرما", note: "" },
           { id: "walnuts", title: "گردو", note: "" },
           { id: "black-tea", title: "چای سیاه", note: "" },
+          { id: "tea-bags", title: "چای کیسه ای", note: "" },
           { id: "green-tea", title: "چای سبز و دمنوش", note: "" },
           { id: "instant-coffee", title: "قهوه فوری", note: "" },
           { id: "hot-chocolate", title: "هات‌چاکلت", note: "" },
           { id: "syrup", title: "شربت و پودر نوشیدنی", note: "" }
+          ,{ id: "soft-drink", title: "نوشابه", note: "" }
+          ,{ id: "malt-drink", title: "دلستر", note: "" }
         ]
       }
     ]
