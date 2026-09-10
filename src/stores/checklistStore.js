@@ -71,7 +71,7 @@ export var useChecklistStore = defineStore("checklist", {
     shoppingItems(state) {
       return state.templates.flatMap((template) =>
         template.categories.flatMap((category) =>
-          category.activeItems // تغییر یافت تا پنهان‌شده‌ها نادیده گرفته شوند
+          category.activeItems
             .filter((item) => item.quantity === 0)
             .map((item) => ({ item, template, category })),
         ),
@@ -81,7 +81,7 @@ export var useChecklistStore = defineStore("checklist", {
     lowStockItems(state) {
       return state.templates.flatMap((template) =>
         template.categories.flatMap((category) =>
-          category.activeItems // تغییر یافت تا پنهان‌شده‌ها نادیده گرفته شوند
+          category.activeItems
             .filter((item) => item.quantity === 0.5)
             .map((item) => ({ item, template, category })),
         ),

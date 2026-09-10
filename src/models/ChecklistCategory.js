@@ -1,9 +1,5 @@
 import { ChecklistItem } from './ChecklistItem'
 
-/**
- * Aggregates a group of related ChecklistItem instances
- * and exposes derived progress metrics.
- */
 export class ChecklistCategory {
   constructor({ id, name, icon = '📌', items = [] }) {
     this.id = id
@@ -17,11 +13,11 @@ export class ChecklistCategory {
   }
 
   get totalCount() {
-    return this.items.length
+    return this.activeItems.length
   }
 
   get completedCount() {
-    return this.items.filter((item) => item.quantity > 0).length
+    return this.activeItems.filter((item) => item.quantity > 0).length
   }
 
   get progressPercent() {
