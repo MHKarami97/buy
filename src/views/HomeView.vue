@@ -42,7 +42,7 @@ function createCustom() {
           class="min-h-[44px] px-4 rounded-xl bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
           @click="isCreating = true"
         >
-          + خرید جدید
+          + لیست جدید
         </button>
       </div>
     </div>
