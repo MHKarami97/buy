@@ -67,7 +67,7 @@ function handleDeleteTemplate() {
 
     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
       <div class="flex items-center justify-between mb-2 text-sm">
-        <span>پیشرفت کلی</span>
+        <span>وضعیت</span>
         <span class="font-semibold">{{ template.overallProgress }}%</span>
       </div>
       <ProgressBar :percent="template.overallProgress" />
