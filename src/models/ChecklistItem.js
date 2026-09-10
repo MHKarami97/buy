@@ -8,14 +8,19 @@ export class ChecklistItem {
     this.title = title
     this.note = note
     // Migrate the former boolean state: checked items become available once.
-    this.quantity = quantity === undefined ? (isChecked ? 1 : 0) : Math.max(0, Number(quantity) || 0)
+    this.quantity = ChecklistItem.normalizeQuantity(quantity === undefined ? (isChecked ? 1 : 0) : quantity)
     this.isCustom = isCustom
     this.createdAt = createdAt
   }
 
   setQuantity(quantity) {
-    this.quantity = Math.max(0, Number(quantity) || 0)
+    this.quantity = ChecklistItem.normalizeQuantity(quantity)
     return this
+  }
+
+  static normalizeQuantity(quantity) {
+    var numericQuantity = Math.max(0, Number(quantity) || 0)
+    return Math.round(numericQuantity * 2) / 2
   }
 
   clone() {

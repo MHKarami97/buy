@@ -5,6 +5,11 @@ import { useChecklistStore } from '../stores/checklistStore'
 var store = useChecklistStore()
 var pendingQuantities = ref({})
 var expandedLists = ref({})
+var expandedCompletedNotes = ref(false)
+var newNote = ref('')
+
+var pendingNotes = computed(() => store.shoppingNotes.filter((note) => !note.isChecked))
+var completedNotes = computed(() => store.shoppingNotes.filter((note) => note.isChecked))
 
 var shoppingLists = computed(() => {
   var lists = new Map()
@@ -53,6 +58,11 @@ function confirmQuantity(entry) {
   store.updateItemQuantity(entry.item.id, quantity, entry.category.id, entry.template.id)
   delete pendingQuantities.value[key]
 }
+
+function addNote() {
+  store.addShoppingNote(newNote.value)
+  newNote.value = ''
+}
 </script>
 
 <template>
@@ -61,6 +71,32 @@ function confirmQuantity(entry) {
       <h1 class="text-xl sm:text-2xl font-bold">لیست خرید</h1>
       <p class="text-sm text-slate-400 mt-1">آیتم‌هایی که موجودی آن‌ها صفر است</p>
     </div>
+
+    <section class="rounded-xl border border-slate-100 dark:border-slate-700/60 bg-white dark:bg-slate-800 p-3 space-y-3">
+      <h2 class="text-sm font-semibold">نوت‌های لیست خرید</h2>
+      <form class="flex gap-2" @submit.prevent="addNote">
+        <input v-model="newNote" type="text" placeholder="مثلاً تماس با فروشگاه" class="flex-1 min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 text-sm" />
+        <button type="submit" class="min-h-[44px] px-4 rounded-xl bg-brand-500 text-white text-sm">افزودن</button>
+      </form>
+      <div v-if="pendingNotes.length" class="space-y-2">
+        <label v-for="note in pendingNotes" :key="note.id" class="flex items-center gap-2 text-sm">
+          <input type="checkbox" :checked="note.isChecked" @change="store.toggleShoppingNote(note.id)" />
+          <span>{{ note.text }}</span>
+        </label>
+      </div>
+      <div v-if="completedNotes.length" class="border-t border-slate-100 dark:border-slate-700/60 pt-2">
+        <button type="button" class="flex w-full items-center justify-between text-xs text-slate-400" @click="expandedCompletedNotes = !expandedCompletedNotes">
+          <span>انجام شده‌ها ({{ completedNotes.length }})</span>
+          <span>{{ expandedCompletedNotes ? '⌃' : '⌄' }}</span>
+        </button>
+        <div v-if="expandedCompletedNotes" class="space-y-2 mt-2">
+          <label v-for="note in completedNotes" :key="note.id" class="flex items-center gap-2 text-sm text-slate-400 line-through">
+            <input type="checkbox" checked @change="store.toggleShoppingNote(note.id)" />
+            <span>{{ note.text }}</span>
+          </label>
+        </div>
+      </div>
+    </section>
 
     <div v-if="shoppingLists.length" class="space-y-4">
       <section
@@ -98,13 +134,14 @@ function confirmQuantity(entry) {
                 class="w-10 h-10 flex items-center justify-center text-lg font-semibold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-40 transition-colors"
                 aria-label="کاهش تعداد"
                 :disabled="pendingQuantity(entry) === 0"
-                @click="changeQuantity(entry, -1)"
+                @click="changeQuantity(entry, -0.5)"
               >−</button>
               <input
                 :value="pendingQuantity(entry)"
                 type="number"
                 min="0"
-                inputmode="numeric"
+                step="0.5"
+                inputmode="decimal"
                 aria-label="تعداد موجود"
                 class="quantity-input w-12 h-10 border-x border-slate-200 dark:border-slate-600 bg-transparent text-center text-sm font-bold text-brand-600 dark:text-brand-300 focus:outline-none"
                 @input="updateQuantity(entry, $event)"
@@ -113,7 +150,7 @@ function confirmQuantity(entry) {
                 type="button"
                 class="w-10 h-10 flex items-center justify-center text-lg font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-slate-600 transition-colors"
                 aria-label="افزایش تعداد"
-                @click="changeQuantity(entry, 1)"
+                @click="changeQuantity(entry, 0.5)"
               >+</button>
             </div>
             <button

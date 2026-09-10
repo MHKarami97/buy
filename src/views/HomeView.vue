@@ -14,15 +14,6 @@ function createCustom() {
   isCreating.value = false
 }
 
-function triggerImport(inputEl) {
-  inputEl.click()
-}
-
-function handleImport(event) {
-  var file = event.target.files?.[0]
-  if (file) store.importData(file)
-  event.target.value = ''
-}
 </script>
 
 <template>
@@ -40,27 +31,18 @@ function handleImport(event) {
         >
           لیست خرید
         </RouterLink>
+        <RouterLink
+          to="/low-stock"
+          class="min-h-[44px] px-4 rounded-xl border border-amber-300 text-amber-600 dark:text-amber-300 text-sm flex items-center"
+        >
+          مواد کم
+        </RouterLink>
         <button
           type="button"
           class="min-h-[44px] px-4 rounded-xl bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
           @click="isCreating = true"
         >
           + خرید جدید
-        </button>
-        <button
-          type="button"
-          class="min-h-[44px] px-4 rounded-xl border border-slate-300 dark:border-slate-600 text-sm"
-          @click="store.exportData"
-        >
-          خروجی
-        </button>
-        <input ref="importInput" type="file" accept="application/json" class="hidden" @change="handleImport" />
-        <button
-          type="button"
-          class="min-h-[44px] px-4 rounded-xl border border-slate-300 dark:border-slate-600 text-sm"
-          @click="triggerImport($refs.importInput)"
-        >
-          ورودی
         </button>
       </div>
     </div>
@@ -82,3 +64,4 @@ function handleImport(event) {
     </div>
   </section>
 </template>
+

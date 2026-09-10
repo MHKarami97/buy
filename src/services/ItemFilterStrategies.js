@@ -30,6 +30,24 @@ class CompletedOnlyStrategy extends BaseStrategy {
   }
 }
 
+class HalfQuantityStrategy extends BaseStrategy {
+  filter(items) {
+    return items.filter((item) => item.quantity === 0.5)
+  }
+}
+
+class OneQuantityStrategy extends BaseStrategy {
+  filter(items) {
+    return items.filter((item) => item.quantity === 1)
+  }
+}
+
+class MoreThanOneQuantityStrategy extends BaseStrategy {
+  filter(items) {
+    return items.filter((item) => item.quantity > 1)
+  }
+}
+
 class AlphabeticalSortStrategy extends BaseStrategy {
   sort(items) {
     return [...items].sort((a, b) => a.title.localeCompare(b.title, 'fa'))
@@ -45,7 +63,10 @@ class NewestFirstSortStrategy extends BaseStrategy {
 export const FilterStrategies = {
   all: new AllItemsStrategy(),
   pending: new PendingOnlyStrategy(),
-  completed: new CompletedOnlyStrategy()
+  completed: new CompletedOnlyStrategy(),
+  half: new HalfQuantityStrategy(),
+  one: new OneQuantityStrategy(),
+  moreThanOne: new MoreThanOneQuantityStrategy()
 }
 
 export const SortStrategies = {

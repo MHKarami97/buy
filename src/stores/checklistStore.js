@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
 import { checklistRepository } from '../services/ChecklistRepository'
 import { ChecklistFactory } from '../services/ChecklistFactory'
+import { ChecklistItem } from '../models/ChecklistItem'
 import { DefaultsReconciler } from '../services/DefaultsReconciler'
 import { defaultChecklistDefinitions } from '../data/defaultChecklists'
 import { applyItemStrategy } from '../services/ItemFilterStrategies'
+import { storageService } from '../services/StorageService'
 
 /**
  * Central reactive store (Observer Pattern via Pinia's reactivity system).
@@ -22,7 +24,8 @@ export var useChecklistStore = defineStore('checklist', {
     saveTimeoutId: null,
     deletedDefaultIds: [],
     quantityNotice: null,
-    quantityNoticeTimeoutId: null
+    quantityNoticeTimeoutId: null,
+    shoppingNotes: []
   }),
 
   getters: {
@@ -53,6 +56,14 @@ export var useChecklistStore = defineStore('checklist', {
           .filter((item) => item.quantity === 0)
           .map((item) => ({ item, template, category }))
       ))
+    },
+
+    lowStockItems(state) {
+      return state.templates.flatMap((template) => template.categories.flatMap((category) =>
+        category.items
+          .filter((item) => item.quantity === 0.5)
+          .map((item) => ({ item, template, category }))
+      ))
     }
   },
 
@@ -75,6 +86,8 @@ export var useChecklistStore = defineStore('checklist', {
         this.activeTemplateId = this.templates[0].id
         this.activeCategoryId = this.templates[0].categories[0]?.id ?? null
       }
+
+      this.shoppingNotes = storageService.get('shopping-notes', [])
 
       var darkPref = localStorage.getItem('smart-checklist:theme')
       this.isDarkMode = darkPref === 'dark'
@@ -122,7 +135,7 @@ export var useChecklistStore = defineStore('checklist', {
       var item = category?.findItem(itemId)
       if (item) {
         var previousQuantity = item.quantity
-        var nextQuantity = Math.max(0, Number(quantity) || 0)
+        var nextQuantity = ChecklistItem.normalizeQuantity(quantity)
         item.setQuantity(nextQuantity)
         if (previousQuantity !== item.quantity) {
           clearTimeout(this.quantityNoticeTimeoutId)
@@ -210,6 +223,20 @@ export var useChecklistStore = defineStore('checklist', {
 
     setSearchQuery(query) {
       this.searchQuery = query
+    },
+
+    addShoppingNote(text) {
+      var value = text.trim()
+      if (!value) return
+      this.shoppingNotes.unshift({ id: `note-${Date.now()}`, text: value, isChecked: false, createdAt: Date.now() })
+      storageService.set('shopping-notes', this.shoppingNotes)
+    },
+
+    toggleShoppingNote(noteId) {
+      var note = this.shoppingNotes.find((entry) => entry.id === noteId)
+      if (!note) return
+      note.isChecked = !note.isChecked
+      storageService.set('shopping-notes', this.shoppingNotes)
     },
 
     toggleTheme() {
