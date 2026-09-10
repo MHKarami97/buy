@@ -8,6 +8,7 @@ import FilterSortBar from '../components/FilterSortBar.vue'
 import AddItemForm from '../components/AddItemForm.vue'
 import VirtualItemList from '../components/VirtualItemList.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
+import ChecklistItem from '../components/ChecklistItem.vue'
 
 var props = defineProps({ id: { type: String, required: true } })
 var store = useChecklistStore()
@@ -80,8 +81,24 @@ function handleDeleteTemplate() {
         @toggle="store.toggleItem"
         @update-quantity="store.updateItemQuantity($event.id, $event.quantity)"
         @remove="handleRemoveItem"
+        @toggle-visibility="store.toggleItemVisibility"
       />
       <AddItemForm @add="(title) => store.addItem(title)" />
+
+        <div v-if="store.hiddenItems.length > 0" class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-4">
+        <h3 class="text-sm font-semibold text-slate-500 mb-3">موارد پنهان‌شده ({{ store.hiddenItems.length }})</h3>
+        <div class="space-y-2 opacity-60">
+          <ChecklistItem
+            v-for="item in store.hiddenItems"
+            :key="item.id"
+            :item="item"
+            @toggle="store.toggleItem"
+            @update-quantity="store.updateItemQuantity($event.id, $event.quantity)"
+            @remove="handleRemoveItem"
+            @toggle-visibility="store.toggleItemVisibility"
+          />
+        </div>
+      </div>
     </div>
   </section>
 

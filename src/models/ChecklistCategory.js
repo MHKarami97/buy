@@ -12,6 +12,10 @@ export class ChecklistCategory {
     this.items = items.map((item) => (item instanceof ChecklistItem ? item : new ChecklistItem(item)))
   }
 
+  get activeItems() {
+    return this.items.filter((item) => !item.isHidden)
+  }
+
   get totalCount() {
     return this.items.length
   }

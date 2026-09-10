@@ -1,16 +1,26 @@
 <script setup>
+import { ref } from "vue";
 import { useChecklistStore } from "../stores/checklistStore";
 
-var currentYear = new Date().getFullYear();
-var store = useChecklistStore();
+const currentYear = new Date().getFullYear();
+const store = useChecklistStore();
+const importInput = ref(null);
 
-function triggerImport(inputEl) {
-  inputEl.click();
+function triggerImport() {
+  if (importInput.value) {
+    importInput.value.click();
+  }
 }
 
-function handleImport(event) {
-  var file = event.target.files?.[0];
-  if (file) store.importData(file);
+async function handleImport(event) {
+  const file = event.target.files?.[0];
+  if (file) {
+    try {
+      await store.importData(file);
+    } catch (error) {
+      console.error("خطا در وارد کردن فایل:", error);
+    }
+  }
   event.target.value = "";
 }
 </script>
@@ -38,7 +48,7 @@ function handleImport(event) {
       <button
         type="button"
         class="min-h-[32px] px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] hover:border-brand-300 hover:text-brand-500 transition-colors"
-        @click="triggerImport($refs.importInput)"
+        @click="triggerImport"
       >
         ورودی
       </button>

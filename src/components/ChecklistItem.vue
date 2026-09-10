@@ -2,7 +2,7 @@
 var props = defineProps({
   item: { type: Object, required: true }
 })
-var emit = defineEmits(['toggle', 'update-quantity', 'remove'])
+var emit = defineEmits(['toggle', 'update-quantity', 'remove', 'toggle-visibility'])
 
 function changeQuantity(amount) {
   emit('update-quantity', { id: props.item.id, quantity: Math.max(0, props.item.quantity + amount) })
@@ -49,6 +49,15 @@ function changeQuantity(amount) {
         +
       </button>
     </div>
+
+    <button
+      type="button"
+      class="opacity-0 group-hover:opacity-100 focus:opacity-100 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-amber-500 transition-opacity"
+      :aria-label="item.isHidden ? 'بازگردانی' : 'پنهان‌سازی'"
+      @click="emit('toggle-visibility', item.id)"
+    >
+      {{ item.isHidden ? '👁️' : '🙈' }}
+    </button>
 
     <button
       type="button"
