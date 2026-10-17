@@ -21,10 +21,10 @@ function createCustom() {
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold">خرید‌های خانه من</h1>
-        <p class="text-sm text-slate-400 mt-1">{{ store.templates.length }} لیست فعال</p>
+        <p class="text-sm text-slate-400 mt-1">{{ store.mainTemplates.length }} لیست فعال</p>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <RouterLink
           to="/shopping-list"
           class="min-h-[44px] px-4 rounded-xl border border-brand-300 text-brand-600 dark:text-brand-300 text-sm flex items-center"
@@ -36,6 +36,12 @@ function createCustom() {
           class="min-h-[44px] px-4 rounded-xl border border-amber-300 text-amber-600 dark:text-amber-300 text-sm flex items-center"
         >
           مواد کم
+        </RouterLink>
+        <RouterLink
+          to="/occasions"
+          class="min-h-[44px] px-4 rounded-xl border border-emerald-300 text-emerald-600 dark:text-emerald-300 text-sm flex items-center"
+        >
+          خرید مناسبتی
         </RouterLink>
         <button
           type="button"
@@ -60,8 +66,7 @@ function createCustom() {
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <TemplateCard v-for="tpl in store.templates" :key="tpl.id" :template="tpl" />
+      <TemplateCard v-for="tpl in store.mainTemplates" :key="tpl.id" :template="tpl" />
     </div>
   </section>
 </template>
-

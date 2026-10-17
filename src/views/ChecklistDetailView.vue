@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useChecklistStore } from '../stores/checklistStore'
 import { useConfirm } from '../composables/useConfirm'
@@ -15,9 +15,13 @@ var store = useChecklistStore()
 var router = useRouter()
 var { isPending, pendingLabel, requestConfirm, confirmAction, cancelAction } = useConfirm()
 
-if (store.activeTemplateId !== props.id) {
-  store.selectTemplate(props.id)
-}
+watch(
+  () => props.id,
+  (id) => {
+    if (store.activeTemplateId !== id) store.selectTemplate(id)
+  },
+  { immediate: true }
+)
 
 var template = computed(() => store.activeTemplate)
 
@@ -31,14 +35,23 @@ function handleResetTemplate() {
 
 function handleDeleteTemplate() {
   requestConfirm('این خرید کامل حذف شود؟', () => {
+    var returnPath = template.value?.isOccasion ? '/occasions' : '/'
     store.deleteTemplate(props.id)
-    router.push('/')
+    router.push(returnPath)
   })
 }
 </script>
 
 <template>
   <section v-if="template" class="space-y-6">
+    <RouterLink
+      v-if="template.isOccasion"
+      to="/occasions"
+      class="inline-flex items-center min-h-[44px] text-sm text-brand-600 dark:text-brand-300"
+    >
+      → خرید مناسبتی
+    </RouterLink>
+
     <div class="flex items-start justify-between gap-3">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold flex items-center gap-2">
@@ -72,6 +85,24 @@ function handleDeleteTemplate() {
         <span class="font-semibold">{{ template.overallProgress }}%</span>
       </div>
       <ProgressBar :percent="template.overallProgress" />
+    </div>
+
+    <div v-if="template.categories.length > 1" class="flex items-center gap-2 overflow-x-auto no-scrollbar" role="tablist">
+      <button
+        v-for="category in template.categories"
+        :key="category.id"
+        type="button"
+        role="tab"
+        :aria-selected="store.activeCategory?.id === category.id"
+        class="min-h-[40px] px-3 rounded-full text-xs sm:text-sm whitespace-nowrap transition-colors"
+        :class="store.activeCategory?.id === category.id
+          ? 'bg-brand-500 text-white'
+          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'"
+        @click="store.selectCategory(category.id)"
+      >
+        {{ category.icon }} {{ category.name }}
+        <span class="opacity-70">({{ category.completedCount }}/{{ category.totalCount }})</span>
+      </button>
     </div>
 
     <div v-if="store.activeCategory" class="space-y-4">

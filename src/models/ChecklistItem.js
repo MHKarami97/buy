@@ -1,5 +1,15 @@
 export class ChecklistItem {
-  constructor({ id, title, note = '', quantity, isChecked = false, isCustom = false, createdAt = Date.now(), isHidden = false }) {
+  constructor({
+    id,
+    title,
+    note = '',
+    quantity,
+    isChecked = false,
+    isCustom = false,
+    createdAt = Date.now(),
+    isHidden = false,
+    isPostponed = false
+  }) {
     this.id = id
     this.title = title
     this.note = note
@@ -7,10 +17,21 @@ export class ChecklistItem {
     this.isCustom = isCustom
     this.createdAt = createdAt
     this.isHidden = isHidden
+    this.isPostponed = isPostponed
   }
 
   setQuantity(quantity) {
     this.quantity = ChecklistItem.normalizeQuantity(quantity)
+    return this
+  }
+
+  postpone() {
+    this.isPostponed = true
+    return this
+  }
+
+  restore() {
+    this.isPostponed = false
     return this
   }
 
@@ -31,7 +52,8 @@ export class ChecklistItem {
       quantity: this.quantity,
       isCustom: this.isCustom,
       createdAt: this.createdAt,
-      isHidden: this.isHidden
+      isHidden: this.isHidden,
+      isPostponed: this.isPostponed
     }
   }
 

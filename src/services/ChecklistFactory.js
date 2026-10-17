@@ -1,6 +1,7 @@
 import { ChecklistTemplate } from '../models/ChecklistTemplate'
 import { ChecklistCategory } from '../models/ChecklistCategory'
 import { ChecklistItem } from '../models/ChecklistItem'
+import { TemplateKind } from '../models/TemplateKind'
 
 var uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -15,6 +16,9 @@ var uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
  * This shape carries stable ids so DefaultsReconciler can diff a user's
  * persisted template against an updated definition without destroying
  * their progress or custom additions.
+ *
+ * Occasion lists are one-off copies of a preset: they get a fresh id and no
+ * sourceDefinitionId, so DefaultsReconciler never touches them.
  */
 export class ChecklistFactory {
   static createItemFromDefinition(defItem) {
@@ -51,6 +55,34 @@ export class ChecklistFactory {
     })
 
     return template
+  }
+
+  static createOccasionFromPreset(preset, customTitle = '') {
+    var categories = preset.categories.map((catDef) => this.createCategoryFromDefinition(catDef))
+
+    return new ChecklistTemplate({
+      id: uid(),
+      title: customTitle.trim() || preset.title,
+      description: preset.description,
+      icon: preset.icon,
+      categories,
+      isCustom: true,
+      kind: TemplateKind.OCCASION
+    })
+  }
+
+  static createEmptyOccasion(title, icon = '🎉') {
+    return new ChecklistTemplate({
+      id: uid(),
+      title,
+      description: 'لیست خرید مناسبتی',
+      icon,
+      categories: [
+        new ChecklistCategory({ id: uid(), name: 'موارد عمومی', icon: '✅', items: [] })
+      ],
+      isCustom: true,
+      kind: TemplateKind.OCCASION
+    })
   }
 
   static createEmptyCustom(title, icon = '📝') {

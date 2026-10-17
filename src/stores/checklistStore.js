@@ -7,6 +7,37 @@ import { defaultChecklistDefinitions } from "../data/defaultChecklists";
 import { applyItemStrategy } from "../services/ItemFilterStrategies";
 import { storageService } from "../services/StorageService";
 import { ChecklistTemplate } from "../models/ChecklistTemplate";
+import { TemplateKind } from "../models/TemplateKind";
+import { occasionPresets } from "../data/occasionPresets";
+
+var LOW_STOCK_QUANTITY = 0.5;
+
+function notesFieldOf(scope) {
+  return scope === "occasion" ? "occasionNotes" : "shoppingNotes";
+}
+
+function noteStorageKeyOf(scope) {
+  return scope === "occasion" ? "occasion-shopping-notes" : "shopping-notes";
+}
+
+function collectEntries(templates, predicate) {
+  var entries = [];
+  templates.forEach((template) => {
+    template.categories.forEach((category) => {
+      category.activeItems.forEach((item) => {
+        if (predicate(item)) {
+          entries.push({
+            item,
+            template,
+            category,
+            isLow: item.quantity === LOW_STOCK_QUANTITY,
+          });
+        }
+      });
+    });
+  });
+  return entries;
+}
 
 /**
  * Central reactive store (Observer Pattern via Pinia's reactivity system).
@@ -27,6 +58,7 @@ export var useChecklistStore = defineStore("checklist", {
     quantityNotice: null,
     quantityNoticeTimeoutId: null,
     shoppingNotes: [],
+    occasionNotes: [],
   }),
 
   getters: {
@@ -68,24 +100,61 @@ export var useChecklistStore = defineStore("checklist", {
       return category.items.filter((item) => item.isHidden);
     },
 
-    shoppingItems(state) {
-      return state.templates.flatMap((template) =>
-        template.categories.flatMap((category) =>
-          category.activeItems
-            .filter((item) => item.quantity === 0)
-            .map((item) => ({ item, template, category })),
-        ),
+    mainTemplates(state) {
+      return state.templates.filter(
+        (template) => template.kind !== TemplateKind.OCCASION,
       );
     },
 
-    lowStockItems(state) {
-      return state.templates.flatMap((template) =>
-        template.categories.flatMap((category) =>
-          category.activeItems
-            .filter((item) => item.quantity === 0.5)
-            .map((item) => ({ item, template, category })),
-        ),
+    occasionTemplates(state) {
+      return state.templates.filter(
+        (template) => template.kind === TemplateKind.OCCASION,
       );
+    },
+
+    shoppingItems() {
+      return collectEntries(
+        this.mainTemplates,
+        (item) => item.quantity === 0 && !item.isPostponed,
+      );
+    },
+
+    lowStockItems() {
+      return collectEntries(
+        this.mainTemplates,
+        (item) => item.quantity === LOW_STOCK_QUANTITY,
+      );
+    },
+
+    templatesOfScope() {
+      return (scope) =>
+        scope === "occasion" ? this.occasionTemplates : this.mainTemplates;
+    },
+
+    shoppingEntriesFor() {
+      return (scope, includeLowStock = false) =>
+        collectEntries(
+          this.templatesOfScope(scope),
+          (item) =>
+            !item.isPostponed &&
+            (item.quantity === 0 ||
+              (includeLowStock && item.quantity === LOW_STOCK_QUANTITY)),
+        );
+    },
+
+    postponedEntriesFor() {
+      return (scope, includeLowStock = false) =>
+        collectEntries(
+          this.templatesOfScope(scope),
+          (item) =>
+            item.isPostponed &&
+            (item.quantity === 0 ||
+              (includeLowStock && item.quantity === LOW_STOCK_QUANTITY)),
+        );
+    },
+
+    notesFor(state) {
+      return (scope) => state[notesFieldOf(scope)];
     },
   },
 
@@ -115,7 +184,8 @@ export var useChecklistStore = defineStore("checklist", {
         this.activeCategoryId = this.templates[0].categories[0]?.id ?? null;
       }
 
-      this.shoppingNotes = storageService.get("shopping-notes", []);
+      this.shoppingNotes = storageService.get(noteStorageKeyOf("main"), []);
+      this.occasionNotes = storageService.get(noteStorageKeyOf("occasion"), []);
 
       var darkPref = localStorage.getItem("smart-checklist:theme");
       this.isDarkMode = darkPref === "dark";
@@ -157,6 +227,29 @@ export var useChecklistStore = defineStore("checklist", {
       this.activeCategoryId = categoryId;
     },
 
+    findItemRef(
+      itemId,
+      categoryId = this.activeCategoryId,
+      templateId = this.activeTemplateId,
+    ) {
+      var template = this.templates.find((entry) => entry.id === templateId);
+      return template?.findCategory(categoryId)?.findItem(itemId) ?? null;
+    },
+
+    postponeItem(itemId, categoryId, templateId) {
+      var item = this.findItemRef(itemId, categoryId, templateId);
+      if (!item) return;
+      item.postpone();
+      this.schedulePersist();
+    },
+
+    restorePostponedItem(itemId, categoryId, templateId) {
+      var item = this.findItemRef(itemId, categoryId, templateId);
+      if (!item) return;
+      item.restore();
+      this.schedulePersist();
+    },
+
     toggleItemVisibility(itemId) {
       const category = this.activeCategory;
       if (!category) return;
@@ -173,14 +266,13 @@ export var useChecklistStore = defineStore("checklist", {
       categoryId = this.activeCategoryId,
       templateId = this.activeTemplateId,
     ) {
-      var template = this.templates.find((entry) => entry.id === templateId);
-      var category = template?.findCategory(categoryId);
-      var item = category?.findItem(itemId);
+      var item = this.findItemRef(itemId, categoryId, templateId);
       if (item) {
         var previousQuantity = item.quantity;
         var nextQuantity = ChecklistItem.normalizeQuantity(quantity);
         item.setQuantity(nextQuantity);
         if (previousQuantity !== item.quantity) {
+          item.restore();
           clearTimeout(this.quantityNoticeTimeoutId);
           this.quantityNotice = {
             itemTitle: item.title,
@@ -241,6 +333,30 @@ export var useChecklistStore = defineStore("checklist", {
       return template;
     },
 
+    createOccasion(presetId, customTitle = "") {
+      var preset = occasionPresets.find((entry) => entry.id === presetId);
+      if (!preset) return null;
+      var template = ChecklistFactory.createOccasionFromPreset(
+        preset,
+        customTitle,
+      );
+      this.templates.push(template);
+      this.selectTemplate(template.id);
+      this.persistAll();
+      return template;
+    },
+
+    createCustomOccasion(title, icon = "🎉") {
+      var template = ChecklistFactory.createEmptyOccasion(
+        title.trim() || "لیست مناسبتی",
+        icon,
+      );
+      this.templates.push(template);
+      this.selectTemplate(template.id);
+      this.persistAll();
+      return template;
+    },
+
     deleteTemplate(templateId) {
       var template = this.templates.find((tpl) => tpl.id === templateId);
 
@@ -271,23 +387,25 @@ export var useChecklistStore = defineStore("checklist", {
       this.searchQuery = query;
     },
 
-    addShoppingNote(text) {
+    addShoppingNote(text, scope = "main") {
       var value = text.trim();
       if (!value) return;
-      this.shoppingNotes.unshift({
+      var field = notesFieldOf(scope);
+      this[field].unshift({
         id: `note-${Date.now()}`,
         text: value,
         isChecked: false,
         createdAt: Date.now(),
       });
-      storageService.set("shopping-notes", this.shoppingNotes);
+      storageService.set(noteStorageKeyOf(scope), this[field]);
     },
 
-    toggleShoppingNote(noteId) {
-      var note = this.shoppingNotes.find((entry) => entry.id === noteId);
+    toggleShoppingNote(noteId, scope = "main") {
+      var field = notesFieldOf(scope);
+      var note = this[field].find((entry) => entry.id === noteId);
       if (!note) return;
       note.isChecked = !note.isChecked;
-      storageService.set("shopping-notes", this.shoppingNotes);
+      storageService.set(noteStorageKeyOf(scope), this[field]);
     },
 
     toggleTheme() {

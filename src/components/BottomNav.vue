@@ -1,8 +1,10 @@
 <script setup>
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 var route = useRoute()
 var router = useRouter()
+var isOccasionRoute = computed(() => String(route.name ?? '').startsWith('occasion'))
 
 function goHome() {
   router.push('/')
@@ -29,6 +31,14 @@ function goHome() {
     >
       <span class="text-xl">🛒</span>
       <span>لیست خرید</span>
+    </RouterLink>
+    <RouterLink
+      to="/occasions"
+      class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-4 text-sm"
+      :class="isOccasionRoute ? 'text-brand-500 font-semibold' : 'text-slate-500 dark:text-slate-400'"
+    >
+      <span class="text-xl">🎉</span>
+      <span>مناسبتی</span>
     </RouterLink>
   </nav>
 </template>

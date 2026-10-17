@@ -1,4 +1,5 @@
 import { ChecklistCategory } from './ChecklistCategory'
+import { TemplateKind } from './TemplateKind'
 
 /**
  * Root aggregate: a full checklist made of multiple categories.
@@ -9,6 +10,10 @@ import { ChecklistCategory } from './ChecklistCategory'
  * required by DefaultsReconciler to safely add new default content without
  * touching user progress or custom items. Both must round-trip through
  * toJSON/fromJSON or they reset to their defaults on every reload.
+ *
+ * `kind` separates the permanent household lists (MAIN) from temporary
+ * event lists (OCCASION). Backups created before this field existed are
+ * treated as MAIN.
  */
 export class ChecklistTemplate {
   constructor({
@@ -20,7 +25,8 @@ export class ChecklistTemplate {
     isCustom = false,
     createdAt = Date.now(),
     version = 1,
-    sourceDefinitionId = null
+    sourceDefinitionId = null,
+    kind = TemplateKind.MAIN
   }) {
     this.id = id
     this.title = title
@@ -30,7 +36,12 @@ export class ChecklistTemplate {
     this.createdAt = createdAt
     this.version = version
     this.sourceDefinitionId = sourceDefinitionId
+    this.kind = kind
     this.categories = categories.map((cat) => (cat instanceof ChecklistCategory ? cat : new ChecklistCategory(cat)))
+  }
+
+  get isOccasion() {
+    return this.kind === TemplateKind.OCCASION
   }
 
   get totalItems() {
@@ -51,7 +62,12 @@ export class ChecklistTemplate {
   }
 
   resetProgress() {
-    this.categories.forEach((cat) => cat.items.forEach((item) => (item.quantity = 0)))
+    this.categories.forEach((cat) =>
+      cat.items.forEach((item) => {
+        item.quantity = 0
+        item.isPostponed = false
+      })
+    )
   }
 
   toJSON() {
@@ -64,6 +80,7 @@ export class ChecklistTemplate {
       createdAt: this.createdAt,
       version: this.version,
       sourceDefinitionId: this.sourceDefinitionId,
+      kind: this.kind,
       categories: this.categories.map((cat) => cat.toJSON())
     }
   }

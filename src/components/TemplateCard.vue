@@ -20,7 +20,11 @@ defineProps({
         </div>
       </div>
       <span
-        v-if="template.isCustom"
+        v-if="template.isOccasion"
+        class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-700/30 dark:text-emerald-100 flex-shrink-0"
+      >مناسبتی</span>
+      <span
+        v-else-if="template.isCustom"
         class="text-[10px] px-2 py-0.5 rounded-full bg-brand-50 text-brand-600 dark:bg-brand-700/30 dark:text-brand-100 flex-shrink-0"
       >شخصی</span>
     </div>
