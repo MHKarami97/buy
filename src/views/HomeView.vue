@@ -8,6 +8,13 @@ var isCreating = ref(false)
 var newTitle = ref('')
 var titleInput = ref(null)
 
+var navLinks = [
+  { to: '/shopping-list', label: 'لیست خرید', tone: 'border-brand-300 text-brand-600 dark:text-brand-300' },
+  { to: '/low-stock', label: 'هشدار مواد کم', tone: 'border-amber-300 text-amber-600 dark:text-amber-300' },
+  { to: '/guide', label: 'راهنمای خرید', tone: 'border-violet-300 text-violet-600 dark:text-violet-300' },
+  { to: '/occasions', label: 'خرید مناسبتی', tone: 'border-emerald-300 text-emerald-600 dark:text-emerald-300' }
+]
+
 async function startCreating() {
   isCreating.value = true
   await nextTick()
@@ -34,32 +41,17 @@ function createCustom() {
         <h1 class="text-xl sm:text-2xl font-bold">خرید‌ها</h1>
         <p class="text-sm text-slate-400 mt-1">{{ store.mainTemplates.length }} لیست</p>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
+      <nav class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center" aria-label="دسترسی سریع">
         <RouterLink
-          to="/shopping-list"
-          class="min-h-[44px] px-4 rounded-xl border border-brand-300 text-brand-600 dark:text-brand-300 text-sm flex items-center"
+          v-for="link in navLinks"
+          :key="link.to"
+          :to="link.to"
+          class="min-h-[44px] px-2 sm:px-4 rounded-xl border text-xs min-[400px]:text-sm text-center whitespace-nowrap flex items-center justify-center"
+          :class="link.tone"
         >
-          لیست خرید
+          {{ link.label }}
         </RouterLink>
-        <RouterLink
-          to="/low-stock"
-          class="min-h-[44px] px-4 rounded-xl border border-amber-300 text-amber-600 dark:text-amber-300 text-sm flex items-center"
-        >
-          هشدار مواد کم
-        </RouterLink>
-        <RouterLink
-          to="/guide"
-          class="min-h-[44px] px-4 rounded-xl border border-violet-300 text-violet-600 dark:text-violet-300 text-sm flex items-center"
-        >
-          📖 راهنمای خرید
-        </RouterLink>
-        <RouterLink
-          to="/occasions"
-          class="min-h-[44px] px-4 rounded-xl border border-emerald-300 text-emerald-600 dark:text-emerald-300 text-sm flex items-center"
-        >
-          خرید مناسبتی
-        </RouterLink>
-      </div>
+      </nav>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
