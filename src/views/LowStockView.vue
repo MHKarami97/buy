@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useChecklistStore } from '../stores/checklistStore'
+import GuideLinkButton from '../components/GuideLinkButton.vue'
 
 var store = useChecklistStore()
 var pendingQuantities = ref({})
@@ -59,7 +60,10 @@ function confirmQuantity(entry) {
           <div v-for="entry in list.entries" :key="entryKey(entry)" class="flex items-center gap-3 rounded-xl px-3 py-3 bg-amber-50 dark:bg-amber-900/20">
             <div class="flex-1 min-w-0">
               <p class="text-sm text-slate-800 dark:text-slate-100">{{ entry.item.title }}</p>
-              <p class="text-xs text-slate-400 mt-0.5">{{ entry.category.name }}</p>
+              <div class="flex flex-wrap items-center gap-x-2 mt-0.5">
+                <p class="text-xs text-slate-400">{{ entry.category.name }}</p>
+                <GuideLinkButton :item="entry.item" />
+              </div>
             </div>
             <div class="flex items-center rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 overflow-hidden">
               <button type="button" class="w-10 h-10 text-lg text-slate-500 disabled:opacity-40" :disabled="pendingQuantity(entry) === 0" @click="changeQuantity(entry, -0.5)">−</button>

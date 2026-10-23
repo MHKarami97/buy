@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import GuideLinkButton from './GuideLinkButton.vue'
 
 var props = defineProps({
   entry: { type: Object, required: true }
@@ -42,7 +43,10 @@ function confirm() {
           class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-700/30 dark:text-amber-200"
         >کم</span>
       </p>
-      <p class="text-xs text-slate-400 mt-0.5">{{ entry.category.name }}</p>
+      <div class="flex flex-wrap items-center gap-x-2 mt-0.5">
+        <p class="text-xs text-slate-400">{{ entry.category.name }}</p>
+        <GuideLinkButton :item="entry.item" />
+      </div>
     </div>
 
     <div class="flex items-center gap-2">
