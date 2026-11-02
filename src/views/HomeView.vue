@@ -78,6 +78,10 @@ function createCustom() {
       <TemplateCard v-for="tpl in store.mainTemplates" :key="tpl.id" :template="tpl" />
     </div>
 
+    <div v-show="showCloudBackup" class="transition-all">
+      <CloudBackupCard />
+    </div>
+
     <div class="w-full">
       <form v-if="isCreating" class="flex w-full flex-col sm:flex-row items-stretch gap-2" @submit.prevent="createCustom">
         <input
