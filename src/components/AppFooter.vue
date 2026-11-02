@@ -52,6 +52,14 @@ async function handleImport(event) {
       >
         ورودی
       </button>
+      <RouterLink
+        to="/"
+        class="min-h-[32px] px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] hover:border-brand-300 hover:text-brand-500 transition-colors flex items-center gap-1"
+        title="تنظیمات پشتیبان ابری Google Drive"
+      >
+        <span>☁️</span>
+        <span>Google Drive</span>
+      </RouterLink>
       <span class="ml-1 mr-5 text-[11px] text-slate-400">مدیریت داده</span>
     </div>
     <div

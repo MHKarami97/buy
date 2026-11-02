@@ -2,11 +2,15 @@
 import { nextTick, ref } from 'vue'
 import { useChecklistStore } from '../stores/checklistStore'
 import TemplateCard from '../components/TemplateCard.vue'
+import { useCloudSyncStore } from '../stores/cloudSyncStore'
+import CloudBackupCard from '../components/cloud/CloudBackupCard.vue'
 
 var store = useChecklistStore()
 var isCreating = ref(false)
 var newTitle = ref('')
 var titleInput = ref(null)
+var cloudStore = useCloudSyncStore()
+var showCloudBackup = ref(false)
 
 var navLinks = [
   { to: '/shopping-list', label: 'لیست خرید', tone: 'border-brand-300 text-brand-600 dark:text-brand-300' },
@@ -51,6 +55,22 @@ function createCustom() {
         >
           {{ link.label }}
         </RouterLink>
+        <button
+            type="button"
+            class="col-span-2 min-h-[44px] px-3.5 rounded-xl border text-sm transition-colors flex items-center gap-1.5 justify-center sm:justify-start"
+            :class="showCloudBackup ? 'bg-brand-50 dark:bg-brand-950/40 border-brand-500 text-brand-600 dark:text-brand-400 font-medium' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'"
+            @click="showCloudBackup = !showCloudBackup"
+            :aria-expanded="showCloudBackup"
+            title="پشتیبان‌گیری ابری Google Drive"
+        >
+          <span>☁️</span>
+          <span>سینک دیتا</span>
+          <span
+              v-if="cloudStore.isConnected"
+              class="inline-block w-2 h-2 rounded-full bg-emerald-500"
+              title="متصل"
+          />
+        </button>
       </nav>
     </div>
 

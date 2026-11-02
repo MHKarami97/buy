@@ -9,6 +9,7 @@ import { storageService } from "../services/StorageService";
 import { ChecklistTemplate } from "../models/ChecklistTemplate";
 import { TemplateKind } from "../models/TemplateKind";
 import { occasionPresets } from "../data/occasionPresets";
+import { cloudSyncService } from "../services/cloud";
 
 var LOW_STOCK_QUANTITY = 0.5;
 
@@ -160,6 +161,17 @@ export var useChecklistStore = defineStore("checklist", {
 
   actions: {
     initialize() {
+      cloudSyncService.setDataRestoredHandler(async () => {
+        this.templates = checklistRepository.getAll();
+        this.deletedDefaultIds = checklistRepository.getDeletedDefaultIds();
+        this.shoppingNotes = storageService.get(noteStorageKeyOf("main"), []);
+        this.occasionNotes = storageService.get(noteStorageKeyOf("occasion"), []);
+        if (this.templates.length && !this.activeTemplateId) {
+          this.activeTemplateId = this.templates[0].id;
+          this.activeCategoryId = this.templates[0].categories[0]?.id ?? null;
+        }
+      });
+
       if (checklistRepository.exists()) {
         this.templates = checklistRepository.getAll();
         this.deletedDefaultIds = checklistRepository.getDeletedDefaultIds();
@@ -398,6 +410,7 @@ export var useChecklistStore = defineStore("checklist", {
         createdAt: Date.now(),
       });
       storageService.set(noteStorageKeyOf(scope), this[field]);
+      checklistRepository.notifyChange();
     },
 
     toggleShoppingNote(noteId, scope = "main") {
@@ -406,6 +419,7 @@ export var useChecklistStore = defineStore("checklist", {
       if (!note) return;
       note.isChecked = !note.isChecked;
       storageService.set(noteStorageKeyOf(scope), this[field]);
+      checklistRepository.notifyChange();
     },
 
     toggleTheme() {
