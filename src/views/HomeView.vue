@@ -4,6 +4,7 @@ import { useChecklistStore } from '../stores/checklistStore'
 import TemplateCard from '../components/TemplateCard.vue'
 import { useCloudSyncStore } from '../stores/cloudSyncStore'
 import CloudBackupCard from '../components/cloud/CloudBackupCard.vue'
+import GlobalSearch from '../components/GlobalSearch.vue'
 
 var store = useChecklistStore()
 var isCreating = ref(false)
@@ -73,6 +74,8 @@ function createCustom() {
         </button>
       </nav>
     </div>
+
+    <GlobalSearch />
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <TemplateCard v-for="tpl in store.mainTemplates" :key="tpl.id" :template="tpl" />

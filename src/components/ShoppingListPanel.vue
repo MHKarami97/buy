@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useChecklistStore } from '../stores/checklistStore'
 import ToggleSwitch from './ToggleSwitch.vue'
 import ShoppingEntryRow from './ShoppingEntryRow.vue'
 import ShoppingNotesCard from './ShoppingNotesCard.vue'
+import { preferencesRepository } from '../services/PreferencesRepository'
 
 var props = defineProps({
   scope: { type: String, default: 'main' },
@@ -12,7 +13,8 @@ var props = defineProps({
 })
 
 var store = useChecklistStore()
-var showLowStock = ref(false)
+var showLowStock = ref(preferencesRepository.getShowLowStock(props.scope))
+watch(showLowStock, (value) => preferencesRepository.setShowLowStock(props.scope, value))
 var expandedLists = ref({})
 var isPostponedExpanded = ref(true)
 

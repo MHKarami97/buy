@@ -9,6 +9,7 @@ import AddItemForm from '../components/AddItemForm.vue'
 import VirtualItemList from '../components/VirtualItemList.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import ChecklistItem from '../components/ChecklistItem.vue'
+import { useRoute } from 'vue-router'
 
 var props = defineProps({ id: { type: String, required: true } })
 var store = useChecklistStore()
@@ -19,6 +20,19 @@ watch(
   () => props.id,
   (id) => {
     if (store.activeTemplateId !== id) store.selectTemplate(id)
+  },
+  { immediate: true }
+)
+
+var route = useRoute()
+
+watch(
+  () => [props.id, route.query.category, route.query.q],
+  () => {
+    if (typeof route.query.category !== 'string') return
+    store.selectCategory(route.query.category)
+    store.setFilter('all')
+    store.setSearchQuery(typeof route.query.q === 'string' ? route.query.q : '')
   },
   { immediate: true }
 )
