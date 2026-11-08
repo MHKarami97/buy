@@ -9,6 +9,8 @@ var OccasionShoppingView = () => import('../views/OccasionShoppingView.vue')
 var GuideView = () => import('../views/GuideView.vue')
 
 var routes = [
+  { path: '/reports', name: 'reports', component: () => import('../views/ReportsView.vue') }, // quantity-history-feature
+  { path: '/history/:templateId/:categoryId/:itemId', name: 'item-history', component: () => import('../views/ItemHistoryView.vue'), props: true },
   { path: '/', name: 'home', component: HomeView },
   { path: '/shopping-list', name: 'shopping-list', component: ShoppingListView },
   { path: '/low-stock', name: 'low-stock', component: LowStockView },

@@ -14,6 +14,7 @@ var cloudStore = useCloudSyncStore()
 var showCloudBackup = ref(false)
 
 var navLinks = [
+  { to: '/reports', label: '📊 گزارش مصرف', tone: 'border-sky-300 text-sky-600 dark:text-sky-300' }, // quantity-history-feature
   { to: '/shopping-list', label: 'لیست خرید', tone: 'border-brand-300 text-brand-600 dark:text-brand-300' },
   { to: '/low-stock', label: 'هشدار مواد کم', tone: 'border-amber-300 text-amber-600 dark:text-amber-300' },
   { to: '/guide', label: 'راهنمای خرید', tone: 'border-violet-300 text-violet-600 dark:text-violet-300' },

@@ -1,4 +1,5 @@
 <script setup>
+import ItemHistoryLink from './ItemHistoryLink.vue'; // quantity-history-feature
 var props = defineProps({
   item: { type: Object, required: true }
 })
@@ -67,6 +68,7 @@ function changeQuantity(amount) {
     >
       🗑️
     </button>
+    <ItemHistoryLink :item="item" />
   </div>
 </template>
 
