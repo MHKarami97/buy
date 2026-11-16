@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 var HomeView = () => import('../views/HomeView.vue')
+var ListsView = () => import('../views/ListsView.vue')
+var SettingsView = () => import('../views/SettingsView.vue')
 var ChecklistDetailView = () => import('../views/ChecklistDetailView.vue')
 var ShoppingListView = () => import('../views/ShoppingListView.vue')
 var LowStockView = () => import('../views/LowStockView.vue')
@@ -14,6 +16,8 @@ var routes = [
   { path: '/reports', name: 'reports', component: () => import('../views/ReportsView.vue') }, // quantity-history-feature
   { path: '/history/:templateId/:categoryId/:itemId', name: 'item-history', component: () => import('../views/ItemHistoryView.vue'), props: true },
   { path: '/', name: 'home', component: HomeView },
+  { path: '/lists', name: 'lists', component: ListsView },
+  { path: '/settings', name: 'settings', component: SettingsView },
   { path: '/shopping-list', name: 'shopping-list', component: ShoppingListView },
   { path: '/low-stock', name: 'low-stock', component: LowStockView },
   { path: '/guide', name: 'guide', component: GuideView },

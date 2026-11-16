@@ -49,7 +49,7 @@ function handleResetTemplate() {
 
 function handleDeleteTemplate() {
   requestConfirm('این خرید کامل حذف شود؟', () => {
-    var returnPath = template.value?.isOccasion ? '/occasions' : '/'
+    var returnPath = template.value?.isOccasion ? '/occasions' : '/lists'
     store.deleteTemplate(props.id)
     router.push(returnPath)
   })
@@ -59,11 +59,10 @@ function handleDeleteTemplate() {
 <template>
   <section v-if="template" class="space-y-6">
     <RouterLink
-      v-if="template.isOccasion"
-      to="/occasions"
+      :to="template.isOccasion ? '/occasions' : '/lists'"
       class="inline-flex items-center min-h-[44px] text-sm text-brand-600 dark:text-brand-300"
     >
-      → خرید مناسبتی
+      {{ template.isOccasion ? '→ خرید مناسبتی' : '→ لیست‌ها' }}
     </RouterLink>
 
     <div class="flex items-start justify-between gap-3">
@@ -130,7 +129,7 @@ function handleDeleteTemplate() {
       />
       <AddItemForm @add="(title) => store.addItem(title)" />
 
-        <div v-if="store.hiddenItems.length > 0" class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-4">
+      <div v-if="store.hiddenItems.length > 0" class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-4">
         <h3 class="text-sm font-semibold text-slate-500 mb-3">موارد پنهان‌شده ({{ store.hiddenItems.length }})</h3>
         <div class="space-y-2 opacity-60">
           <ChecklistItem

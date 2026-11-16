@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import GuideLinkButton from './GuideLinkButton.vue'
 import IngredientWarningBadge from './IngredientWarningBadge.vue'
-import { itemPriceRepository } from '../services/ItemPriceRepository'
+import ItemPriceField from './ItemPriceField.vue'
 import { QuantityHistoryRepository } from '../services/QuantityHistoryRepository.js'
 
 var props = defineProps({
@@ -15,7 +15,6 @@ var hasChange = computed(() => pendingQuantity.value !== props.entry.item.quanti
 var priceKey = computed(() =>
   QuantityHistoryRepository.buildKey(props.entry.template.id, props.entry.category.id, props.entry.item.id)
 )
-var priceText = ref(itemPriceRepository.getCurrent(priceKey.value) ?? '')
 
 watch(
   () => props.entry.item.quantity,
@@ -32,13 +31,6 @@ function onInput(event) {
   pendingQuantity.value = Math.max(0, Number(event.target.value) || 0)
 }
 
-function savePrice(event) {
-  var value = Number(event.target.value)
-  if (!event.target.value || !Number.isFinite(value) || value <= 0) return
-  itemPriceRepository.record(priceKey.value, value)
-  priceText.value = Math.round(value)
-}
-
 function confirm() {
   if (hasChange.value) emit('confirm', pendingQuantity.value)
 }
@@ -46,83 +38,75 @@ function confirm() {
 
 <template>
   <div
-    class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl px-3 py-3"
+    class="space-y-2 rounded-xl px-3 py-3"
     :class="entry.isLow ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-slate-50 dark:bg-slate-700/40'"
   >
-    <div class="flex-1 min-w-[8rem]">
-      <p class="flex items-center gap-2 text-sm sm:text-base text-slate-800 dark:text-slate-100">
-        <span>{{ entry.item.title }}</span>
-        <span
-          v-if="entry.isLow"
-          class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-700/30 dark:text-amber-200"
-        >کم</span>
-      </p>
-      <div class="flex flex-wrap items-center gap-x-2 mt-0.5">
-        <p class="text-xs text-slate-400">{{ entry.category.name }}</p>
-        <GuideLinkButton :item="entry.item" />
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <div class="flex-1 min-w-[8rem]">
+        <p class="flex items-center gap-2 text-sm sm:text-base text-slate-800 dark:text-slate-100">
+          <span>{{ entry.item.title }}</span>
+          <span
+            v-if="entry.isLow"
+            class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-700/30 dark:text-amber-200"
+          >کم</span>
+        </p>
+        <div class="flex flex-wrap items-center gap-x-2 mt-0.5">
+          <p class="text-xs text-slate-400">{{ entry.category.name }}</p>
+          <GuideLinkButton :item="entry.item" />
+        </div>
+        <IngredientWarningBadge :item="entry.item" />
       </div>
-      <IngredientWarningBadge :item="entry.item" />
-      <label class="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
-        <span>قیمت واحد (تومان)</span>
-        <input
-          :value="priceText"
-          type="number"
-          min="0"
-          step="1000"
-          inputmode="numeric"
-          placeholder="اختیاری"
-          aria-label="قیمت واحد به تومان"
-          class="w-28 min-h-[32px] rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-400"
-          @change="savePrice"
-        />
-      </label>
+
+      <div class="flex items-center gap-2">
+        <div class="flex items-center rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 overflow-hidden shadow-sm">
+          <button
+            type="button"
+            class="w-10 h-10 flex items-center justify-center text-lg font-semibold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-40 transition-colors"
+            aria-label="کاهش تعداد"
+            :disabled="pendingQuantity === 0"
+            @click="changeQuantity(-0.5)"
+          >−</button>
+          <input
+            :value="pendingQuantity"
+            type="number"
+            min="0"
+            step="0.5"
+            inputmode="decimal"
+            aria-label="تعداد موجود"
+            class="quantity-input w-12 h-10 border-x border-slate-200 dark:border-slate-600 bg-transparent text-center text-sm font-bold text-brand-600 dark:text-brand-300 focus:outline-none"
+            @input="onInput"
+          />
+          <button
+            type="button"
+            class="w-10 h-10 flex items-center justify-center text-lg font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-slate-600 transition-colors"
+            aria-label="افزایش تعداد"
+            @click="changeQuantity(0.5)"
+          >+</button>
+        </div>
+
+        <button
+          v-if="hasChange"
+          type="button"
+          class="min-h-[40px] px-3 rounded-xl bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 transition-colors"
+          @click="confirm"
+        >
+          تأیید
+        </button>
+
+        <button
+          type="button"
+          class="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+          aria-label="حذف موقت از لیست خرید"
+          title="حذف موقت از لیست خرید"
+          @click="emit('postpone')"
+        >
+          ✕
+        </button>
+      </div>
     </div>
 
-    <div class="flex items-center gap-2">
-      <div class="flex items-center rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 overflow-hidden shadow-sm">
-        <button
-          type="button"
-          class="w-10 h-10 flex items-center justify-center text-lg font-semibold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-40 transition-colors"
-          aria-label="کاهش تعداد"
-          :disabled="pendingQuantity === 0"
-          @click="changeQuantity(-0.5)"
-        >−</button>
-        <input
-          :value="pendingQuantity"
-          type="number"
-          min="0"
-          step="0.5"
-          inputmode="decimal"
-          aria-label="تعداد موجود"
-          class="quantity-input w-12 h-10 border-x border-slate-200 dark:border-slate-600 bg-transparent text-center text-sm font-bold text-brand-600 dark:text-brand-300 focus:outline-none"
-          @input="onInput"
-        />
-        <button
-          type="button"
-          class="w-10 h-10 flex items-center justify-center text-lg font-semibold text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-slate-600 transition-colors"
-          aria-label="افزایش تعداد"
-          @click="changeQuantity(0.5)"
-        >+</button>
-      </div>
-
-      <button
-        v-if="hasChange"
-        type="button"
-        class="min-h-[40px] px-3 rounded-xl bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 transition-colors"
-        @click="confirm"
-      >
-        تأیید
-      </button>
-
-      <button
-        type="button"
-        class="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-slate-700 transition-colors"
-        aria-label="حذف موقت از لیست خرید"
-        title="حذف موقت از لیست خرید"
-        @click="emit('postpone')"
-      >
-        ✕
-      </button>
+    <div class="border-t border-slate-200/70 pt-2 dark:border-slate-600/50">
+      <ItemPriceField :price-key="priceKey" />
     </div>
   </div>
 </template>

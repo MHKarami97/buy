@@ -1,121 +1,185 @@
 <script setup>
-import { nextTick, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useChecklistStore } from '../stores/checklistStore'
-import TemplateCard from '../components/TemplateCard.vue'
-import { useCloudSyncStore } from '../stores/cloudSyncStore'
-import CloudBackupCard from '../components/cloud/CloudBackupCard.vue'
+import { JalaliDate } from '../services/JalaliDate.js'
+import { formatInteger } from '../services/format.js'
+import { formatToman, formatPercent } from '../services/currency.js'
+import { DashboardInsights } from '../services/DashboardInsights.js'
+import { QuantityHistoryRepository, quantityHistoryRepository } from '../services/QuantityHistoryRepository.js'
+import { itemPriceRepository } from '../services/ItemPriceRepository.js'
+import { guideRepository } from '../data/guides'
+import { useIngredientPreferences } from '../composables/useIngredientPreferences'
+import { DASHBOARD_FEATURES, TONES } from '../data/appFeatures'
 import GlobalSearch from '../components/GlobalSearch.vue'
+import ProgressBar from '../components/ProgressBar.vue'
+import AppIcon from '../components/AppIcon.vue'
+
+var PREVIEW_LIMIT = 5
 
 var store = useChecklistStore()
-var isCreating = ref(false)
-var newTitle = ref('')
-var titleInput = ref(null)
-var cloudStore = useCloudSyncStore()
-var showCloudBackup = ref(false)
+var { avoidedCount, isAvoided } = useIngredientPreferences()
+var shortages = ref([])
+var spending = ref(null)
 
-var navLinks = [
-  { to: '/reports', label: '📊 گزارش مصرف', tone: 'border-sky-300 text-sky-600 dark:text-sky-300' }, // quantity-history-feature
-  { to: '/spending', label: '💰 هزینه ماهانه', tone: 'border-teal-300 text-teal-600 dark:text-teal-300' },
-  { to: '/shopping-list', label: 'لیست خرید', tone: 'border-brand-300 text-brand-600 dark:text-brand-300' },
-  { to: '/low-stock', label: 'هشدار مواد کم', tone: 'border-amber-300 text-amber-600 dark:text-amber-300' },
-  { to: '/guide', label: 'راهنمای خرید', tone: 'border-violet-300 text-violet-600 dark:text-violet-300' },
-  { to: '/compare', label: '⚖️ مقایسه کالا', tone: 'border-fuchsia-300 text-fuchsia-600 dark:text-fuchsia-300' },
-  { to: '/occasions', label: 'خرید مناسبتی', tone: 'border-emerald-300 text-emerald-600 dark:text-emerald-300' }
-]
+var todayText = computed(() => JalaliDate.date(Date.now()))
+var shoppingEntries = computed(() => store.shoppingItems)
+var shoppingPreview = computed(() => shoppingEntries.value.slice(0, PREVIEW_LIMIT))
+var lowStockCount = computed(() => store.lowStockItems.length)
+var flaggedCount = computed(() =>
+  avoidedCount.value === 0
+    ? 0
+    : shoppingEntries.value.filter((entry) =>
+        guideRepository.ingredientsForItem(entry.item).some((ingredient) => isAvoided(ingredient.id))
+      ).length
+)
+var laggingLists = computed(() => DashboardInsights.laggingLists(store.mainTemplates))
+var listCount = computed(() => store.mainTemplates.length)
 
-async function startCreating() {
-  isCreating.value = true
-  await nextTick()
-  titleInput.value?.focus()
+function daysText(days) {
+  if (days < 1) return 'کمتر از یک روز'
+  return `حدود ${formatInteger(Math.round(days))} روز`
 }
 
-function cancelCreating() {
-  isCreating.value = false
-  newTitle.value = ''
+function loadInsights() {
+  var histories = quantityHistoryRepository.getAll()
+  var quantities = DashboardInsights.quantityByKey(store.mainTemplates, QuantityHistoryRepository.buildKey)
+  shortages.value = DashboardInsights.upcomingShortages(histories, quantities)
+  spending.value = DashboardInsights.monthSpending(histories, itemPriceRepository.getAll())
 }
 
-function createCustom() {
-  if (!newTitle.value.trim()) return
-  store.createCustomTemplate(newTitle.value.trim())
-  newTitle.value = ''
-  isCreating.value = false
-}
+onMounted(loadInsights)
 </script>
 
 <template>
   <section class="space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <h1 class="text-xl sm:text-2xl font-bold">خرید‌ها</h1>
-        <p class="text-sm text-slate-400 mt-1">{{ store.mainTemplates.length }} لیست</p>
-      </div>
-      <nav class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center" aria-label="دسترسی سریع">
-        <RouterLink
-          v-for="link in navLinks"
-          :key="link.to"
-          :to="link.to"
-          class="min-h-[44px] px-2 sm:px-4 rounded-xl border text-xs min-[400px]:text-sm text-center whitespace-nowrap flex items-center justify-center"
-          :class="link.tone"
-        >
-          {{ link.label }}
+    <header class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-500 to-brand-700 p-5 text-white shadow-lg shadow-brand-500/20">
+      <div class="pointer-events-none absolute -left-10 -top-10 size-40 rounded-full bg-white/10" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -bottom-12 right-6 size-32 rounded-full bg-white/10" aria-hidden="true"></div>
+      <p class="relative text-xs text-white/80">{{ todayText }}</p>
+      <h1 class="relative mt-1 text-2xl font-bold">خرید هوشمند</h1>
+      <p class="relative mt-1 text-sm text-white/85">وضعیت امروز خانه در یک نگاه</p>
+
+      <div class="relative mt-4 grid grid-cols-2 gap-2">
+        <RouterLink to="/shopping-list" class="rounded-2xl bg-white/15 p-3 backdrop-blur transition-colors hover:bg-white/25">
+          <span class="block text-2xl font-bold">{{ formatInteger(shoppingEntries.length) }}</span>
+          <span class="block text-xs text-white/85">آیتم برای خرید</span>
         </RouterLink>
-        <button
-          type="button"
-          class="min-h-[44px] px-2 sm:px-4 rounded-xl border text-xs min-[400px]:text-sm text-center whitespace-nowrap transition-colors flex items-center justify-center gap-1.5"
-          :class="showCloudBackup
-            ? 'bg-brand-50 dark:bg-brand-950/40 border-brand-500 text-brand-600 dark:text-brand-400 font-medium'
-            : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'"
-          :aria-expanded="showCloudBackup"
-          title="پشتیبان‌گیری ابری Google Drive"
-          @click="showCloudBackup = !showCloudBackup"
-        >
-          <span aria-hidden="true">☁️</span>
-          <span>سینک دیتا</span>
-          <span
-            v-if="cloudStore.isConnected"
-            class="inline-block w-2 h-2 rounded-full bg-emerald-500"
-            title="متصل"
-          />
-        </button>
-      </nav>
-    </div>
+        <RouterLink to="/low-stock" class="rounded-2xl bg-white/15 p-3 backdrop-blur transition-colors hover:bg-white/25">
+          <span class="block text-2xl font-bold">{{ formatInteger(lowStockCount) }}</span>
+          <span class="block text-xs text-white/85">مورد رو‌به‌اتمام</span>
+        </RouterLink>
+        <RouterLink to="/spending" class="rounded-2xl bg-white/15 p-3 backdrop-blur transition-colors hover:bg-white/25">
+          <span class="block text-base font-bold leading-8">
+            {{ spending && spending.total > 0 ? formatToman(spending.total) : '—' }}
+          </span>
+          <span class="block text-xs text-white/85">
+            هزینه‌ی {{ spending ? spending.label : 'این ماه' }}
+            <template v-if="spending && spending.changePercent !== null">
+              ({{ spending.changePercent > 0 ? '▲' : '▼' }}{{ formatPercent(Math.abs(spending.changePercent)) }})
+            </template>
+          </span>
+        </RouterLink>
+        <RouterLink to="/reports" class="rounded-2xl bg-white/15 p-3 backdrop-blur transition-colors hover:bg-white/25">
+          <span class="block text-2xl font-bold">{{ formatInteger(shortages.length) }}</span>
+          <span class="block text-xs text-white/85">تا یک هفته‌ی دیگر تمام می‌شود</span>
+        </RouterLink>
+      </div>
+    </header>
 
     <GlobalSearch />
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <TemplateCard v-for="tpl in store.mainTemplates" :key="tpl.id" :template="tpl" />
-    </div>
+    <RouterLink
+      v-if="flaggedCount"
+      to="/shopping-list"
+      class="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50/70 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-900/10 dark:text-red-300"
+    >
+      <AppIcon name="shield" />
+      <span class="flex-1">{{ formatInteger(flaggedCount) }} آیتم لیست خرید ممکن است دارای مواد پرهیزی شما باشد.</span>
+      <AppIcon name="chevron" :size="18" />
+    </RouterLink>
 
-    <div v-show="showCloudBackup" class="transition-all">
-      <CloudBackupCard />
-    </div>
+    <section class="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800" aria-labelledby="today-title">
+      <div class="flex items-center justify-between">
+        <h2 id="today-title" class="text-sm font-bold">امروز بخر</h2>
+        <RouterLink v-if="shoppingEntries.length" to="/shopping-list" class="text-xs text-brand-600 dark:text-brand-300">مشاهده‌ی همه</RouterLink>
+      </div>
+      <p v-if="!shoppingEntries.length" class="mt-3 text-sm text-slate-400">همه‌چیز موجود است؛ آیتمی برای خرید نیست. 🎉</p>
+      <ul v-else class="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+        <li v-for="entry in shoppingPreview" :key="`${entry.template.id}-${entry.item.id}`" class="flex items-center justify-between gap-2 py-2 text-sm">
+          <span>{{ entry.item.title }}</span>
+          <span class="text-xs text-slate-400">{{ entry.template.title }}</span>
+        </li>
+        <li v-if="shoppingEntries.length > PREVIEW_LIMIT" class="pt-2 text-xs text-slate-400">
+          و {{ formatInteger(shoppingEntries.length - PREVIEW_LIMIT) }} آیتم دیگر
+        </li>
+      </ul>
+    </section>
 
-    <div class="w-full">
-      <form v-if="isCreating" class="flex w-full flex-col sm:flex-row items-stretch gap-2" @submit.prevent="createCustom">
-        <input
-          ref="titleInput"
-          v-model="newTitle"
-          type="text"
-          placeholder="نام لیست جدید..."
-          class="flex-1 min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
-        />
-        <div class="flex gap-2">
-          <button type="submit" class="flex-1 sm:flex-none min-h-[44px] px-6 rounded-xl bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors">
-            ایجاد
-          </button>
-          <button type="button" class="flex-1 sm:flex-none min-h-[44px] px-6 rounded-xl border border-slate-300 dark:border-slate-600 text-sm" @click="cancelCreating">
-            انصراف
-          </button>
-        </div>
-      </form>
-      <button
-        v-else
-        type="button"
-        class="w-full min-h-[48px] rounded-xl bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
-        @click="startCreating"
-      >
-        + لیست جدید
-      </button>
-    </div>
+    <section v-if="shortages.length" class="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-800 dark:bg-amber-900/10" aria-labelledby="soon-title">
+      <h2 id="soon-title" class="text-sm font-bold">به‌زودی تمام می‌شود</h2>
+      <p class="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">برآورد بر اساس سرعت مصرف قبلی شما</p>
+      <ul class="mt-3 space-y-2">
+        <li v-for="item in shortages" :key="item.key" class="flex items-center justify-between gap-2 text-sm">
+          <span>{{ item.title }}</span>
+          <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">{{ daysText(item.daysLeft) }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section v-if="spending && !spending.hasAnyPrice" class="rounded-2xl border border-dashed border-slate-300 p-4 text-sm leading-7 text-slate-500 dark:border-slate-600 dark:text-slate-400">
+      💰 برای دیدن هزینه‌ی ماهانه، در «لیست خرید» قیمت واحد آیتم‌ها را وارد کنید.
+    </section>
+
+    <RouterLink
+      to="/lists"
+      class="flex min-h-[72px] items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50/60 p-4 transition-colors hover:border-brand-400 dark:border-brand-700/50 dark:bg-brand-700/10"
+    >
+      <span class="flex size-12 items-center justify-center rounded-2xl bg-brand-500 text-white">
+        <AppIcon name="lists" :size="26" />
+      </span>
+      <span class="flex-1">
+        <span class="block text-base font-bold">همه‌ی لیست‌ها</span>
+        <span class="block text-xs text-slate-500 dark:text-slate-400">{{ formatInteger(listCount) }} لیست؛ مشاهده، ویرایش و ساخت لیست جدید</span>
+      </span>
+      <AppIcon name="chevron" class="text-brand-500" />
+    </RouterLink>
+
+    <section v-if="laggingLists.length" class="space-y-2" aria-labelledby="lagging-title">
+      <h2 id="lagging-title" class="text-sm font-semibold text-slate-500">لیست‌هایی که بیشتر نیاز به توجه دارند</h2>
+      <ul class="space-y-2">
+        <li v-for="template in laggingLists" :key="template.id">
+          <RouterLink
+            :to="{ name: 'checklist-detail', params: { id: template.id } }"
+            class="block rounded-2xl border border-slate-200 bg-white p-3 transition-colors hover:border-brand-400 dark:border-slate-700 dark:bg-slate-800"
+          >
+            <div class="mb-2 flex items-center justify-between text-sm">
+              <span>{{ template.icon }} {{ template.title }}</span>
+              <span class="text-xs text-slate-400">{{ template.overallProgress }}٪</span>
+            </div>
+            <ProgressBar :percent="template.overallProgress" size="sm" />
+          </RouterLink>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="features-title" class="space-y-3">
+      <h2 id="features-title" class="text-sm font-semibold text-slate-500">امکانات</h2>
+      <ul class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <li v-for="feature in DASHBOARD_FEATURES" :key="feature.id">
+          <RouterLink
+            :to="feature.to"
+            class="group flex h-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-md active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 motion-reduce:transition-none"
+          >
+            <span class="flex size-11 items-center justify-center rounded-2xl" :class="TONES[feature.tone]">
+              <AppIcon :name="feature.icon" />
+            </span>
+            <span>
+              <span class="block text-sm font-bold">{{ feature.title }}</span>
+              <span class="mt-0.5 block text-xs leading-6 text-slate-500 dark:text-slate-400">{{ feature.desc }}</span>
+            </span>
+          </RouterLink>
+        </li>
+      </ul>
+    </section>
   </section>
 </template>
