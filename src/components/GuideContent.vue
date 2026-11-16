@@ -1,5 +1,9 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import { guideRepository } from '../data/guides'
+import IngredientCard from './IngredientCard.vue'
+
+var props = defineProps({
   guide: { type: Object, required: true }
 })
 
@@ -26,6 +30,8 @@ var KIND_STYLES = {
   }
 }
 
+var ingredients = computed(() => guideRepository.ingredientsForGuide(props.guide))
+
 function styleOf(kind) {
   return KIND_STYLES[kind] ?? KIND_STYLES.tip
 }
@@ -48,6 +54,18 @@ function styleOf(kind) {
       <ul class="space-y-2 text-sm leading-7 text-slate-700 dark:text-slate-200 list-disc pr-5 marker:text-slate-400">
         <li v-for="point in section.points" :key="point">{{ point }}</li>
       </ul>
+    </section>
+
+    <section
+      v-if="ingredients.length"
+      class="rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 space-y-2"
+    >
+      <h3 class="flex items-center gap-2 text-sm font-semibold">
+        <span aria-hidden="true">🧪</span>
+        <span>مواد تشکیل‌دهنده‌ای که ممکن است پشت بسته ببینید</span>
+      </h3>
+      <p class="text-xs text-slate-400">حضور هر ماده به برند و محصول بستگی دارد؛ فهرست روی بسته ملاک است.</p>
+      <IngredientCard v-for="ingredient in ingredients" :key="ingredient.id" :ingredient="ingredient" />
     </section>
   </div>
 </template>

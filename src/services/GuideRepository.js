@@ -7,18 +7,25 @@ const DIGIT_OFFSETS = [['۰', '۹', 0x06f0], ['٠', '٩', 0x0660]]
  *   1. exact match on the stable default item id (itemIds),
  *   2. whole-word match of the item title against guide keywords
  *      (covers custom items and ids that are not mapped yet).
+ * Ingredients (optional) are attached to guides through shared item ids, and
+ * their text is added to each guide's search index so that searching for an
+ * ingredient returns every guide whose products may contain it.
  * All lookups are memoised because shopping lists re-render often.
  */
 export class GuideRepository {
-  constructor(groups) {
+  constructor(groups, ingredientRepository = null) {
     this.groups = groups
+    this.ingredientRepository = ingredientRepository
     this.guidesById = new Map()
     this.guideByItemId = new Map()
     this.keywordEntries = []
     this.searchTextById = new Map()
+    this.ingredientsByGuideId = new Map()
+    this.guidesByIngredientId = new Map()
     this.titleCache = new Map()
     this.groups.forEach((group) => this.#indexGroup(group))
     this.keywordEntries.sort((a, b) => b.keyword.length - a.keyword.length)
+    this.#indexIngredients()
   }
 
   static normalize(text) {
@@ -36,6 +43,10 @@ export class GuideRepository {
     return this.guidesById.size
   }
 
+  get ingredientCount() {
+    return this.ingredientRepository?.count ?? 0
+  }
+
   findById(guideId) {
     return this.guidesById.get(guideId) ?? null
   }
@@ -45,6 +56,18 @@ export class GuideRepository {
     var byId = this.guideByItemId.get(item.id)
     if (byId) return byId
     return this.#findByTitle(item.title)
+  }
+
+  ingredientsForGuide(guide) {
+    return this.ingredientsByGuideId.get(guide.id) ?? []
+  }
+
+  guidesForIngredient(ingredient) {
+    return this.guidesByIngredientId.get(ingredient.id) ?? []
+  }
+
+  searchIngredients(query) {
+    return this.ingredientRepository ? this.ingredientRepository.search(query) : []
   }
 
   search(query, groupId = 'all') {
@@ -70,6 +93,21 @@ export class GuideRepository {
         })
       })
       this.searchTextById.set(guide.id, this.#buildSearchText(guide))
+    })
+  }
+
+  #indexIngredients() {
+    if (!this.ingredientRepository) return
+    this.guidesById.forEach((guide) => {
+      var ingredients = this.ingredientRepository.findForItemIds(guide.itemIds)
+      this.ingredientsByGuideId.set(guide.id, ingredients)
+      var extra = ingredients.map((ingredient) => this.ingredientRepository.searchTextOf(ingredient)).join(' ')
+      this.searchTextById.set(guide.id, `${this.searchTextById.get(guide.id)} ${extra}`)
+      ingredients.forEach((ingredient) => {
+        var guides = this.guidesByIngredientId.get(ingredient.id) ?? []
+        guides.push(guide)
+        this.guidesByIngredientId.set(ingredient.id, guides)
+      })
     })
   }
 

@@ -1,4 +1,5 @@
 import { GuideRepository } from '../../services/GuideRepository'
+import { ingredientRepository } from '../ingredients'
 import { produceGroup } from './produceGuides'
 import { dairyProteinGroup } from './dairyProteinGuides'
 import { staplesGroup } from './staplesGuides'
@@ -22,4 +23,4 @@ export var guideGroups = [
   kitchenHomeGroup
 ]
 
-export var guideRepository = new GuideRepository(guideGroups)
+export var guideRepository = new GuideRepository(guideGroups, ingredientRepository)
