@@ -62,6 +62,12 @@ export class GuideRepository {
     return this.ingredientsByGuideId.get(guide.id) ?? []
   }
 
+  /** Ingredients linked to this exact default item id (custom items return none). */
+  ingredientsForItem(item) {
+    if (!item || !this.ingredientRepository) return []
+    return this.ingredientRepository.findForItemIds([item.id])
+  }
+
   guidesForIngredient(ingredient) {
     return this.guidesByIngredientId.get(ingredient.id) ?? []
   }

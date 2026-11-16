@@ -15,9 +15,11 @@ var showCloudBackup = ref(false)
 
 var navLinks = [
   { to: '/reports', label: '📊 گزارش مصرف', tone: 'border-sky-300 text-sky-600 dark:text-sky-300' }, // quantity-history-feature
+  { to: '/spending', label: '💰 هزینه ماهانه', tone: 'border-teal-300 text-teal-600 dark:text-teal-300' },
   { to: '/shopping-list', label: 'لیست خرید', tone: 'border-brand-300 text-brand-600 dark:text-brand-300' },
   { to: '/low-stock', label: 'هشدار مواد کم', tone: 'border-amber-300 text-amber-600 dark:text-amber-300' },
   { to: '/guide', label: 'راهنمای خرید', tone: 'border-violet-300 text-violet-600 dark:text-violet-300' },
+  { to: '/compare', label: '⚖️ مقایسه کالا', tone: 'border-fuchsia-300 text-fuchsia-600 dark:text-fuchsia-300' },
   { to: '/occasions', label: 'خرید مناسبتی', tone: 'border-emerald-300 text-emerald-600 dark:text-emerald-300' }
 ]
 
@@ -58,23 +60,23 @@ function createCustom() {
           {{ link.label }}
         </RouterLink>
         <button
-  type="button"
-  class="min-h-[44px] px-2 sm:px-4 rounded-xl border text-xs min-[400px]:text-sm text-center whitespace-nowrap transition-colors flex items-center justify-center gap-1.5"
-  :class="showCloudBackup
-    ? 'bg-brand-50 dark:bg-brand-950/40 border-brand-500 text-brand-600 dark:text-brand-400 font-medium'
-    : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'"
-  :aria-expanded="showCloudBackup"
-  title="پشتیبان‌گیری ابری Google Drive"
-  @click="showCloudBackup = !showCloudBackup"
->
-  <span aria-hidden="true">☁️</span>
-  <span>سینک دیتا</span>
-  <span
-    v-if="cloudStore.isConnected"
-    class="inline-block w-2 h-2 rounded-full bg-emerald-500"
-    title="متصل"
-  />
-</button>
+          type="button"
+          class="min-h-[44px] px-2 sm:px-4 rounded-xl border text-xs min-[400px]:text-sm text-center whitespace-nowrap transition-colors flex items-center justify-center gap-1.5"
+          :class="showCloudBackup
+            ? 'bg-brand-50 dark:bg-brand-950/40 border-brand-500 text-brand-600 dark:text-brand-400 font-medium'
+            : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'"
+          :aria-expanded="showCloudBackup"
+          title="پشتیبان‌گیری ابری Google Drive"
+          @click="showCloudBackup = !showCloudBackup"
+        >
+          <span aria-hidden="true">☁️</span>
+          <span>سینک دیتا</span>
+          <span
+            v-if="cloudStore.isConnected"
+            class="inline-block w-2 h-2 rounded-full bg-emerald-500"
+            title="متصل"
+          />
+        </button>
       </nav>
     </div>
 

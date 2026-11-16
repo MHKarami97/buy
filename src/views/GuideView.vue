@@ -2,12 +2,15 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { guideRepository } from '../data/guides'
+import { ingredientRepository } from '../data/ingredients'
 import { useDebouncedValue } from '../composables/useDebounce'
 import { useGuideDialog } from '../composables/useGuideDialog'
+import { useIngredientPreferences } from '../composables/useIngredientPreferences'
 import IngredientCard from '../components/IngredientCard.vue'
 
 var route = useRoute()
 var { open } = useGuideDialog()
+var { avoidedIds, toggleAvoided } = useIngredientPreferences()
 var { debouncedValue: debouncedQuery, setValue: setDebouncedQuery } = useDebouncedValue('', 200)
 
 var query = ref('')
@@ -22,6 +25,9 @@ var ingredientResults = computed(() =>
   }))
 )
 var hasAnyResult = computed(() => resultCount.value > 0 || ingredientResults.value.length > 0)
+var avoidedIngredients = computed(() =>
+  avoidedIds.value.map((id) => ingredientRepository.findById(id)).filter(Boolean)
+)
 
 watch(query, (value) => setDebouncedQuery(value))
 
@@ -33,11 +39,17 @@ onMounted(() => {
 
 <template>
   <section class="space-y-5">
-    <div>
-      <h1 class="text-xl sm:text-2xl font-bold">راهنمای خرید</h1>
-      <p class="text-sm text-slate-400 mt-1">
-        {{ guideRepository.guideCount }} راهنما و {{ guideRepository.ingredientCount }} ماده تشکیل‌دهنده برای مقایسه و انتخاب بهتر کالا
-      </p>
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-bold">راهنمای خرید</h1>
+        <p class="text-sm text-slate-400 mt-1">
+          {{ guideRepository.guideCount }} راهنما و {{ guideRepository.ingredientCount }} ماده تشکیل‌دهنده برای مقایسه و انتخاب بهتر کالا
+        </p>
+      </div>
+      <RouterLink
+        to="/compare"
+        class="min-h-[44px] px-4 rounded-xl border border-violet-300 text-violet-600 dark:text-violet-300 text-sm flex items-center justify-center"
+      >⚖️ مقایسه‌ی دو کالا</RouterLink>
     </div>
 
     <input
@@ -46,6 +58,26 @@ onMounted(() => {
       placeholder="جستجو؛ مثلاً کره، ماهی، فولیک اسید، جانشین کاکائو..."
       class="w-full min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
     />
+
+    <section
+      class="rounded-xl border border-dashed border-red-300 dark:border-red-800 p-3 space-y-2"
+      aria-label="مواد پرهیزی من"
+    >
+      <h2 class="text-sm font-semibold text-red-700 dark:text-red-300">🚫 مواد پرهیزی من</h2>
+      <p v-if="!avoidedIngredients.length" class="text-xs text-slate-400">
+        ماده‌ای را جستجو کنید و دکمه‌ی «این ماده را پرهیز می‌کنم» را بزنید. آیتم‌های مرتبط در لیست خرید علامت می‌خورند.
+      </p>
+      <ul v-else class="flex flex-wrap gap-2">
+        <li v-for="ingredient in avoidedIngredients" :key="ingredient.id">
+          <button
+            type="button"
+            class="min-h-[36px] px-3 rounded-full bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200 text-xs"
+            :aria-label="`حذف ${ingredient.name} از فهرست پرهیز`"
+            @click="toggleAvoided(ingredient.id)"
+          >{{ ingredient.name }} ✕</button>
+        </li>
+      </ul>
+    </section>
 
     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar" role="tablist">
       <button

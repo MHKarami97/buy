@@ -4,7 +4,10 @@ import { useChecklistStore } from '../stores/checklistStore'
 import ToggleSwitch from './ToggleSwitch.vue'
 import ShoppingEntryRow from './ShoppingEntryRow.vue'
 import ShoppingNotesCard from './ShoppingNotesCard.vue'
+import ShoppingListExportDialog from './ShoppingListExportDialog.vue'
 import { preferencesRepository } from '../services/PreferencesRepository'
+import { guideRepository } from '../data/guides'
+import { useIngredientPreferences } from '../composables/useIngredientPreferences'
 
 var props = defineProps({
   scope: { type: String, default: 'main' },
@@ -13,8 +16,12 @@ var props = defineProps({
 })
 
 var store = useChecklistStore()
+var { avoidedCount, isAvoided } = useIngredientPreferences()
 var showLowStock = ref(preferencesRepository.getShowLowStock(props.scope))
+var onlyAvoided = ref(preferencesRepository.getOnlyAvoidedFilter(props.scope))
+var isExportOpen = ref(false)
 watch(showLowStock, (value) => preferencesRepository.setShowLowStock(props.scope, value))
+watch(onlyAvoided, (value) => preferencesRepository.setOnlyAvoidedFilter(props.scope, value))
 var expandedLists = ref({})
 var isPostponedExpanded = ref(true)
 
@@ -31,9 +38,17 @@ function groupByTemplate(entries) {
   return Array.from(groups.values())
 }
 
-var shoppingGroups = computed(() =>
-  groupByTemplate(store.shoppingEntriesFor(props.scope, showLowStock.value))
+function hasAvoidedIngredient(entry) {
+  return guideRepository.ingredientsForItem(entry.item).some((ingredient) => isAvoided(ingredient.id))
+}
+
+var allEntries = computed(() => store.shoppingEntriesFor(props.scope, showLowStock.value))
+var isFilterActive = computed(() => onlyAvoided.value && avoidedCount.value > 0)
+var flaggedCount = computed(() => allEntries.value.filter(hasAvoidedIngredient).length)
+var visibleEntries = computed(() =>
+  isFilterActive.value ? allEntries.value.filter(hasAvoidedIngredient) : allEntries.value
 )
+var shoppingGroups = computed(() => groupByTemplate(visibleEntries.value))
 var postponedGroups = computed(() =>
   groupByTemplate(store.postponedEntriesFor(props.scope, showLowStock.value))
 )
@@ -73,12 +88,29 @@ function restore(entry) {
 
 <template>
   <section class="space-y-6">
-    <div class="flex flex-wrap items-start justify-between gap-x-4">
+    <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold">{{ title }}</h1>
         <p class="text-sm text-slate-400 mt-1">{{ subtitle }}</p>
       </div>
-      <ToggleSwitch v-model="showLowStock" label="نمایش مواد کم" />
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <ToggleSwitch v-model="showLowStock" label="نمایش مواد کم" />
+        <button
+          type="button"
+          class="min-h-[44px] px-4 rounded-xl border border-brand-300 text-brand-600 dark:text-brand-300 text-sm font-medium hover:bg-brand-50 dark:hover:bg-slate-800 transition-colors"
+          @click="isExportOpen = true"
+        >📄 خروجی PDF</button>
+      </div>
+    </div>
+
+    <div
+      v-if="avoidedCount"
+      class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-900/10 px-3 py-1"
+    >
+      <p class="text-xs text-red-700 dark:text-red-300">
+        🚫 {{ flaggedCount }} آیتم دارای ماده‌ی پرهیزی (از {{ avoidedCount }} ماده‌ی علامت‌خورده)
+      </p>
+      <ToggleSwitch v-model="onlyAvoided" label="فقط آیتم‌های هشداردار" />
     </div>
 
     <ShoppingNotesCard :scope="scope" />
@@ -114,7 +146,9 @@ function restore(entry) {
         </div>
       </section>
     </div>
-    <p v-else class="text-center text-sm text-slate-400 py-8">{{ emptyText }}</p>
+    <p v-else class="text-center text-sm text-slate-400 py-8">
+      {{ isFilterActive ? 'آیتمی با ماده‌ی پرهیزی در لیست خرید نیست' : emptyText }}
+    </p>
 
     <section
       v-if="postponedCount"
@@ -156,5 +190,7 @@ function restore(entry) {
         </div>
       </div>
     </section>
+
+    <ShoppingListExportDialog v-model="isExportOpen" :scope="scope" :title="title" />
   </section>
 </template>

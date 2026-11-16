@@ -1,6 +1,9 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import GuideLinkButton from './GuideLinkButton.vue'
+import IngredientWarningBadge from './IngredientWarningBadge.vue'
+import { itemPriceRepository } from '../services/ItemPriceRepository'
+import { QuantityHistoryRepository } from '../services/QuantityHistoryRepository.js'
 
 var props = defineProps({
   entry: { type: Object, required: true }
@@ -9,6 +12,10 @@ var emit = defineEmits(['confirm', 'postpone'])
 
 var pendingQuantity = ref(props.entry.item.quantity)
 var hasChange = computed(() => pendingQuantity.value !== props.entry.item.quantity)
+var priceKey = computed(() =>
+  QuantityHistoryRepository.buildKey(props.entry.template.id, props.entry.category.id, props.entry.item.id)
+)
+var priceText = ref(itemPriceRepository.getCurrent(priceKey.value) ?? '')
 
 watch(
   () => props.entry.item.quantity,
@@ -23,6 +30,13 @@ function changeQuantity(amount) {
 
 function onInput(event) {
   pendingQuantity.value = Math.max(0, Number(event.target.value) || 0)
+}
+
+function savePrice(event) {
+  var value = Number(event.target.value)
+  if (!event.target.value || !Number.isFinite(value) || value <= 0) return
+  itemPriceRepository.record(priceKey.value, value)
+  priceText.value = Math.round(value)
 }
 
 function confirm() {
@@ -47,6 +61,21 @@ function confirm() {
         <p class="text-xs text-slate-400">{{ entry.category.name }}</p>
         <GuideLinkButton :item="entry.item" />
       </div>
+      <IngredientWarningBadge :item="entry.item" />
+      <label class="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
+        <span>قیمت واحد (تومان)</span>
+        <input
+          :value="priceText"
+          type="number"
+          min="0"
+          step="1000"
+          inputmode="numeric"
+          placeholder="اختیاری"
+          aria-label="قیمت واحد به تومان"
+          class="w-28 min-h-[32px] rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 text-xs text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-400"
+          @change="savePrice"
+        />
+      </label>
     </div>
 
     <div class="flex items-center gap-2">
