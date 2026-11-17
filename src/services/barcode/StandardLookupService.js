@@ -131,7 +131,7 @@ export class StandardLookupService {
 
         if (response.ok) {
           var data = await response.json()
-          if (data && data.ok && data.captchaImage) {
+          if (data && data.ok && data.captchaImage && !data.captchaImage.startsWith('data:image/jpeg;base64,ZXJy')) {
             return {
               ok: true,
               sessionId: data.sessionId,

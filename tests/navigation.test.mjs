@@ -25,7 +25,7 @@ test('every feature has an existing icon, a known tone and a description', () =>
 test('dashboard excludes home, lists and settings, and covers all remaining features', () => {
   var ids = DASHBOARD_FEATURES.map((f) => f.id)
   ;['home', 'lists', 'settings'].forEach((id) => assert.ok(!ids.includes(id)))
-  assert.equal(ids.length, FEATURES.length - 3)
+  assert.equal(ids.length, FEATURES.filter((f) => !['home', 'lists', 'settings'].includes(f.id)).length)
 })
 
 test('active matching handles nested routes and does not leak from home', () => {

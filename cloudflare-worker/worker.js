@@ -171,29 +171,46 @@ export default {
     // 3. Standard Captcha: /api/standard/captcha
     if (path === '/api/standard/captcha' || path === '/standard/captcha') {
       try {
-        const initResp = await fetch('http://isom.inso.gov.ir/parvaneh/', {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+        // Step 1: Handshake with ArvanCloud on HTTP port 80 (avoids SSL 526)
+        const resp1 = await fetch('http://isom.inso.gov.ir/parvaneh/', {
+          redirect: 'manual',
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
         })
-        const setCookieHeader = initResp.headers.get('set-cookie') || ''
-        const cookieMatches = setCookieHeader.match(/PHPSESSID=([^;]+)/)
-        const phpsessid = cookieMatches ? cookieMatches[1] : `sess_${Date.now()}`
+        const setCookies1 = resp1.headers.getSetCookie ? resp1.headers.getSetCookie() : [resp1.headers.get('set-cookie')]
+        const cookies1 = (setCookies1 || []).map((c) => (c || '').split(';')[0]).filter(Boolean)
 
-        const cookies = [`PHPSESSID=${phpsessid}`]
-        const arcscoc = setCookieHeader.match(/__arcscoc=([^;]+)/)
-        if (arcscoc) cookies.push(`__arcscoc=${arcscoc[1]}`)
-        const arcsco = setCookieHeader.match(/__arcsco=([^;]+)/)
-        if (arcsco) cookies.push(`__arcsco=${arcsco[1]}`)
+        // Step 2: Request with ArvanCloud cookies to get PHP session
+        const resp2 = await fetch('http://isom.inso.gov.ir/parvaneh/', {
+          redirect: 'manual',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Cookie': cookies1.join('; ')
+          }
+        })
+        const setCookies2 = resp2.headers.getSetCookie ? resp2.headers.getSetCookie() : [resp2.headers.get('set-cookie')]
+        const allCookies = [...cookies1, ...(setCookies2 || []).map((c) => (c || '').split(';')[0]).filter(Boolean)]
 
+        // Step 3: Fetch captcha JPEG image
         const captchaResp = await fetch('http://isom.inso.gov.ir/standard/verif_img.php', {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Referer': 'http://isom.inso.gov.ir/parvaneh/',
-            'Cookie': cookies.join('; ')
+            'Cookie': allCookies.join('; ')
           }
         })
 
+        if (!captchaResp.ok) {
+          return jsonResponse({ ok: false, error: 'captcha_failed', errorMessage: `خطای سامانه استاندارد (${captchaResp.status})` }, 502)
+        }
+
         const arrayBuffer = await captchaResp.arrayBuffer()
         const uint8 = new Uint8Array(arrayBuffer)
+
+        // Validate that response is actually a JPEG image (starts with 0xFF 0xD8)
+        if (uint8.length < 100 || uint8[0] !== 0xff || uint8[1] !== 0xd8) {
+          return jsonResponse({ ok: false, error: 'invalid_image', errorMessage: 'تصویر کد امنیتی دریافت نشد.' }, 502)
+        }
+
         let binary = ''
         for (let i = 0; i < uint8.length; i++) {
           binary += String.fromCharCode(uint8[i])
@@ -201,7 +218,7 @@ export default {
         const base64 = btoa(binary)
         const dataUrl = `data:image/jpeg;base64,${base64}`
 
-        const sessionToken = btoa(JSON.stringify(cookies))
+        const sessionToken = btoa(JSON.stringify(allCookies))
 
         return jsonResponse({
           ok: true,
@@ -244,7 +261,7 @@ export default {
         const postResp = await fetch('http://isom.inso.gov.ir/parvaneh/', {
           method: 'POST',
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Referer': 'http://isom.inso.gov.ir/parvaneh/',
             'Content-Type': 'application/x-www-form-urlencoded',
             'Cookie': cookies.join('; ')
