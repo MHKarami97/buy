@@ -7,6 +7,11 @@ import { BarcodeLookupService } from '../services/barcode/BarcodeLookupService'
 import { barcodeHistoryRepository } from '../services/barcode/BarcodeHistoryRepository'
 import { JalaliDate } from '../services/JalaliDate'
 import { PACKAGING_LOGOS, LOGO_CATEGORIES } from '../data/packagingLogos.js'
+import { IfdaLookupService, normalizeIfdaCode } from '../services/barcode/IfdaLookupService'
+import { ifdaHistoryRepository } from '../services/barcode/IfdaHistoryRepository'
+import { itemProductCodeRepository } from '../services/barcode/ItemProductCodeRepository'
+import MapItemCodeModal from '../components/MapItemCodeModal.vue'
+import ItemCodeDetailsModal from '../components/ItemCodeDetailsModal.vue'
 import AppIcon from '../components/AppIcon.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useConfirm } from '../composables/useConfirm'
@@ -29,6 +34,8 @@ var scanAnimFrame = null
 
 var currentResult = ref(null)
 var isFetchingOnline = ref(false)
+var isFetchingIranCode = ref(false)
+var iranCodeResult = ref(null)
 var copiedNotice = ref(false)
 
 // History state
@@ -76,11 +83,170 @@ var itemToAddTitle = ref('')
 var isManualModalOpen = ref(false)
 var manualCodeInput = ref('')
 
+// IFDA (غذا و دارو) Inquiry state
+var ifdaInput = ref('')
+var isFetchingIfda = ref(false)
+var ifdaResult = ref(null)
+var ifdaHistoryQuery = ref('')
+var ifdaHistoryStatusFilter = ref('all') // 'all' | 'valid' | 'invalid'
+var ifdaHistoryItems = ref([])
+
+// Mapped Items state
+var mappedQuery = ref('')
+var mappedFilter = ref('all') // 'all' | 'barcode' | 'ifda' | 'standard'
+var mappedItems = ref([])
+var mappedCount = ref(0)
+
+// Modal states for mapping and item details
+var isMapModalOpen = ref(false)
+var mapModalParams = ref({
+  initialItem: null,
+  initialBarcode: '',
+  initialIfdaCode: '',
+  initialStandardCode: '',
+  initialBrand: '',
+  initialProductTitle: '',
+  initialManufacturer: '',
+  initialLicenseStatus: ''
+})
+var isDetailsModalOpen = ref(false)
+var selectedMappingForDetails = ref(null)
+
 function loadHistory() {
   historyItems.value = barcodeHistoryRepository.filter(historyQuery.value, historyFilter.value)
 }
 
+function loadIfdaHistory() {
+  ifdaHistoryItems.value = ifdaHistoryRepository.filter(ifdaHistoryQuery.value, ifdaHistoryStatusFilter.value)
+}
+
+function loadMappedItems() {
+  mappedItems.value = itemProductCodeRepository.filter(mappedQuery.value, mappedFilter.value)
+  mappedCount.value = itemProductCodeRepository.getAll().length
+}
+
 watch([historyQuery, historyFilter], loadHistory)
+watch([ifdaHistoryQuery, ifdaHistoryStatusFilter], loadIfdaHistory)
+watch([mappedQuery, mappedFilter], loadMappedItems)
+
+async function submitIfdaInquiry(sampleCode) {
+  var targetCode = (sampleCode || ifdaInput.value || '').trim()
+  if (!targetCode) return
+  ifdaInput.value = targetCode
+
+  isFetchingIfda.value = true
+  ifdaResult.value = null
+
+  try {
+    var res = await IfdaLookupService.fetchIfdaDetails(targetCode)
+    ifdaResult.value = res
+    if (res.ok && res.data) {
+      ifdaHistoryRepository.add({
+        code: res.code,
+        title: res.data.name,
+        brand: res.data.brand,
+        manufacturer: res.data.manufacturer,
+        licenseStatus: res.data.licenseStatus,
+        issueDate: res.data.issueDate,
+        expiryDate: res.data.expiryDate,
+        url: res.url
+      })
+      loadIfdaHistory()
+    }
+  } finally {
+    isFetchingIfda.value = false
+  }
+}
+
+function handleClearIfdaHistory() {
+  requestConfirm('آیا کل تاریخچه استعلام‌های غذا و دارو پاک شود؟', () => {
+    ifdaHistoryRepository.clear()
+    loadIfdaHistory()
+  })
+}
+
+function handleRemoveIfdaHistoryItem(id) {
+  ifdaHistoryRepository.remove(id)
+  loadIfdaHistory()
+}
+
+function openMapModalFromIfda(itemOrResult) {
+  var data = itemOrResult?.data || itemOrResult || {}
+  mapModalParams.value = {
+    initialItem: null,
+    initialBarcode: '',
+    initialIfdaCode: data.code || ifdaResult.value?.code || ifdaInput.value || '',
+    initialStandardCode: '',
+    initialBrand: data.brand || '',
+    initialProductTitle: data.title || data.name || '',
+    initialManufacturer: data.manufacturer || '',
+    initialLicenseStatus: data.licenseStatus || ''
+  }
+  isMapModalOpen.value = true
+}
+
+function openMapModalForScannedBarcode() {
+  if (!currentResult.value) return
+  mapModalParams.value = {
+    initialItem: currentResult.value.localItem || null,
+    initialBarcode: currentResult.value.normalizedValue || currentResult.value.rawValue || '',
+    initialIfdaCode: '',
+    initialStandardCode: '',
+    initialBrand: currentResult.value.iranCodeData?.brand || currentResult.value.iranianCompany?.name || currentResult.value.onlineProduct?.brand || '',
+    initialProductTitle: currentResult.value.iranCodeData?.labelDescription || currentResult.value.onlineProduct?.title || currentResult.value.title || '',
+    initialManufacturer: currentResult.value.iranCodeData?.member || currentResult.value.iranianCompany?.name || '',
+    initialLicenseStatus: ''
+  }
+  isMapModalOpen.value = true
+}
+
+function openMapModalForNew() {
+  mapModalParams.value = {
+    initialItem: null,
+    initialBarcode: '',
+    initialIfdaCode: '',
+    initialStandardCode: '',
+    initialBrand: '',
+    initialProductTitle: '',
+    initialManufacturer: '',
+    initialLicenseStatus: ''
+  }
+  isMapModalOpen.value = true
+}
+
+function openDetailsForMapping(mapping) {
+  selectedMappingForDetails.value = mapping
+  isDetailsModalOpen.value = true
+}
+
+function openEditForMapping(mapping) {
+  mapModalParams.value = {
+    initialItem: {
+      id: mapping.itemId,
+      title: mapping.itemTitle,
+      templateId: mapping.templateId,
+      templateTitle: mapping.templateTitle,
+      categoryId: mapping.categoryId,
+      categoryName: mapping.categoryName
+    },
+    initialBarcode: mapping.barcode || '',
+    initialIfdaCode: mapping.ifdaCode || '',
+    initialStandardCode: mapping.standardCode || '',
+    initialBrand: mapping.brand || '',
+    initialProductTitle: mapping.productTitle || '',
+    initialManufacturer: mapping.manufacturer || '',
+    initialLicenseStatus: mapping.licenseStatus || ''
+  }
+  isDetailsModalOpen.value = false
+  isMapModalOpen.value = true
+}
+
+function handleDeleteMapping(id) {
+  requestConfirm('آیا این مشخصات ثبت‌شده برای کالا حذف شود؟', () => {
+    itemProductCodeRepository.remove(id)
+    loadMappedItems()
+  })
+}
 
 var filteredHistory = computed(() => historyItems.value)
 
@@ -219,12 +385,12 @@ async function runScanningLoop() {
 async function handleSuccessfulScan(code, format = 'unknown') {
   barcodeScannerEngine.playSuccessFeedback()
 
-  // Inspect offline details
+  // Inspect offline details (Country, flag, Iranian manufacturer, format) immediately
   var enriched = BarcodeLookupService.inspect(code, format)
   currentResult.value = enriched
 
-  // Save to history
-  barcodeHistoryRepository.add({
+  // Save to history initially
+  var savedRecord = barcodeHistoryRepository.add({
     code: enriched.normalizedValue || enriched.rawValue,
     format: enriched.format,
     type: enriched.type,
@@ -245,18 +411,57 @@ async function handleSuccessfulScan(code, format = 'unknown') {
     selectedCategoryId.value = tpl?.categories[0]?.id || ''
   }
 
-  // Fetch online product details in background if it's a numeric barcode and not local item
+  // Reset online / IranCode query states
+  iranCodeResult.value = null
+  isFetchingIranCode.value = false
+
+  // Concurrently query IranCode (irancode.ir/01/<barcode>) for products
+  if (/^\d{8,14}$/.test(enriched.normalizedValue)) {
+    isFetchingIranCode.value = true
+    BarcodeLookupService.fetchIranCodeDetails(enriched.normalizedValue).then((res) => {
+      iranCodeResult.value = res
+      if (res.ok && res.data) {
+        var officialTitle = res.data.labelDescription || res.data.brand
+        if (officialTitle) {
+          currentResult.value = {
+            ...currentResult.value,
+            title: officialTitle,
+            iranCodeData: res.data
+          }
+          itemToAddTitle.value = officialTitle
+
+          // Update record in history if available
+          if (savedRecord?.id) {
+            barcodeHistoryRepository.update(savedRecord.id, {
+              title: officialTitle,
+              brand: res.data.brand || res.data.member || savedRecord.brand,
+              category: res.data.breakTitle || res.data.gpc || savedRecord.category
+            })
+            loadHistory()
+          }
+        }
+      }
+    }).finally(() => {
+      isFetchingIranCode.value = false
+    })
+  }
+
+  // Fetch online product details from Open Food Facts in background if not matching local item
   if (!enriched.localItem && /^\d{8,14}$/.test(enriched.normalizedValue)) {
     isFetchingOnline.value = true
     try {
       var online = await BarcodeLookupService.fetchOnlineDetails(enriched.normalizedValue)
       if (online && online.title) {
+        // Only override title if IranCode hasn't already provided an official label
+        var hasIranCodeTitle = Boolean(currentResult.value?.iranCodeData?.labelDescription)
         currentResult.value = {
           ...currentResult.value,
           onlineProduct: online,
-          title: online.title || currentResult.value.title
+          title: hasIranCodeTitle ? currentResult.value.title : (online.title || currentResult.value.title)
         }
-        itemToAddTitle.value = online.title
+        if (!hasIranCodeTitle) {
+          itemToAddTitle.value = online.title
+        }
       }
     } finally {
       isFetchingOnline.value = false
@@ -266,6 +471,8 @@ async function handleSuccessfulScan(code, format = 'unknown') {
 
 function resumeScanner() {
   currentResult.value = null
+  iranCodeResult.value = null
+  isFetchingIranCode.value = false
   isScanning.value = true
   runScanningLoop()
 }
@@ -341,6 +548,8 @@ function confirmAddToChecklist() {
   }
 }
 
+var unsubMapping = null
+
 watch(activeTab, (tab) => {
   if (tab === 'scanner') {
     startCamera()
@@ -348,17 +557,31 @@ watch(activeTab, (tab) => {
     stopCamera()
     if (tab === 'history') {
       loadHistory()
+    } else if (tab === 'ifda') {
+      loadIfdaHistory()
+    } else if (tab === 'mapped') {
+      loadMappedItems()
     }
   }
 })
 
 onMounted(() => {
   loadHistory()
+  loadIfdaHistory()
+  loadMappedItems()
+  unsubMapping = itemProductCodeRepository.subscribe(loadMappedItems)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('item-product-codes-changed', loadMappedItems)
+  }
   startCamera()
 })
 
 onBeforeUnmount(() => {
   stopCamera()
+  if (unsubMapping) unsubMapping()
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('item-product-codes-changed', loadMappedItems)
+  }
 })
 </script>
 
@@ -388,33 +611,48 @@ onBeforeUnmount(() => {
       </p>
     </div>
 
-    <!-- Tabs Segmented Control (full width on mobile, perfectly aligned) -->
-    <div class="grid grid-cols-3 w-full rounded-2xl bg-slate-100 p-1 dark:bg-slate-800 shadow-inner">
+    <!-- Tabs Segmented Control (Smooth horizontal scroll on mobile, flex on desktop) -->
+    <div class="flex items-center gap-1 overflow-x-auto no-scrollbar rounded-2xl bg-slate-100 p-1 dark:bg-slate-800 shadow-inner">
       <button
         type="button"
-        class="flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        class="flex-1 sm:flex-initial min-w-[75px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
         :class="activeTab === 'scanner' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
         @click="activeTab = 'scanner'"
       >
         <AppIcon name="camera" :size="16" class="shrink-0" />
-        <span class="hidden sm:inline">اسکنر بارکد</span>
-        <span class="sm:hidden">اسکنر</span>
+        <span>اسکنر بارکد</span>
       </button>
 
       <button
         type="button"
-        class="flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
-        :class="activeTab === 'logos' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
-        @click="activeTab = 'logos'"
+        class="flex-1 sm:flex-initial min-w-[85px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        :class="activeTab === 'ifda' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+        @click="activeTab = 'ifda'"
       >
-        <AppIcon name="tag" :size="16" class="shrink-0" />
-        <span class="hidden sm:inline">راهنمای نمادها</span>
-        <span class="sm:hidden">نمادهای کالا</span>
+        <span class="text-sm shrink-0">🍏</span>
+        <span>استعلام غذا و دارو</span>
       </button>
 
       <button
         type="button"
-        class="flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        class="flex-1 sm:flex-initial min-w-[85px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        :class="activeTab === 'mapped' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+        @click="activeTab = 'mapped'"
+      >
+        <span class="text-sm shrink-0">🏷️</span>
+        <span>کالاهای ثبت‌شده</span>
+        <span
+          v-if="mappedCount > 0"
+          class="rounded-full px-1.5 py-0.2 text-[10px] font-bold leading-none shrink-0"
+          :class="activeTab === 'mapped' ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'"
+        >
+          {{ mappedCount }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="flex-1 sm:flex-initial min-w-[70px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
         :class="activeTab === 'history' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
         @click="activeTab = 'history'"
       >
@@ -427,6 +665,16 @@ onBeforeUnmount(() => {
         >
           {{ historyItems.length }}
         </span>
+      </button>
+
+      <button
+        type="button"
+        class="flex-1 sm:flex-initial min-w-[80px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        :class="activeTab === 'logos' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+        @click="activeTab = 'logos'"
+      >
+        <AppIcon name="tag" :size="16" class="shrink-0" />
+        <span>نمادهای کالا</span>
       </button>
     </div>
 
@@ -593,7 +841,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <!-- Iranian Manufacturer Info -->
+        <!-- Iranian Manufacturer Info (Local offline lookup) -->
         <div v-if="currentResult.iranianCompany" class="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/20 text-xs sm:text-sm">
           <span class="block font-semibold text-emerald-800 dark:text-emerald-300">
             شرکت / برند داخلی: {{ currentResult.iranianCompany.name }}
@@ -601,6 +849,93 @@ onBeforeUnmount(() => {
           <span class="block text-emerald-700 dark:text-emerald-400 text-xs mt-0.5">
             دسته‌بندی: {{ currentResult.iranianCompany.category }}
           </span>
+        </div>
+
+        <!-- IranCode National Product Portal Section (مرکز ملی شماره‌گذاری کالا و خدمات) -->
+        <div
+          v-if="/^\d{8,14}$/.test(currentResult.normalizedValue)"
+          class="rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 dark:border-slate-700 dark:bg-slate-900/40 space-y-2.5"
+        >
+          <div class="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-2 dark:border-slate-700/80">
+            <div class="flex items-center gap-1.5">
+              <span class="text-base">🏢</span>
+              <span class="text-xs font-bold text-slate-800 dark:text-slate-200">
+                مرکز ملی شماره‌گذاری کالا و خدمات (ایران‌کد / GS1)
+              </span>
+            </div>
+            <a
+              :href="`https://irancode.ir/01/${currentResult.normalizedValue}`"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 underline"
+            >
+              <span>مشاهده در irancode.ir</span>
+              <span class="text-[10px]">↗</span>
+            </a>
+          </div>
+
+          <!-- 1. Loading State -->
+          <div v-if="isFetchingIranCode" class="flex items-center gap-2 py-1 text-xs text-slate-500 dark:text-slate-400">
+            <div class="size-4 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+            <span>در حال استعلام همزمان اطلاعات کالا از سامانه ایران‌کد...</span>
+          </div>
+
+          <!-- 2. Success State -->
+          <div v-else-if="iranCodeResult && iranCodeResult.ok && iranCodeResult.data" class="space-y-2 text-xs">
+            <div class="rounded-xl bg-emerald-50 p-2.5 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 space-y-1.5">
+              <div class="flex items-start gap-1.5">
+                <span class="text-emerald-600 dark:text-emerald-400 font-bold shrink-0">✓ شرح رسمی:</span>
+                <span class="font-bold text-slate-900 dark:text-slate-100 leading-relaxed">
+                  {{ iranCodeResult.data.labelDescription || 'ثبت‌شده در سامانه' }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px] text-slate-600 dark:text-slate-300">
+                <div v-if="iranCodeResult.data.brand">
+                  <span class="text-slate-400">نام برند: </span>
+                  <span class="font-semibold text-slate-800 dark:text-slate-200">{{ iranCodeResult.data.brand }}</span>
+                </div>
+                <div v-if="iranCodeResult.data.member">
+                  <span class="text-slate-400">عضو / شرکت: </span>
+                  <span class="font-semibold text-slate-800 dark:text-slate-200">{{ iranCodeResult.data.member }}</span>
+                </div>
+                <div v-if="iranCodeResult.data.gpc" class="sm:col-span-2">
+                  <span class="text-slate-400">ساختار GPC: </span>
+                  <span>{{ iranCodeResult.data.gpc }}</span>
+                </div>
+                <div v-if="iranCodeResult.data.breakTitle" class="sm:col-span-2">
+                  <span class="text-slate-400">بریک کالا: </span>
+                  <span>{{ iranCodeResult.data.breakTitle }}</span>
+                  <span v-if="iranCodeResult.data.breakCode" class="text-slate-400"> (کد: {{ iranCodeResult.data.breakCode }})</span>
+                </div>
+                <div v-if="iranCodeResult.data.iranCode">
+                  <span class="text-slate-400">ایران‌کد: </span>
+                  <span class="font-mono font-semibold">{{ iranCodeResult.data.iranCode }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Error / Failure / Not found State -->
+          <div v-else-if="iranCodeResult && !iranCodeResult.ok" class="rounded-xl border border-amber-200/80 bg-amber-50/60 p-2.5 dark:border-amber-900/40 dark:bg-amber-950/20 text-xs space-y-1.5">
+            <div class="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-semibold">
+              <span>⚠️</span>
+              <span>{{ iranCodeResult.error || 'دیتا دریافت نشد یا خطا خورد' }}</span>
+            </div>
+            <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+              {{ iranCodeResult.errorMessage || 'امکان واکشی مستقیم اطلاعات در این مرورگر وجود نداشت یا پاسخی از سامانه دریافت نشد.' }}
+            </p>
+            <div class="pt-1">
+              <a
+                :href="iranCodeResult.url || `https://irancode.ir/01/${currentResult.normalizedValue}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 rounded-lg bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 transition-colors"
+              >
+                <span>مشاهده مستقیم در سامانه ایران‌کد (irancode.ir) ↗</span>
+              </a>
+            </div>
+          </div>
         </div>
 
         <!-- TTAC Pharma Authenticity Label -->
@@ -644,8 +979,18 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
+        <!-- Map to item action -->
+        <button
+          type="button"
+          class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 text-xs sm:text-sm font-bold hover:bg-emerald-100 transition-colors shadow-2xs"
+          @click="openMapModalForScannedBarcode"
+        >
+          <span>🔗</span>
+          <span>اتصال این بارکد به آیتم خرید (نگاشت و ذخیره کدهای کالا)</span>
+        </button>
+
         <!-- Action buttons -->
-        <div class="grid grid-cols-2 gap-2 pt-2">
+        <div class="grid grid-cols-2 gap-2 pt-1">
           <button
             type="button"
             class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl bg-brand-500 text-white text-xs sm:text-sm font-semibold hover:bg-brand-600 transition-colors shadow-md shadow-brand-500/20"
@@ -663,6 +1008,429 @@ onBeforeUnmount(() => {
             <span>اسکن مورد بعدی</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- TAB: IFDA INQUIRY (استعلام سازمان غذا و دارو) -->
+    <div v-show="activeTab === 'ifda'" class="space-y-4">
+      <!-- Info Header -->
+      <div class="rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 to-teal-50/50 p-4 sm:p-5 dark:border-emerald-900/40 dark:from-emerald-950/30 dark:to-teal-950/20 space-y-2">
+        <div class="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm sm:text-base">
+          <span class="text-2xl">🍏</span>
+          <span>استعلام پروانه بهداشتی ساخت (سازمان غذا و دارو - سامانه سرفود)</span>
+        </div>
+        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+          شماره پروانه بهداشتی درج‌شده در کنار نشان سیب سلامت (به فرمت <strong>۳۲/۱۱۱۵۹</strong>) را وارد کنید تا نام رسمی، برند، کارخانه سازنده و وضعیت اعتبار پروانه استعلام شود.
+        </p>
+      </div>
+
+      <!-- Input Form -->
+      <div class="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm dark:border-slate-700/80 dark:bg-slate-800 space-y-3">
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-200">
+          شماره پروانه بهداشتی ساخت:
+        </label>
+
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div class="relative flex-1">
+            <input
+              v-model="ifdaInput"
+              type="text"
+              dir="ltr"
+              placeholder="مثال: 32/11159 یا ۳۲/۱۱۱۵۹"
+              class="w-full min-h-[44px] rounded-2xl border border-slate-200 bg-slate-50 px-4 text-center font-mono text-base font-bold tracking-wider text-slate-800 shadow-inner dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              @keydown.enter="submitIfdaInquiry()"
+            />
+          </div>
+
+          <button
+            type="button"
+            class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 px-5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition-colors disabled:opacity-50 shrink-0"
+            :disabled="!ifdaInput.trim() || isFetchingIfda"
+            @click="submitIfdaInquiry()"
+          >
+            <div v-if="isFetchingIfda" class="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            <AppIcon v-else name="search" :size="16" />
+            <span>{{ isFetchingIfda ? 'در حال استعلام...' : 'استعلام پروانه' }}</span>
+          </button>
+        </div>
+
+        <!-- Example test chip -->
+        <div class="flex items-center gap-2 pt-1 text-xs">
+          <span class="text-slate-400">نمونه پروانه تستی:</span>
+          <button
+            type="button"
+            class="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors"
+            @click="submitIfdaInquiry('32/11159')"
+          >
+            ۳۲/۱۱۱۵۹ (دستمال کاغذی تکلان پاک)
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div
+        v-if="ifdaResult"
+        class="rounded-3xl border p-4 sm:p-5 shadow-lg space-y-3.5 animate-fade-in"
+        :class="ifdaResult.ok ? 'border-emerald-200 bg-white dark:border-emerald-900/60 dark:bg-slate-800' : 'border-amber-200 bg-amber-50/70 dark:border-amber-900/40 dark:bg-amber-950/20'"
+      >
+        <!-- Success State -->
+        <div v-if="ifdaResult.ok && ifdaResult.data" class="space-y-3">
+          <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 dark:border-slate-700">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="rounded-lg bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  سازمان غذا و دارو
+                </span>
+                <span
+                  class="rounded-lg px-2 py-0.5 text-[11px] font-bold"
+                  :class="['دارای اعتبار', 'معتبر'].some((s) => ifdaResult.data.licenseStatus.includes(s))
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                    : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'"
+                >
+                  {{ ifdaResult.data.licenseStatus }}
+                </span>
+              </div>
+              <h2 class="mt-2 text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                {{ ifdaResult.data.name }}
+              </h2>
+            </div>
+
+            <a
+              :href="ifdaResult.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 underline shrink-0"
+            >
+              <span>مشاهده در سرفود</span>
+              <span>↗</span>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
+              <span class="text-slate-400 block mb-0.5">شماره پروانه بهداشتی:</span>
+              <span class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ ifdaResult.data.code }}</span>
+            </div>
+            <div v-if="ifdaResult.data.brand" class="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
+              <span class="text-slate-400 block mb-0.5">نام تجاری / برند:</span>
+              <span class="font-bold text-slate-800 dark:text-slate-100">{{ ifdaResult.data.brand }}</span>
+            </div>
+            <div v-if="ifdaResult.data.manufacturer" class="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50 sm:col-span-2">
+              <span class="text-slate-400 block mb-0.5">کارخانه / شرکت سازنده:</span>
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ ifdaResult.data.manufacturer }}</span>
+            </div>
+            <div v-if="ifdaResult.data.address" class="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50 sm:col-span-2">
+              <span class="text-slate-400 block mb-0.5">نشانی کارخانه:</span>
+              <span class="text-slate-700 dark:text-slate-300 leading-relaxed">{{ ifdaResult.data.address }}</span>
+            </div>
+            <div v-if="ifdaResult.data.issueDate" class="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
+              <span class="text-slate-400 block mb-0.5">تاریخ صدور:</span>
+              <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ ifdaResult.data.issueDate }}</span>
+            </div>
+            <div v-if="ifdaResult.data.expiryDate" class="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
+              <span class="text-slate-400 block mb-0.5">تاریخ انقضا:</span>
+              <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ ifdaResult.data.expiryDate }}</span>
+            </div>
+          </div>
+
+          <!-- Action: Map this IFDA to checklist item -->
+          <div class="pt-1">
+            <button
+              type="button"
+              class="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-white text-xs sm:text-sm font-bold hover:bg-emerald-700 transition-colors shadow-md shadow-emerald-600/20"
+              @click="openMapModalFromIfda(ifdaResult.data)"
+            >
+              <span>🔗</span>
+              <span>اتصال این پروانه به آیتم خرید (نگاشت کالا)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div v-else class="space-y-2 text-xs">
+          <div class="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+            <span>⚠️</span>
+            <span>{{ ifdaResult.error || 'دیتا دریافت نشد یا خطا خورد' }}</span>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            {{ ifdaResult.errorMessage || 'امکان استعلام آنلاین در این مرورگر وجود نداشت یا پروانه‌ای با این شماره ثبت نشده است.' }}
+          </p>
+          <div class="pt-1">
+            <a
+              :href="ifdaResult.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 rounded-xl bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-200 transition-colors"
+            >
+              <span>مشاهده مستقیم در سامانه سرفود (cerfood.ir) ↗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- IFDA Inquiry History -->
+      <div class="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+            تاریخچه استعلام‌های غذا و دارو
+          </h3>
+          <button
+            v-if="ifdaHistoryItems.length"
+            type="button"
+            class="text-xs text-red-500 hover:underline"
+            @click="handleClearIfdaHistory"
+          >
+            پاک کردن تاریخچه
+          </button>
+        </div>
+
+        <!-- Search & Filter in history -->
+        <div class="space-y-2">
+          <input
+            v-model="ifdaHistoryQuery"
+            type="search"
+            placeholder="جستجو در تاریخچه پروانه‌ها، نام محصول، برند..."
+            class="w-full min-h-[40px] rounded-xl border border-slate-200 bg-white px-3 text-xs shadow-sm dark:border-slate-700 dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+          />
+
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <button
+              v-for="st in [
+                { key: 'all', label: 'همه' },
+                { key: 'valid', label: 'دارای اعتبار' },
+                { key: 'invalid', label: 'عدم اعتبار' }
+              ]"
+              :key="st.key"
+              type="button"
+              class="min-h-[28px] px-2.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors"
+              :class="ifdaHistoryStatusFilter === st.key ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'"
+              @click="ifdaHistoryStatusFilter = st.key"
+            >
+              {{ st.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- History cards list -->
+        <div v-if="ifdaHistoryItems.length" class="space-y-2">
+          <div
+            v-for="item in ifdaHistoryItems"
+            :key="item.id"
+            class="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-700/60 dark:bg-slate-800 space-y-2"
+          >
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs font-bold text-slate-800 dark:text-slate-100">{{ item.code }}</span>
+                  <span
+                    v-if="item.licenseStatus"
+                    class="rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                    :class="['دارای اعتبار', 'معتبر'].some((s) => item.licenseStatus.includes(s))
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'"
+                  >
+                    {{ item.licenseStatus }}
+                  </span>
+                </div>
+                <h4 class="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {{ item.title || 'فرآورده بهداشتی / غذایی' }}
+                  <span v-if="item.brand" class="text-slate-400 font-normal">({{ item.brand }})</span>
+                </h4>
+              </div>
+
+              <div class="flex items-center gap-1">
+                <button
+                  type="button"
+                  class="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors"
+                  title="اتصال به آیتم خرید"
+                  @click="openMapModalFromIfda(item)"
+                >
+                  اتصال به آیتم
+                </button>
+                <button
+                  type="button"
+                  class="flex size-7 items-center justify-center rounded-lg text-slate-400 hover:text-red-500"
+                  title="حذف"
+                  @click="handleRemoveIfdaHistoryItem(item.id)"
+                >
+                  <AppIcon name="trash" :size="14" />
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-50 dark:border-slate-700/60 pt-1.5">
+              <a
+                :href="item.url || `https://cerfood.ir/p/${item.code}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-emerald-600 dark:text-emerald-400 hover:underline"
+              >
+                مشاهده در سرفود ↗
+              </a>
+              <span>{{ JalaliDate.dateTime(item.inquiredAt) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="text-center py-6 text-slate-400 text-xs">
+          تاریخچه استعلام غذا و دارو خالی است.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: MAPPED ITEMS (کالاهای متصل‌شده به کدهای کالا) -->
+    <div v-show="activeTab === 'mapped'" class="space-y-4">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-3xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-sm dark:border-slate-700/80 dark:bg-slate-800">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🏷️</span>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+              کالاهای دارای شناسه و اصالت ثبت‌شده
+            </h2>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">
+            نگاشت بارکد، پروانه غذا و دارو و کد استاندارد ملی به آیتم‌های موجود در لیست خرید
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="flex min-h-[40px] items-center justify-center gap-1.5 rounded-2xl bg-brand-500 px-4 text-xs sm:text-sm font-semibold text-white shadow hover:bg-brand-600 transition-colors shrink-0"
+          @click="openMapModalForNew"
+        >
+          <AppIcon name="plus" :size="16" />
+          <span>ثبت نگاشت جدید</span>
+        </button>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="space-y-2">
+        <input
+          v-model="mappedQuery"
+          type="search"
+          placeholder="جستجو در کالاهای ثبت‌شده (نام کالا، برند، بارکد، پروانه...)"
+          class="w-full min-h-[44px] rounded-2xl border border-slate-200 bg-white px-4 text-xs sm:text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-400"
+        />
+
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          <button
+            v-for="mf in [
+              { key: 'all', label: 'همه کالاهای ثبت‌شده' },
+              { key: 'barcode', label: 'دارای بارکد' },
+              { key: 'ifda', label: 'دارای پروانه غذا و دارو' },
+              { key: 'standard', label: 'دارای نشان استاندارد' }
+            ]"
+            :key="mf.key"
+            type="button"
+            class="min-h-[30px] px-3 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
+            :class="mappedFilter === mf.key ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'"
+            @click="mappedFilter = mf.key"
+          >
+            {{ mf.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Mapped Items Grid / List -->
+      <div v-if="mappedItems.length" class="space-y-3">
+        <div
+          v-for="item in mappedItems"
+          :key="item.id"
+          class="rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm hover:border-brand-300 dark:border-slate-700/80 dark:bg-slate-800 transition-all space-y-3"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                <span class="rounded-lg bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700 dark:bg-brand-950/40 dark:text-brand-300">
+                  {{ item.templateTitle || 'لیست خرید' }}
+                </span>
+                <span v-if="item.categoryName" class="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                  {{ item.categoryName }}
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">
+                {{ item.itemTitle }}
+              </h3>
+              <p v-if="item.productTitle || item.brand" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {{ item.productTitle || item.brand }}
+              </p>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button
+                type="button"
+                class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+                @click="openDetailsForMapping(item)"
+              >
+                شناسنامه
+              </button>
+              <button
+                type="button"
+                class="flex size-8 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-brand-600 dark:border-slate-700 dark:hover:bg-slate-700"
+                title="ویرایش نگاشت"
+                @click="openEditForMapping(item)"
+              >
+                <AppIcon name="edit" :size="15" />
+              </button>
+              <button
+                type="button"
+                class="flex size-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-red-50 hover:text-red-500 dark:border-slate-700 dark:hover:bg-red-950/30"
+                title="حذف نگاشت"
+                @click="handleDeleteMapping(item.id)"
+              >
+                <AppIcon name="trash" :size="15" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Registered Codes Pills -->
+          <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-700/60 text-xs font-mono">
+            <span
+              v-if="item.barcode"
+              class="inline-flex items-center gap-1 rounded-xl bg-slate-50 px-2.5 py-1 text-slate-700 dark:bg-slate-900/60 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700/60"
+            >
+              <span>📊 بارکد:</span>
+              <span class="font-bold">{{ item.barcode }}</span>
+            </span>
+            <span
+              v-if="item.ifdaCode"
+              class="inline-flex items-center gap-1 rounded-xl bg-emerald-50 px-2.5 py-1 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60"
+            >
+              <span>🍏 پروانه:</span>
+              <span class="font-bold">{{ item.ifdaCode }}</span>
+            </span>
+            <span
+              v-if="item.standardCode"
+              class="inline-flex items-center gap-1 rounded-xl bg-sky-50 px-2.5 py-1 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/60"
+            >
+              <span>🇮🇷 استاندارد:</span>
+              <span class="font-bold">{{ item.standardCode }}</span>
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+            <span v-if="item.manufacturer">کارخانه: {{ item.manufacturer }}</span>
+            <span v-else></span>
+            <span>ثبت: {{ JalaliDate.date(item.registeredAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div v-else class="text-center py-12 text-slate-400 space-y-3">
+        <span class="text-4xl block">🏷️</span>
+        <p class="text-sm">هیچ کالایی با کدهای شناسایی و اصالت ثبت نشده است.</p>
+        <p class="text-xs text-slate-500">
+          می‌توانید پس از اسکن بارکد یا استعلام پروانه غذا و دارو، آن را به آیتم‌های لیست خرید خود متصل کنید.
+        </p>
+        <button
+          type="button"
+          class="rounded-xl bg-brand-500 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-brand-600 transition-colors"
+          @click="openMapModalForNew"
+        >
+          ثبت اولین نگاشت کالا
+        </button>
       </div>
     </div>
 
@@ -752,7 +1520,20 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-50 dark:border-slate-700/60 pt-2">
-            <span class="font-mono text-slate-600 dark:text-slate-300 tracking-wider">{{ item.code }}</span>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-slate-600 dark:text-slate-300 tracking-wider">{{ item.code }}</span>
+              <a
+                v-if="/^\d{8,14}$/.test(item.code)"
+                :href="`https://irancode.ir/01/${item.code}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 underline"
+                title="مشاهده مستقیم در مرکز ملی شماره‌گذاری کالا (ایران‌کد)"
+              >
+                <span>ایران‌کد</span>
+                <span class="text-[9px]">↗</span>
+              </a>
+            </div>
             <span>{{ JalaliDate.dateTime(item.scannedAt) }}</span>
           </div>
         </div>
@@ -1046,6 +1827,30 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
+
+    <!-- Map Item Code Modal -->
+    <MapItemCodeModal
+      :is-open="isMapModalOpen"
+      :initial-item="mapModalParams.initialItem"
+      :initial-barcode="mapModalParams.initialBarcode"
+      :initial-ifda-code="mapModalParams.initialIfdaCode"
+      :initial-standard-code="mapModalParams.initialStandardCode"
+      :initial-brand="mapModalParams.initialBrand"
+      :initial-product-title="mapModalParams.initialProductTitle"
+      :initial-manufacturer="mapModalParams.initialManufacturer"
+      :initial-license-status="mapModalParams.initialLicenseStatus"
+      @close="isMapModalOpen = false"
+      @saved="loadMappedItems"
+    />
+
+    <!-- Item Code Details Modal -->
+    <ItemCodeDetailsModal
+      :is-open="isDetailsModalOpen"
+      :mapping="selectedMappingForDetails"
+      @close="isDetailsModalOpen = false"
+      @edit="openEditForMapping(selectedMappingForDetails)"
+      @deleted="loadMappedItems"
+    />
 
     <!-- Confirm Dialog -->
     <ConfirmDialog

@@ -45,6 +45,17 @@ export class BarcodeHistoryRepository {
     return newRecord
   }
 
+  update(id, updates) {
+    var items = this.getAll()
+    var idx = items.findIndex((item) => item.id === id)
+    if (idx !== -1) {
+      items[idx] = { ...items[idx], ...updates }
+      this.saveAll(items)
+      return items[idx]
+    }
+    return null
+  }
+
   remove(id) {
     var items = this.getAll().filter((item) => item.id !== id)
     this.saveAll(items)

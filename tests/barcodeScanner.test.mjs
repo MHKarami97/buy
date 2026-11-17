@@ -123,9 +123,67 @@ test('BarcodeHistoryRepository adds, filters and removes scans', () => {
   var iranFilter = repo.filter('', 'iran')
   assert.equal(iranFilter.length, 1)
 
+  // Update record
+  var updated = repo.update(repo.getAll()[0].id, { title: 'عنوان بروزرسانی‌شده' })
+  assert.ok(updated)
+  assert.equal(updated.title, 'عنوان بروزرسانی‌شده')
+
   // Clear
   repo.clear()
   assert.equal(repo.getAll().length, 0)
+})
+
+test('BarcodeLookupService.decodeHtmlEntities handles numeric and named entities', () => {
+  var sampleHex = '&#x62A;&#x643;&#x644;&#x627;&#x646; &#x67E;&#x627;&#x643;'
+  assert.equal(BarcodeLookupService.decodeHtmlEntities(sampleHex), 'تكلان پاك')
+
+  var sampleNamed = '&quot;کالای نمونه&quot; &amp; &lt;تست&gt;'
+  assert.equal(BarcodeLookupService.decodeHtmlEntities(sampleNamed), '"کالای نمونه" & <تست>')
+})
+
+test('BarcodeLookupService.parseIranCodeHtml extracts product details from irancode.ir HTML', () => {
+  var mockHtml = `
+    <div class="card">
+      <span class="mb-1 fw-semibold text-muted">عضو: </span>
+      <span style="color: black">&#x62A;&#x643;&#x644;&#x627;&#x646; &#x67E;&#x627;&#x643;</span>
+      <span class="mb-1 fw-semibold text-muted">شرح برچسب: </span>
+      <span style="color: black">دستمال کاغذی، 150 برگ دو لایه، 1 عدد، تکلان پاک</span>
+      <span class="mb-1 fw-semibold text-muted">نام برند: </span>
+      <span style="color: black">تکلان پاک</span>
+      <span class="mb-1 fw-semibold text-muted">ساختار GPC: </span>
+      <span style="color: black">کالاهای بهداشتی عمومی شخصی</span>
+      <span class="mb-1 fw-semibold text-muted">بریک: </span>
+      <span style="color: black">دستمال کاغذی/دستمال نظافت (دور انداختنی)</span>
+      <span class="mb-1 fw-semibold text-muted">کد بریک: </span>
+      <span style="color: black">10000485</span>
+      <span class="mb-1 fw-semibold text-muted">کشور سازنده: </span>
+      <span style="color: black">ایران</span>
+      <span class="mb-1 fw-semibold text-muted">GTIN Code: </span>
+      <span style="color: black">6262637600129</span>
+    </div>
+  `
+
+  var res = BarcodeLookupService.parseIranCodeHtml(mockHtml, '6262637600129')
+  assert.equal(res.ok, true)
+  assert.equal(res.data.labelDescription, 'دستمال کاغذی، 150 برگ دو لایه، 1 عدد، تکلان پاک')
+  assert.equal(res.data.brand, 'تکلان پاک')
+  assert.equal(res.data.member, 'تكلان پاك')
+  assert.equal(res.data.breakCode, '10000485')
+  assert.equal(res.data.gtin, '6262637600129')
+})
+
+test('BarcodeLookupService.parseIranCodeHtml fails gracefully on empty or invalid HTML', () => {
+  var emptyRes = BarcodeLookupService.parseIranCodeHtml('<html><body>Page Not Found 404</body></html>')
+  assert.equal(emptyRes.ok, false)
+
+  var nullRes = BarcodeLookupService.parseIranCodeHtml(null)
+  assert.equal(nullRes.ok, false)
+})
+
+test('BarcodeLookupService.fetchIranCodeDetails handles invalid barcode format', async () => {
+  var res = await BarcodeLookupService.fetchIranCodeDetails('invalid-123')
+  assert.equal(res.ok, false)
+  assert.equal(res.status, 'invalid_code')
 })
 
 test('validateEan13Checksum checks standard 13-digit EAN-13 barcodes', () => {

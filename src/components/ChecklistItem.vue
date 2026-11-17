@@ -4,6 +4,7 @@ import AppIcon from './AppIcon.vue'
 import GuideLinkButton from './GuideLinkButton.vue'
 import ItemHistoryLink from './ItemHistoryLink.vue'
 import ItemPriceField from './ItemPriceField.vue'
+import ItemCodesBadge from './ItemCodesBadge.vue'
 import { useChecklistStore } from '../stores/checklistStore'
 import { QuantityHistoryRepository } from '../services/QuantityHistoryRepository.js'
 
@@ -83,6 +84,7 @@ function changeQuantity(amount) {
     <div class="flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-slate-100 pt-2 dark:border-slate-700/60">
       <ItemPriceField v-if="priceKey" :price-key="priceKey" />
       <GuideLinkButton :item="item" />
+      <ItemCodesBadge :item="item" />
 
       <div class="ms-auto flex items-center">
         <ItemHistoryLink :item="item" />

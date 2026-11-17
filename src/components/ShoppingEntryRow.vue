@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import GuideLinkButton from './GuideLinkButton.vue'
 import IngredientWarningBadge from './IngredientWarningBadge.vue'
 import ItemPriceField from './ItemPriceField.vue'
+import ItemCodesBadge from './ItemCodesBadge.vue'
 import AppIcon from './AppIcon.vue'
 import { QuantityHistoryRepository } from '../services/QuantityHistoryRepository.js'
 
@@ -54,6 +55,7 @@ function confirm() {
         <div class="flex flex-wrap items-center gap-x-2 mt-0.5">
           <p class="text-xs text-slate-400">{{ entry.category.name }}</p>
           <GuideLinkButton :item="entry.item" />
+          <ItemCodesBadge :item="entry.item" />
         </div>
         <IngredientWarningBadge :item="entry.item" />
       </div>

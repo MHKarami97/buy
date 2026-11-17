@@ -3,6 +3,22 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  server: {
+    proxy: {
+      '/api/irancode': {
+        target: 'https://irancode.ir',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/irancode/, ''),
+        secure: false
+      },
+      '/api/cerfood': {
+        target: 'https://cerfood.ir',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/cerfood/, ''),
+        secure: false
+      }
+    }
+  },
   plugins: [
     vue(),
     VitePWA({
