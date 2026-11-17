@@ -130,19 +130,35 @@ onMounted(loadInsights)
       💰 برای دیدن هزینه‌ی ماهانه، در «لیست خرید» قیمت واحد آیتم‌ها را وارد کنید.
     </section>
 
-    <RouterLink
-      to="/lists"
-      class="flex min-h-[72px] items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50/60 p-4 transition-colors hover:border-brand-400 dark:border-brand-700/50 dark:bg-brand-700/10"
-    >
-      <span class="flex size-12 items-center justify-center rounded-2xl bg-brand-500 text-white">
-        <AppIcon name="lists" :size="26" />
-      </span>
-      <span class="flex-1">
-        <span class="block text-base font-bold">همه‌ی لیست‌ها</span>
-        <span class="block text-xs text-slate-500 dark:text-slate-400">{{ formatInteger(listCount) }} لیست؛ مشاهده، ویرایش و ساخت لیست جدید</span>
-      </span>
-      <AppIcon name="chevron" class="text-brand-500" />
-    </RouterLink>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <RouterLink
+        to="/lists"
+        class="flex min-h-[72px] items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50/60 p-4 transition-colors hover:border-brand-400 dark:border-brand-700/50 dark:bg-brand-700/10"
+      >
+        <span class="flex size-12 items-center justify-center rounded-2xl bg-brand-500 text-white shrink-0">
+          <AppIcon name="lists" :size="26" />
+        </span>
+        <span class="flex-1 min-w-0">
+          <span class="block text-base font-bold">همه‌ی لیست‌ها</span>
+          <span class="block text-xs text-slate-500 dark:text-slate-400 truncate">{{ formatInteger(listCount) }} لیست؛ مشاهده، ویرایش و ساخت</span>
+        </span>
+        <AppIcon name="chevron" class="text-brand-500 shrink-0" />
+      </RouterLink>
+
+      <RouterLink
+        to="/scanner"
+        class="flex min-h-[72px] items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50/60 p-4 transition-colors hover:border-sky-400 dark:border-sky-700/50 dark:bg-sky-700/10"
+      >
+        <span class="flex size-12 items-center justify-center rounded-2xl bg-sky-500 text-white shrink-0">
+          <AppIcon name="scan" :size="24" />
+        </span>
+        <span class="flex-1 min-w-0">
+          <span class="block text-base font-bold">بارکدخوان هوشمند</span>
+          <span class="block text-xs text-slate-500 dark:text-slate-400 truncate">اسکن کالا، QR و تشخیص کشور سازنده</span>
+        </span>
+        <AppIcon name="chevron" class="text-sky-500 shrink-0" />
+      </RouterLink>
+    </div>
 
     <section v-if="laggingLists.length" class="space-y-2" aria-labelledby="lagging-title">
       <h2 id="lagging-title" class="text-sm font-semibold text-slate-500">لیست‌هایی که بیشتر نیاز به توجه دارند</h2>

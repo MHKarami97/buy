@@ -24,6 +24,7 @@ export var FEATURES = Object.freeze([
   { id: 'occasions', to: '/occasions', title: 'خرید مناسبتی', desc: 'لیست ویژه‌ی مهمانی و مناسبت‌ها', icon: 'gift', tone: 'emerald', placement: 'more', activePrefixes: [] },
   { id: 'reports', to: '/reports', title: 'گزارش مصرف', desc: 'هر چند وقت چیزی تمام می‌شود', icon: 'chart', tone: 'sky', placement: 'more', activePrefixes: ['/history'] },
   { id: 'spending', to: '/spending', title: 'هزینه ماهانه', desc: 'خرج هر ماه شمسی را ببین', icon: 'wallet', tone: 'teal', placement: 'more', activePrefixes: [] },
+  { id: 'scanner', to: '/scanner', title: 'بارکدخوان', desc: 'اسکن بارکد، QR و تشخیص کشور سازنده', icon: 'scan', tone: 'sky', placement: 'more', activePrefixes: [] },
   { id: 'settings', to: '/settings', title: 'تنظیمات', desc: 'ظاهر، پشتیبان‌گیری و مدیریت داده', icon: 'sliders', tone: 'slate', placement: 'more', activePrefixes: [] }
 ])
 

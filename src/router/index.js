@@ -23,6 +23,7 @@ var routes = [
   { path: '/guide', name: 'guide', component: GuideView },
   { path: '/compare', name: 'compare', component: CompareView },
   { path: '/spending', name: 'spending', component: CostReportView },
+  { path: '/scanner', name: 'scanner', component: () => import('../views/BarcodeScannerView.vue') },
   { path: '/occasions', name: 'occasions', component: OccasionsView },
   { path: '/occasions/shopping', name: 'occasion-shopping', component: OccasionShoppingView },
   { path: '/checklist/:id', name: 'checklist-detail', component: ChecklistDetailView, props: true }

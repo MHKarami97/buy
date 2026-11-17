@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useChecklistStore } from '../stores/checklistStore'
 import { useDebouncedValue } from '../composables/useDebounce'
 import { ItemSearchService } from '../services/ItemSearchService'
+import AppIcon from './AppIcon.vue'
 
 var SEARCH_LIMIT = 40
 
@@ -94,6 +95,16 @@ function entryKey(result) {
       >
         ✕
       </button>
+
+      <RouterLink
+        v-else
+        to="/scanner"
+        class="absolute inset-y-0 end-2 my-auto flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+        title="اسکن بارکد"
+        aria-label="اسکن بارکد"
+      >
+        <AppIcon name="scan" :size="20" />
+      </RouterLink>
     </div>
 
     <div v-if="hasQuery && results.length" class="mt-2 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
