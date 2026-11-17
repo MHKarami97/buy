@@ -4,7 +4,7 @@ var FDA_CBS = source('FDA GRAS Notice 654: Cocoa butter substitute', 'https://ww
 var JRC_CBE = source('EU Joint Research Centre: Foreign fats in chocolate', 'https://joint-research-centre.ec.europa.eu/scientific-activities/food-authenticity-and-quality/foreign-fats-chocolate_en')
 var MAYO_TRANS = source('Mayo Clinic: Trans fat is double trouble for heart health', 'https://www.mayoclinic.org/diseases-conditions/high-blood-cholesterol/in-depth/trans-fat/art-20046114')
 
-var CHOCOLATE_ITEMS = ['chocolate', 'chocolate-sauce', 'hot-chocolate', 'cocoa', 'dry-pastry', 'snacks', 'guest-snacks', 'cereal', 'ice-cream']
+var CHOCOLATE_ITEMS = ['chocolate', 'chocolate-sauce', 'hot-chocolate', 'cocoa', 'dry-pastry', 'snacks', 'guest-snacks', 'cereal', 'ice-cream', 'chocolate-spread', 'biscuits-cookies']
 
 export var fatsCocoaGroup = defineIngredientGroup({
   id: 'fats-cocoa',
@@ -41,7 +41,7 @@ export var fatsCocoaGroup = defineIngredientGroup({
       role: 'ماندگاری بیشتر، بافت ترد یا نرم و ارزانی در شیرینی، سرخ‌کردنی و غذای آماده.',
       verdict: Verdict.AVOID,
       verdictNote: 'چربی ترانس صنعتی کلسترول LDL را بالا و HDL را پایین می‌آورد و خطر بیماری قلبی را افزایش می‌دهد. محصولی با این عبارت در فهرست مواد را با نمونه بدون آن مقایسه کنید.',
-      itemIds: ['cooking-oil', 'cooking-oil-rice', 'fried-onions', 'snacks', 'dry-pastry', 'popcorn', 'chocolate', 'frozen-fries', 'nuggets', 'cake-powder', 'cereal', 'butter'],
+      itemIds: ['cooking-oil', 'cooking-oil-rice', 'fried-onions', 'snacks', 'dry-pastry', 'popcorn', 'chocolate', 'frozen-fries', 'nuggets', 'cake-powder', 'cereal', 'butter', 'biscuits-cookies', 'chips', 'puffs-snacks'],
       sources: [MAYO_TRANS]
     }),
     defineIngredient({
@@ -52,7 +52,7 @@ export var fatsCocoaGroup = defineIngredientGroup({
       role: 'نرمی نان و کیک، جلوگیری از جدا شدن چربی در بستنی و شکلات و پایداری سس‌ها.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'در مصرف عادی غذایی نگرانی خاصی گزارش نشده است. نشانه کم‌ارزش بودن محصول نیست، اما خود محصول را با فهرست مواد کوتاه‌تر مقایسه کنید. سند FDA فقط رایج بودن را تأیید می‌کند و ارزیابی ایمنی جداگانه‌ای در آن نبود.',
-      itemIds: ['chocolate', 'ice-cream', 'cake-powder', 'toast-bread', 'breakfast-bread', 'mayonnaise-sauce', 'cream', 'snacks', 'dry-pastry'],
+      itemIds: ['chocolate', 'ice-cream', 'cake-powder', 'toast-bread', 'breakfast-bread', 'mayonnaise-sauce', 'cream', 'snacks', 'dry-pastry', 'biscuits-cookies', 'burger', 'chocolate-spread'],
       sources: [FDA_CBS]
     })
   ]

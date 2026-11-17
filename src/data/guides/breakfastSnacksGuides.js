@@ -45,10 +45,10 @@ export var breakfastSnacksGroup = defineGroup({
     }),
     defineGuide({
       id: 'spreads-halva',
-      title: 'کره بادام‌زمینی و حلواشکری',
+      title: 'کره بادام‌زمینی، حلوا، ارده، شیره و شکلات صبحانه',
       icon: '🥜',
-      itemIds: ['peanut-butter', 'halva'],
-      keywords: ['کره بادام زمینی', 'کره بادام', 'حلوا', 'حلوا شکری', 'حلوا ارده', 'نوتلا'],
+      itemIds: ['peanut-butter', 'halva', 'chocolate-spread', 'tahini-paste', 'date-grape-syrup'],
+      keywords: ['کره بادام زمینی', 'کره بادام', 'حلوا', 'حلوا شکری', 'حلوا ارده', 'نوتلا', 'شکلات صبحانه', 'ارده', 'شیره', 'شیره خرما', 'شیره انگور', 'سه شیره'],
       summary: 'درصد ماده اصلی (بادام‌زمینی، کنجد) و میزان شکر و روغن اضافه، معیار اصلی مقایسه این محصولات است.',
       sections: [
         label([
@@ -100,10 +100,10 @@ export var breakfastSnacksGroup = defineGroup({
     }),
     defineGuide({
       id: 'dates',
-      title: 'خرما و میوه خشک',
+      title: 'خرما، کشمش و میوه خشک',
       icon: '🌴',
-      itemIds: ['dates'],
-      keywords: ['خرما', 'کشمش', 'برگه', 'برگه هلو', 'انجیر خشک', 'توت خشک', 'آلو خشک', 'میوه خشک', 'زردآلو خشک'],
+      itemIds: ['dates', 'raisins'],
+      keywords: ['خرما', 'کشمش', 'مویز', 'برگه', 'برگه هلو', 'انجیر خشک', 'توت خشک', 'آلو خشک', 'میوه خشک', 'زردآلو خشک'],
       summary: 'میوه خشک خوب نرم و معطر است، بدون کپک و رنگ‌های غیرطبیعی.',
       sections: [
         check([
@@ -156,10 +156,10 @@ export var breakfastSnacksGroup = defineGroup({
     }),
     defineGuide({
       id: 'snacks',
-      title: 'تنقلات، پفیلا، لواشک و شیرینی خشک',
+      title: 'تنقلات، چیپس، پفک، بیسکویت، پفیلا و لواشک',
       icon: '🍿',
-      itemIds: ['snacks', 'popcorn', 'lavashak', 'dry-pastry'],
-      keywords: ['تنقلات', 'پفک', 'چیپس', 'پفیلا', 'پاپ کورن', 'لواشک', 'شیرینی خشک', 'شیرینی', 'بیسکویت', 'کیک', 'کلوچه', 'ویفر'],
+      itemIds: ['snacks', 'popcorn', 'lavashak', 'dry-pastry', 'chips', 'puffs-snacks', 'biscuits-cookies', 'gummies-candy', 'hard-candy', 'chewing-gum'],
+      keywords: ['تنقلات', 'پفک', 'چیپس', 'پفیلا', 'پاپ کورن', 'لواشک', 'شیرینی خشک', 'شیرینی', 'بیسکویت', 'کیک', 'کلوچه', 'ویفر', 'آدامس', 'پاستیل', 'تافی', 'آبنبات', 'اسمارتیز', 'دراژه', 'اسنک'],
       summary: 'در تنقلات نمک، قند، نوع روغن و تاریخ تولید مهم‌ترین معیارهای مقایسه‌اند.',
       sections: [
         label([
@@ -239,10 +239,10 @@ export var breakfastSnacksGroup = defineGroup({
     }),
     defineGuide({
       id: 'drinks',
-      title: 'نوشابه، دلستر، شربت و آب آشامیدنی',
+      title: 'نوشیدنی، آبمیوه، انرژی‌زا، نوشابه و آب آشامیدنی',
       icon: '🥤',
-      itemIds: ['soft-drink', 'malt-drink', 'syrup', 'drinking-water'],
-      keywords: ['نوشابه', 'دلستر', 'ماءالشعیر', 'شربت', 'آب آشامیدنی', 'آب معدنی', 'آب میوه', 'آبمیوه', 'پودر نوشیدنی', 'نوشیدنی'],
+      itemIds: ['soft-drink', 'malt-drink', 'syrup', 'drinking-water', 'fruit-juice', 'energy-drink'],
+      keywords: ['نوشابه', 'دلستر', 'ماءالشعیر', 'شربت', 'آب آشامیدنی', 'آب معدنی', 'آب میوه', 'آبمیوه', 'پودر نوشیدنی', 'نوشیدنی', 'انرژی زا', 'انرژی‌زا', 'نوشیدنی انرژی زا'],
       summary: 'در نوشیدنی‌ها قند، درصد میوه واقعی و مجوز بهداشت مهم‌تر از نام تجاری است.',
       sections: [
         label([
@@ -266,9 +266,9 @@ export var breakfastSnacksGroup = defineGroup({
     }),
     defineGuide({
       id: 'herbal-distillates',
-      title: 'عرق گیاهی، خاکشیر و تخم شربتی',
+      title: 'عرق گیاهی، گلاب، خاکشیر و تخم شربتی',
       icon: '🌿',
-      itemIds: ['mint-distillate', 'khashir', 'basil-seeds'],
+      itemIds: ['mint-distillate', 'khashir', 'basil-seeds', 'rosewater'],
       keywords: ['عرق', 'عرق نعنا', 'عرق بیدمشک', 'گلاب', 'خاکشیر', 'تخم شربتی', 'تخم ریحان', 'بهارنارنج', 'عرقیات'],
       summary: 'عرقیات و دانه‌های سنتی را از منبع دارای مجوز بهداشت بخرید و تاریخ تولید را ببینید.',
       sections: [

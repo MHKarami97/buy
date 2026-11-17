@@ -40,10 +40,10 @@ export var cleaningGroup = defineGroup({
     }),
     defineGuide({
       id: 'dishwashing',
-      title: 'مایع ظرفشویی و قرص ماشین ظرفشویی',
+      title: 'مایع، قرص و نمک ماشین ظرفشویی',
       icon: '🍽️',
-      itemIds: ['dishwashing-liquid', 'dishwasher-tablets', 'dishwasher-cleaner'],
-      keywords: ['مایع ظرفشویی', 'قرص ظرفشویی', 'قرص ماشین ظرفشویی', 'جرم گیر ماشین ظرفشویی', 'نمک ظرفشویی', 'جلادهنده', 'پودر ظرفشویی'],
+      itemIds: ['dishwashing-liquid', 'dishwasher-tablets', 'dishwasher-cleaner', 'dishwasher-salt'],
+      keywords: ['مایع ظرفشویی', 'قرص ظرفشویی', 'قرص ماشین ظرفشویی', 'جرم گیر ماشین ظرفشویی', 'نمک ظرفشویی', 'نمک ماشین ظرفشویی', 'جلادهنده', 'پودر ظرفشویی'],
       summary: 'غلظت و کارایی واقعی را با قیمت هر بار شستشو بسنجید، نه قیمت بسته.',
       sections: [
         label([
@@ -96,10 +96,10 @@ export var cleaningGroup = defineGroup({
     }),
     defineGuide({
       id: 'surface-cleaners',
-      title: 'پاک‌کننده سطوح، شیشه، توالت و زمین',
+      title: 'پاک‌کننده سطوح، شیشه، توالت، زمین و شامپو فرش',
       icon: '🧴',
-      itemIds: ['floor-cleaner', 'multi-purpose-cleaner', 'glass-cleaner', 'toilet-cleaner', 'scouring-powder'],
-      keywords: ['زمین شوی', 'پاک کننده', 'چند منظوره', 'شیشه پاک کن', 'سرویس بهداشتی', 'شوینده توالت', 'پودر سطوح', 'گندزدا', 'ضد عفونی کننده', 'جرمگیر'],
+      itemIds: ['floor-cleaner', 'multi-purpose-cleaner', 'glass-cleaner', 'toilet-cleaner', 'scouring-powder', 'carpet-shampoo'],
+      keywords: ['زمین شوی', 'پاک کننده', 'چند منظوره', 'شیشه پاک کن', 'سرویس بهداشتی', 'شوینده توالت', 'پودر سطوح', 'گندزدا', 'ضد عفونی کننده', 'جرمگیر', 'شامپو فرش', 'شامپو فرش و مبل', 'شامپو مبل'],
       summary: 'هر شوینده را برای سطح مناسبش بخرید و هرگز دو محصول شیمیایی را با هم مخلوط نکنید.',
       sections: [
         label([

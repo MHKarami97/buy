@@ -32,7 +32,7 @@ export var cleaningIngredientsGroup = defineIngredientGroup({
       role: 'ضدعفونی سطوح، دستمال مرطوب و برخی شوینده‌ها و ضدعفونی‌کننده‌ی دست.',
       verdict: Verdict.CAUTION,
       verdictNote: 'ممکن است پوست و چشم را تحریک کنند و در برخی افراد، به‌ویژه مبتلایان به آسم، علائم تنفسی بدهند. موارد آسم شغلی در پرستاران گزارش شده است (نادر). با سفیدکننده مخلوط نکنید. اسپری‌نکردن و تهویه ریسک را کم می‌کند.',
-      itemIds: ['multi-purpose-cleaner', 'floor-cleaner', 'toilet-cleaner', 'hand-sanitizer', 'wet-wipes', 'air-freshener', 'insect-spray', 'cleaning-cloths'],
+      itemIds: ['multi-purpose-cleaner', 'floor-cleaner', 'toilet-cleaner', 'hand-sanitizer', 'wet-wipes', 'air-freshener', 'insect-spray', 'cleaning-cloths', 'rubbing-alcohol'],
       sources: [QAC_ASTHMA, QAC_MOUNT_SINAI]
     }),
     defineIngredient({
@@ -43,7 +43,7 @@ export var cleaningIngredientsGroup = defineIngredientGroup({
       role: 'پاک‌کنندگی بهتر لکه در آب سرد در پودر و مایع لباسشویی و ظرفشویی.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'به گفته‌ی اتحادیه‌ی صنعت (A.I.S.E.)، در مصرف خانگی ایمن‌اند، ولی مثل هر پروتئینی ممکن است حساسیت تنفسی ایجاد کنند. گرد پودر را استنشاق نکنید. این منبع صنعتی است و مستقل نیست.',
-      itemIds: ['laundry-detergent', 'dishwasher-tablets', 'fabric-stain-remover', 'dishwashing-liquid', 'washing-machine-cleaner'],
+      itemIds: ['laundry-detergent', 'dishwasher-tablets', 'fabric-stain-remover', 'dishwashing-liquid', 'washing-machine-cleaner', 'carpet-shampoo'],
       sources: [AISE_ENZYMES]
     }),
     defineIngredient({
@@ -54,7 +54,7 @@ export var cleaningIngredientsGroup = defineIngredientGroup({
       role: 'نرم‌کردن آب و کمک به پاک‌کنندگی در پودر لباسشویی و قرص ماشین ظرفشویی.',
       verdict: Verdict.CAUTION,
       verdictNote: 'مشکل اصلی محیط‌زیستی است: فسفات در آب‌های طبیعی باعث یوتروفیکاسیون می‌شود. مقررات اتحادیه اروپا برای شوینده‌ی لباسشویی خانگی حد فسفر را کمتر از ۰٫۵ گرم در مقدار توصیه‌شده برای یک بار شست‌وشو گذاشته است. این حد محدودیت اروپاست و در ایران ممکن است فرق کند.',
-      itemIds: ['laundry-detergent', 'dishwasher-tablets', 'softener', 'descaler', 'washing-machine-cleaner'],
+      itemIds: ['laundry-detergent', 'dishwasher-tablets', 'softener', 'descaler', 'washing-machine-cleaner', 'dishwasher-salt'],
       sources: [EU_DETERGENTS]
     })
   ]

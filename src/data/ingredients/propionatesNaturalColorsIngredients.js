@@ -19,7 +19,7 @@ export var propionatesNaturalColorsGroup = defineIngredientGroup({
       role: 'جلوگیری از کپک‌زدگی نان صنعتی، کیک و تورتیلا.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'EFSA در ۲۰۱۴ به این نتیجه رسید که برای ADI داده‌ی کافی نیست، ولی در حداکثر مقدار مجاز مصرف نگرانی ایمنی نیست و ژنوتوکسیسیتی یا سرطان‌زایی هم نگرانی نبود. حد مجاز در اتحادیه اروپا ۱۰۰۰ تا ۳۰۰۰ میلی‌گرم بر کیلوگرم غذاست.',
-      itemIds: ['bread', 'toast-bread', 'breakfast-bread', 'pizza-dough', 'cake-powder', 'dry-pastry', 'lasagna'],
+      itemIds: ['bread', 'toast-bread', 'breakfast-bread', 'pizza-dough', 'cake-powder', 'dry-pastry', 'lasagna', 'biscuits-cookies'],
       sources: [EFSA_PROPIONATES, EU_PROPIONATES]
     }),
     defineIngredient({
@@ -30,7 +30,7 @@ export var propionatesNaturalColorsGroup = defineIngredientGroup({
       role: 'رنگ زرد طبیعی در شیرینی، نوشیدنی، سس و بستنی.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'EFSA در ۲۰۱۰ ADI را ۳ میلی‌گرم بر کیلوگرم وزن بدن تعیین کرد. در ارزیابی تکمیلی ۲۰۱۴ مصرف بزرگسالان زیر ADI بود و در کودکان نزدیک ADI گزارش شد.',
-      itemIds: ['sauce', 'ice-cream', 'cake-powder', 'syrup', 'jelly-powder', 'snacks', 'spices', 'dry-pastry'],
+      itemIds: ['sauce', 'ice-cream', 'cake-powder', 'syrup', 'jelly-powder', 'snacks', 'spices', 'dry-pastry', 'noodles', 'chips', 'puffs-snacks', 'soup-powder'],
       sources: [EFSA_CURCUMIN, EFSA_COLOURS]
     }),
     defineIngredient({
@@ -41,7 +41,7 @@ export var propionatesNaturalColorsGroup = defineIngredientGroup({
       role: 'رنگ قرمز و صورتی در ژله، نوشیدنی، سوسیس و شیرینی.',
       verdict: Verdict.CAUTION,
       verdictNote: 'EFSA بازبینی را در ۲۰۱۵ کامل کرد. منشأ حیوانی دارد؛ برای گیاهخواران یا افراد دارای حساسیت باید روی برچسب را بخوانند. جزئیات ADI را در منبع‌های قابل‌اتکا تأیید نکردم.',
-      itemIds: ['jelly-powder', 'syrup', 'sausage', 'dry-pastry', 'ice-cream', 'cake-powder', 'lavashak', 'soft-drink'],
+      itemIds: ['jelly-powder', 'syrup', 'sausage', 'dry-pastry', 'ice-cream', 'cake-powder', 'lavashak', 'soft-drink', 'gummies-candy'],
       sources: [EFSA_COLOURS]
     }),
     defineIngredient({
@@ -52,7 +52,7 @@ export var propionatesNaturalColorsGroup = defineIngredientGroup({
       role: 'رنگ نارنجی و زرد در کره، پنیر، نوشیدنی و مارگارین.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'EFSA بازبینی کاروتن‌ها را در ۲۰۱۲ و آنوتو را در ۲۰۱۶ (با پیگیری ۲۰۱۹) کامل کرده است. برای بتاکاروتن، EFSA بیانیه‌ی جدا درباره‌ی مصرف در سیگاری‌های سنگین دارد. جزئیات عددی نتیجه را در منبع نیافتم.',
-      itemIds: ['butter', 'cheese', 'cottage-cheese', 'syrup', 'soft-drink', 'cereal', 'snacks', 'popcorn', 'ice-cream', 'cake-powder', 'cooking-oil'],
+      itemIds: ['butter', 'cheese', 'cottage-cheese', 'syrup', 'soft-drink', 'cereal', 'snacks', 'popcorn', 'ice-cream', 'cake-powder', 'cooking-oil', 'puffs-snacks', 'biscuits-cookies'],
       sources: [EFSA_COLOURS, EFSA_COLOURS_NEWS]
     })
   ]

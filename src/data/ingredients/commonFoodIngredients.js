@@ -23,7 +23,7 @@ export var commonFoodIngredientsGroup = defineIngredientGroup({
       role: 'بافت، طعم و ماندگاری در محصولات سرخ‌شده، شیرینی و سس.',
       verdict: Verdict.CAUTION,
       verdictNote: 'WHO توصیه می‌کند چربی اشباع حداکثر ۱۰٪ انرژی روزانه و چربی ترانس کمتر از ۱٪ باشد و بهتر است بیشتر چربی مصرفی غیراشباع باشد. این فقط حد مصرف کل است؛ نباید یک محصول را فقط بر اساس وجود پالم رد کرد.',
-      itemIds: ['butter', 'cream', 'cheese', 'parmesan', 'cooking-oil', 'cooking-oil-rice', 'fried-onions', 'frozen-fries', 'nuggets', 'sausage', 'red-meat', 'minced-meat', 'chocolate', 'dry-pastry', 'snacks', 'popcorn', 'ice-cream', 'cake-powder', 'halva', 'peanut-butter', 'cereal'],
+      itemIds: ['butter', 'cream', 'cheese', 'parmesan', 'cooking-oil', 'cooking-oil-rice', 'fried-onions', 'frozen-fries', 'nuggets', 'sausage', 'red-meat', 'minced-meat', 'chocolate', 'dry-pastry', 'snacks', 'popcorn', 'ice-cream', 'cake-powder', 'halva', 'peanut-butter', 'cereal', 'chips', 'puffs-snacks', 'biscuits-cookies', 'chocolate-spread', 'burger', 'schnitzel', 'canned-tuna', 'noodles'],
       sources: [WHO_FATS_NEWS, WHO_FATS_GUIDELINE]
     }),
     defineIngredient({
@@ -34,7 +34,7 @@ export var commonFoodIngredientsGroup = defineIngredientGroup({
       role: 'غلیظ کردن و یکنواخت نگه داشتن سس، سوپ، ماست میوه‌ای، پودر کیک و غذای آماده.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'EFSA در ۲۰۱۷ نتیجه گرفت در مصارف گزارش‌شده نگرانی ایمنی نیست و ADI عددی لازم نیست. مثل نشاسته‌ی معمولی کالری دارد؛ فقط نشانه‌ی فرآوری بیشتر و مقدار ماده‌ی اصلی کمتر است.',
-      itemIds: ['sauce', 'mayonnaise-sauce', 'yogurt', 'doogh', 'cottage-cheese', 'tomato-paste', 'canned-food', 'cake-powder', 'pancake-powder', 'jelly-powder', 'nuggets', 'frozen-fries', 'falafel', 'sausage', 'ice-cream', 'chocolate-sauce', 'vermicelli'],
+      itemIds: ['sauce', 'mayonnaise-sauce', 'yogurt', 'doogh', 'cottage-cheese', 'tomato-paste', 'canned-food', 'cake-powder', 'pancake-powder', 'jelly-powder', 'nuggets', 'frozen-fries', 'falafel', 'sausage', 'ice-cream', 'chocolate-sauce', 'vermicelli', 'soup-powder', 'burger', 'schnitzel', 'noodles'],
       sources: [EFSA_STARCH]
     }),
     defineIngredient({
@@ -45,7 +45,7 @@ export var commonFoodIngredientsGroup = defineIngredientGroup({
       role: 'ترش‌کردن، تنظیم اسیدیته و کمک به نگهداری در رب، سس، مربا، نوشیدنی و کنسرو.',
       verdict: Verdict.GOOD,
       verdictNote: 'ADI آن «مشخص نشده» است؛ یعنی در سطوح فنی لازم خطری برای سلامت نیست. طبق مقررات ۲۰۲۰ اتحادیه اروپا، بازبینی کامل آن در برنامه‌ی EFSA به‌دلیل نگرانی کم هنوز در انتظار بود.',
-      itemIds: ['tomato-paste', 'sauce', 'mayonnaise-sauce', 'jam', 'breakfast-jam', 'canned-food', 'pickles', 'olives', 'syrup', 'soft-drink', 'malt-drink', 'jelly-powder', 'lavashak', 'cake-powder', 'ice-cream', 'abghooreh', 'lemon-juice', 'chocolate'],
+      itemIds: ['tomato-paste', 'sauce', 'mayonnaise-sauce', 'jam', 'breakfast-jam', 'canned-food', 'pickles', 'olives', 'syrup', 'soft-drink', 'malt-drink', 'jelly-powder', 'lavashak', 'cake-powder', 'ice-cream', 'abghooreh', 'lemon-juice', 'chocolate', 'fruit-juice', 'energy-drink', 'gummies-candy', 'hard-candy', 'compote'],
       sources: [EU_CITRIC_ASCORBIC]
     }),
     defineIngredient({
@@ -56,7 +56,7 @@ export var commonFoodIngredientsGroup = defineIngredientGroup({
       role: 'جلوگیری از قهوه‌ای شدن و اکسید شدن در آب‌میوه، گوشت فرآوری‌شده، نان و روغن.',
       verdict: Verdict.GOOD,
       verdictNote: 'EFSA در ۲۰۱۵ اعلام کرد در مصارف گزارش‌شده نگرانی ایمنی نیست و ADI عددی لازم نیست.',
-      itemIds: ['syrup', 'soft-drink', 'sausage', 'bread', 'toast-bread', 'cereal', 'jam', 'breakfast-jam', 'canned-food', 'dried-herbs', 'cake-powder', 'pickles', 'lemon-juice'],
+      itemIds: ['syrup', 'soft-drink', 'sausage', 'bread', 'toast-bread', 'cereal', 'jam', 'breakfast-jam', 'canned-food', 'dried-herbs', 'cake-powder', 'pickles', 'lemon-juice', 'fruit-juice'],
       sources: [EFSA_ASCORBIC, EU_CITRIC_ASCORBIC]
     }),
     defineIngredient({
@@ -67,7 +67,7 @@ export var commonFoodIngredientsGroup = defineIngredientGroup({
       role: 'ماندگاری روغن، چیپس، غلات صبحانه، آجیل و سرخ‌کردنی.',
       verdict: Verdict.CAUTION,
       verdictNote: 'EFSA در بازبینی ۲۰۱۲ برای BHT نگرانی ژنوتوکسیسیتی ندید و سرطان‌زایی را آستانه‌دار دانست. یک منبع غیررسمی می‌گوید مصرف کودکان در برخی کشورها از ADI بیشتر بوده، ولی تأیید نشد. ADI برای BHT برابر ۰٫۲۵ و برای BHA برابر ۱ میلی‌گرم بر کیلوگرم وزن بدن و برای TBHQ برابر ۰٫۷ از منبع‌های غیررسمی آمد و من تأییدش نکردم. در حد معمول مشکل حاد ندارند؛ می‌توانید محصول بدون آن‌ها را ترجیح دهید.',
-      itemIds: ['cooking-oil', 'cooking-oil-rice', 'cooking-oil-zitun', 'snacks', 'popcorn', 'cereal', 'nuts', 'seeds', 'frozen-fries', 'nuggets', 'fried-onions', 'peanut-butter', 'dry-pastry'],
+      itemIds: ['cooking-oil', 'cooking-oil-rice', 'cooking-oil-zitun', 'snacks', 'popcorn', 'cereal', 'nuts', 'seeds', 'frozen-fries', 'nuggets', 'fried-onions', 'peanut-butter', 'dry-pastry', 'chips', 'puffs-snacks', 'canned-tuna', 'noodles', 'schnitzel'],
       sources: [EFSA_BHT, EFSA_BHA, EFSA_TBHQ]
     }),
     defineIngredient({

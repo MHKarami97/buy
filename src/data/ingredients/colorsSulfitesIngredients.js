@@ -18,7 +18,7 @@ export var colorsSulfitesGroup = defineIngredientGroup({
       role: 'نگهداری میوه خشک، لواشک، مربا، آب‌میوه، سرکه و ترشی.',
       verdict: Verdict.CAUTION,
       verdictNote: 'برخی افراد (به‌ویژه مبتلایان به آسم) ممکن است واکنش شبه‌آلرژیک نشان دهند. EFSA در ۲۰۲۲ ADI موقت گروهی را به دلیل ناکافی بودن داده‌ها کنار گذاشت و ارزیابی را با حاشیه‌ی ایمنی (MoE) انجام داد؛ در سناریوی دقیق‌تر مصرف، MoE از حد ۸۰ کمتر بود و نگرانی ایمنی ایجاد کرد. در اتحادیه اروپا از ۱۰ میلی‌گرم بر کیلوگرم به بالا باید روی بسته بیاید. مبتلایان به آسم یا حساسیت باید فهرست را بخوانند.',
-      itemIds: ['lavashak', 'jam', 'breakfast-jam', 'dates', 'nuts', 'vinegar', 'lemon-juice', 'pickles', 'olives', 'syrup', 'fried-onions', 'dried-herbs'],
+      itemIds: ['lavashak', 'jam', 'breakfast-jam', 'dates', 'nuts', 'vinegar', 'lemon-juice', 'pickles', 'olives', 'syrup', 'fried-onions', 'dried-herbs', 'raisins', 'compote', 'fruit-juice'],
       sources: [EFSA_SULFITES, BFR_SULFITES]
     }),
     defineIngredient({
@@ -29,7 +29,7 @@ export var colorsSulfitesGroup = defineIngredientGroup({
       role: 'رنگی کردن نوشیدنی، شیرینی، ژله، پفک و پودر نوشیدنی.',
       verdict: Verdict.CAUTION,
       verdictNote: 'در اتحادیه اروپا محصول دارای این رنگ‌ها باید هشدار «ممکن است بر فعالیت و توجه کودکان اثر بگذارد» داشته باشد (گزارش ثانویه). EFSA واکنش آلرژیک شدید به آزو‌ها را بعید دانست. برای کودکان، محصول بدون رنگ مصنوعی ترجیح دارد.',
-      itemIds: ['syrup', 'jelly-powder', 'cake-powder', 'popcorn', 'snacks', 'guest-snacks', 'dry-pastry', 'ice-cream', 'lavashak', 'soft-drink', 'malt-drink', 'cereal'],
+      itemIds: ['syrup', 'jelly-powder', 'cake-powder', 'popcorn', 'snacks', 'guest-snacks', 'dry-pastry', 'ice-cream', 'lavashak', 'soft-drink', 'malt-drink', 'cereal', 'chips', 'puffs-snacks', 'gummies-candy', 'hard-candy', 'energy-drink'],
       sources: [SOUTHAMPTON, AZO_EFSA]
     })
   ]

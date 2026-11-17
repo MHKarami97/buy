@@ -31,7 +31,7 @@ export var microIngredientsGroup = defineIngredientGroup({
       role: 'تقویت طعم گوشتی در ادویه، سوپ آماده، چیپس و سس، معمولاً همراه گلوتامات.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'JECFA ADI را «مشخص نشده» اعلام کرده و EFSA با فرض سمیت ذاتی کم، بازبینی را در دست دارد (فراخوان ۲۰۲۳). افراد مبتلا به نقرس یا مشکل پورین ممکن است محدودیت داشته باشند (این نکته از منبع نیامده؛ با پزشک مشورت کنید).',
-      itemIds: ['spices', 'salad-seasoning', 'sauce', 'canned-food', 'snacks', 'popcorn', 'sausage', 'nuggets', 'fried-onions'],
+      itemIds: ['spices', 'salad-seasoning', 'sauce', 'canned-food', 'snacks', 'popcorn', 'sausage', 'nuggets', 'fried-onions', 'chips', 'puffs-snacks', 'noodles', 'soup-powder', 'burger'],
       sources: [EFSA_RIBONUCLEOTIDES]
     }),
     defineIngredient({
@@ -42,7 +42,7 @@ export var microIngredientsGroup = defineIngredientGroup({
       role: 'جبران کمبود ریزمغذی در جمعیت با مصرف زیاد نان و غلات.',
       verdict: Verdict.GOOD,
       verdictNote: 'WHO غنی‌سازی آرد گندم را با آهن با زیست‌دسترسی بالا و اسید فولیک توصیه می‌کند و غنی‌سازی با روی را هم ممکن می‌داند. شرط آن است که از سقف مصرف مجاز (UL) بالاتر نرود. برای آهن، EFSA به‌جای UL فقط «سطح مصرف ایمن» داده است، چون داده‌ی کافی نبود. مصرف مکمل آهن باید با نظر پزشک باشد.',
-      itemIds: ['flour', 'bread', 'breakfast-bread', 'toast-bread', 'pasta', 'cereal', 'cake-powder', 'pancake-powder', 'breadcrumbs', 'vermicelli', 'milk', 'oats', 'hot-chocolate'],
+      itemIds: ['flour', 'bread', 'breakfast-bread', 'toast-bread', 'pasta', 'cereal', 'cake-powder', 'pancake-powder', 'breadcrumbs', 'vermicelli', 'milk', 'oats', 'hot-chocolate', 'noodles', 'biscuits-cookies'],
       sources: [WHO_WHEAT_FORTIFICATION, WHO_FORTIFICATION_GUIDE, EFSA_UL]
     })
   ]

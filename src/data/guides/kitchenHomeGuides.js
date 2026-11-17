@@ -60,10 +60,10 @@ export var kitchenHomeGroup = defineGroup({
     }),
     defineGuide({
       id: 'disposables',
-      title: 'ظروف یک‌بارمصرف، دستکش، نی و سیخ',
+      title: 'ظروف، قاشق و چنگال یک‌بارمصرف، دستکش و نی',
       icon: '🥤',
-      itemIds: ['disposable-gloves', 'disposable-cups', 'disposable-plates', 'disposable-tablecloth', 'straws', 'toothpicks', 'napkins', 'wooden-skewers'],
-      keywords: ['یک بار مصرف', 'یکبارمصرف', 'لیوان یکبارمصرف', 'بشقاب یکبارمصرف', 'سفره یکبارمصرف', 'دستکش یکبارمصرف', 'نی', 'خلال دندان', 'دستمال سفره', 'سیخ چوبی', 'ظرف یکبارمصرف', 'چنگال', 'قاشق یکبارمصرف'],
+      itemIds: ['disposable-gloves', 'disposable-cups', 'disposable-plates', 'disposable-tablecloth', 'straws', 'toothpicks', 'napkins', 'wooden-skewers', 'disposable-cutlery'],
+      keywords: ['یک بار مصرف', 'یکبارمصرف', 'لیوان یکبارمصرف', 'بشقاب یکبارمصرف', 'سفره یکبارمصرف', 'دستکش یکبارمصرف', 'نی', 'خلال دندان', 'دستمال سفره', 'سیخ چوبی', 'ظرف یکبارمصرف', 'چنگال', 'قاشق یکبارمصرف', 'کارد یکبارمصرف', 'قاشق و چنگال یکبارمصرف'],
       summary: 'ظروف یک‌بارمصرف را بر اساس دمای غذا (گرم یا سرد)، علامت تماس با غذا و استحکام انتخاب کنید.',
       sections: [
         check([
@@ -85,10 +85,10 @@ export var kitchenHomeGroup = defineGroup({
     }),
     defineGuide({
       id: 'charcoal-matches-candles',
-      title: 'زغال، کبریت، فندک و شمع تولد',
+      title: 'زغال، ژل آتش‌زا، گاز فندک، کبریت و شمع',
       icon: '🔥',
-      itemIds: ['charcoal', 'matches', 'cake-candles'],
-      keywords: ['زغال', 'کبریت', 'فندک', 'شمع', 'شمع تولد', 'آتش زنه', 'آتش‌زنه'],
+      itemIds: ['charcoal', 'matches', 'cake-candles', 'firestarter-gel', 'lighter-gas'],
+      keywords: ['زغال', 'کبریت', 'فندک', 'شمع', 'شمع تولد', 'آتش زنه', 'آتش‌زنه', 'ژل آتش زا', 'ژل آتش‌زا', 'گاز فندک', 'ژل باربیکیو'],
       summary: 'زغال خوب دود کم و حرارت پایدار دارد و ایمنی در استفاده از آتش مهم‌ترین اصل است.',
       sections: [
         check([
@@ -137,10 +137,10 @@ export var kitchenHomeGroup = defineGroup({
     }),
     defineGuide({
       id: 'glue-tape-sewing',
-      title: 'چسب، نخ و سوزن، واکس کفش',
+      title: 'چسب، نخ و سوزن، واکس کفش و پاکت جاروبرقی',
       icon: '🧵',
-      itemIds: ['adhesive-tape', 'super-glue', 'sewing-thread', 'sewing-needles', 'shoe-polish', 'laundry-bag'],
-      keywords: ['چسب', 'چسب نواری', 'چسب قطره ای', 'نخ خیاطی', 'سوزن', 'واکس کفش', 'کیسه لباسشویی', 'نخ', 'سوزن خیاطی'],
+      itemIds: ['adhesive-tape', 'super-glue', 'sewing-thread', 'sewing-needles', 'shoe-polish', 'laundry-bag', 'vacuum-bags'],
+      keywords: ['چسب', 'چسب نواری', 'چسب قطره ای', 'نخ خیاطی', 'سوزن', 'واکس کفش', 'کیسه لباسشویی', 'نخ', 'سوزن خیاطی', 'پاکت جاروبرقی', 'کیسه جاروبرقی'],
       summary: 'کاربرد، جنس سطح و ایمنی (به‌ویژه چسب قطره‌ای) باید مبنای انتخاب باشد.',
       sections: [
         check([
@@ -191,10 +191,10 @@ export var kitchenHomeGroup = defineGroup({
     }),
     defineGuide({
       id: 'first-aid-refill',
-      title: 'چسب زخم، باند و اقلام کمک‌های اولیه',
+      title: 'چسب زخم، الکل، باند و اقلام کمک‌های اولیه',
       icon: '🩹',
-      itemIds: ['first-aid-refill'],
-      keywords: ['چسب زخم', 'باند', 'گاز استریل', 'پانسمان', 'بتادین', 'کمک های اولیه', 'پنبه', 'سرم'],
+      itemIds: ['first-aid-refill', 'rubbing-alcohol'],
+      keywords: ['چسب زخم', 'باند', 'گاز استریل', 'پانسمان', 'بتادین', 'کمک های اولیه', 'پنبه', 'سرم', 'الکل', 'الکل سفید', 'الکل صنعتی', 'الکل ضدعفونی'],
       summary: 'اقلام کمک‌های اولیه باید استریل، سالم و دارای تاریخ مصرف معتبر باشند.',
       sections: [
         check([

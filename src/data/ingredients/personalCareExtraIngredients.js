@@ -20,7 +20,7 @@ export var personalCareExtraGroup = defineIngredientGroup({
       role: 'کاهش تعریق زیر بغل.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'SCCS در ۲۰۲۴ ترکیبات آلومینیوم را تا سقف‌های مشخص برای هر دسته محصول ایمن اعلام کرد. در اسپری‌ها شرط این است که ذرات و قطرات کوچک‌تر از ۱۰ میکرومتر بیشتر از ۲۰٪ ذرات پراکنده‌شده نباشد. این ارزیابی فقط مواجهه از لوازم آرایشی را در نظر گرفته است.',
-      itemIds: ['deodorant'],
+      itemIds: ['deodorant', 'body-spray'],
       sources: [SCCS_ALUMINIUM, SCCS_ALUMINIUM_III]
     }),
     defineIngredient({
@@ -42,7 +42,7 @@ export var personalCareExtraGroup = defineIngredientGroup({
       role: 'ایجاد بوی خوش در شامپو، کرم، ضدتعریق و عطر.',
       verdict: Verdict.CAUTION,
       verdictNote: 'SCCS ۸۲ ماده را «آلرژن تماسی تثبیت‌شده» در انسان شناخته و ۵۶ ماده‌ی جدید به ۲۶ ماده‌ی قبلی اضافه کرد. اگر غلظت از ۰٫۰۰۱٪ در محصول ماندنی یا ۰٫۰۱٪ در محصول شست‌وشو بیشتر شود، باید جدا در فهرست مواد بیاید. برای پوست حساس یا سابقه‌ی آلرژی، محصول بدون عطر مطمئن‌تر است.',
-      itemIds: ['perfume', 'deodorant', 'shampoo', 'body-wash', 'conditioner', 'hair-mask', 'hair-gel', 'moisturizer', 'hand-cream', 'face-wash', 'liquid-soap', 'soap', 'lip-balm', 'wet-wipes', 'shaving-supplies'],
+      itemIds: ['perfume', 'deodorant', 'shampoo', 'body-wash', 'conditioner', 'hair-mask', 'hair-gel', 'moisturizer', 'hand-cream', 'face-wash', 'liquid-soap', 'soap', 'lip-balm', 'wet-wipes', 'shaving-supplies', 'baby-care', 'body-lotion', 'body-spray', 'makeup-remover'],
       sources: [EC_FRAGRANCE, EU_2023_1545]
     })
   ]

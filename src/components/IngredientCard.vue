@@ -40,11 +40,6 @@ var avoided = computed(() => isAvoided(props.ingredient.id))
       <p v-if="ingredient.aliases.length" class="text-xs text-slate-400">
         نام‌های دیگر: {{ ingredient.aliases.join('، ') }}
       </p>
-      <ul v-if="ingredient.sources.length" class="text-xs space-y-1">
-        <li v-for="item in ingredient.sources" :key="item.url">
-          <a :href="item.url" target="_blank" rel="noopener noreferrer" class="text-brand-600 dark:text-brand-300 underline">{{ item.title }}</a>
-        </li>
-      </ul>
       <button
         type="button"
         class="min-h-[40px] px-3 rounded-xl border text-xs font-medium transition-colors"

@@ -254,10 +254,10 @@ export var dairyProteinGroup = defineGroup({
     }),
     defineGuide({
       id: 'processed-meat',
-      title: 'سوسیس، کالباس و فرآورده‌های گوشتی',
+      title: 'سوسیس، کالباس، همبرگر و شنیسل',
       icon: '🌭',
-      itemIds: ['sausage', 'nuggets'],
-      keywords: ['سوسیس', 'کالباس', 'ناگت', 'همبرگر', 'کباب لقمه', 'ژامبون', 'هات داگ'],
+      itemIds: ['sausage', 'nuggets', 'burger', 'schnitzel'],
+      keywords: ['سوسیس', 'کالباس', 'ناگت', 'همبرگر', 'کباب لقمه', 'ژامبون', 'هات داگ', 'شنیسل', 'فیله سوخاری', 'سوخاری', 'برگر'],
       summary: 'عدد درصد گوشت و جای آن در فهرست مواد، مهم‌ترین معیار مقایسه این محصولات است.',
       sections: [
         label([

@@ -22,7 +22,7 @@ export var processingAdditivesGroup = defineIngredientGroup({
       role: 'سفید و مات کردن ظاهر محصول.',
       verdict: Verdict.AVOID,
       verdictNote: 'EFSA در ۲۰۲۱ اعلام کرد نگرانی ژنوتوکسیسیتی را نمی‌توان رد کرد و ADI تعیین نشد. اتحادیه اروپا با رگولاسیون ۲۰۲۲/۶۳ مصرف آن را در غذا ممنوع کرد. وضعیت مقررات ایران را بررسی نکردم.',
-      itemIds: ['snacks', 'dry-pastry', 'chocolate', 'guest-snacks', 'jelly-powder', 'cake-powder', 'popcorn', 'ice-cream'],
+      itemIds: ['snacks', 'dry-pastry', 'chocolate', 'guest-snacks', 'jelly-powder', 'cake-powder', 'popcorn', 'ice-cream', 'chewing-gum'],
       sources: [EFSA_E171, EC_REEVAL]
     }),
     defineIngredient({
@@ -33,7 +33,7 @@ export var processingAdditivesGroup = defineIngredientGroup({
       role: 'جلوگیری از رشد باکتری، حفظ رنگ صورتی و طعم سوسیس و کالباس.',
       verdict: Verdict.CAUTION,
       verdictNote: 'EFSA ADI را برای نیترات ۳٫۷ و نیتریت ۰٫۰۷ میلی‌گرم بر کیلوگرم وزن بدن (به‌صورت یون) تعیین کرده است. در ۲۰۲۳ EFSA نیتروزآمین‌های تشکیل‌شده از آن‌ها را نگرانی سلامتی دانست و محدودیت‌ها سخت‌تر شد. مصرف کم و متنوع فرآورده‌ی گوشتی عاقلانه‌تر است.',
-      itemIds: ['sausage', 'parmesan', 'cheese', 'canned-food'],
+      itemIds: ['sausage', 'parmesan', 'cheese', 'canned-food', 'burger'],
       sources: [FSA_NITRITE, RIVM_NITRITE]
     }),
     defineIngredient({
@@ -44,7 +44,7 @@ export var processingAdditivesGroup = defineIngredientGroup({
       role: 'غلیظ و یکنواخت نگه داشتن سس، سالاد و بستنی.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'EFSA می‌گوید ADI عددی لازم نیست و در مصارف گزارش‌شده نگرانی ایمنی نیست.',
-      itemIds: ['sauce', 'mayonnaise-sauce', 'salad-seasoning', 'chocolate-sauce', 'ice-cream', 'cake-powder', 'pancake-powder'],
+      itemIds: ['sauce', 'mayonnaise-sauce', 'salad-seasoning', 'chocolate-sauce', 'ice-cream', 'cake-powder', 'pancake-powder', 'soup-powder'],
       sources: [EFSA_XANTHAN]
     }),
     defineIngredient({
@@ -77,7 +77,7 @@ export var processingAdditivesGroup = defineIngredientGroup({
       role: 'لسیتین امولسیفایر در شکلات و کیک است و پکتین مربا و ژله را سفت می‌کند.',
       verdict: Verdict.GOOD,
       verdictNote: 'EFSA هر دو را جزو افزودنی‌های طبیعی دانسته که بازبینی ۲۰۲۱ شده‌اند. جزئیات نتیجه‌ی بازبینی را در منبع نیافتم؛ به‌طور کلی نشانه‌ی نگران‌کننده‌ای ندیدم.',
-      itemIds: ['chocolate', 'cake-powder', 'ice-cream', 'jam', 'breakfast-jam', 'jelly-powder', 'mayonnaise-sauce', 'pancake-powder'],
+      itemIds: ['chocolate', 'cake-powder', 'ice-cream', 'jam', 'breakfast-jam', 'jelly-powder', 'mayonnaise-sauce', 'pancake-powder', 'biscuits-cookies', 'chocolate-spread', 'compote'],
       sources: [EFSA_ADDITIVES]
     })
   ]

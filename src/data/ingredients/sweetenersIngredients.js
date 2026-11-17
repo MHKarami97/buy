@@ -5,7 +5,7 @@ var EFSA_E962 = source('EFSA: Salt of aspartame-acesulfame (E 962) is safe at cu
 var EFSA_ACEK = source('EFSA Journal 2025: Re-evaluation of acesulfame K (E 950)', 'https://efsa.onlinelibrary.wiley.com/doi/pdf/10.2903/j.efsa.2025.9317')
 var EFSA_MSG = source('EFSA: Glutamates added to food (group ADI 30 mg/kg bw/day)', 'https://www.efsa.europa.eu/en/press/news/170712')
 
-var DRINK_ITEMS = ['soft-drink', 'malt-drink', 'syrup', 'hot-chocolate', 'jelly-powder', 'jam', 'breakfast-jam', 'chocolate-sauce', 'cereal', 'dry-pastry', 'snacks']
+var DRINK_ITEMS = ['soft-drink', 'malt-drink', 'syrup', 'hot-chocolate', 'jelly-powder', 'jam', 'breakfast-jam', 'chocolate-sauce', 'cereal', 'dry-pastry', 'snacks', 'energy-drink', 'chewing-gum']
 
 export var sweetenersGroup = defineIngredientGroup({
   id: 'sweeteners-enhancers',
@@ -75,7 +75,7 @@ export var sweetenersGroup = defineIngredientGroup({
       role: 'تقویت طعم در ادویه‌ی آماده، سوپ، سس، چیپس و فرآورده‌ی گوشتی.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'EFSA در ۲۰۱۷ ADI گروهی را ۳۰ میلی‌گرم بر کیلوگرم وزن بدن در روز (به‌صورت اسید گلوتامیک) تعیین کرد. چون در چند محصول همزمان می‌آید، مصرف روزانه از چند منبع را جمع بزنید.',
-      itemIds: ['spices', 'salad-seasoning', 'sauce', 'canned-food', 'sausage', 'nuggets', 'falafel', 'snacks', 'popcorn', 'fried-onions', 'frozen-fries'],
+      itemIds: ['spices', 'salad-seasoning', 'sauce', 'canned-food', 'sausage', 'nuggets', 'falafel', 'snacks', 'popcorn', 'fried-onions', 'frozen-fries', 'chips', 'puffs-snacks', 'noodles', 'soup-powder', 'burger'],
       sources: [EFSA_MSG]
     })
   ]

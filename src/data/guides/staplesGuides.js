@@ -68,10 +68,10 @@ export var staplesGroup = defineGroup({
     }),
     defineGuide({
       id: 'pasta',
-      title: 'ماکارونی، رشته و ورمیشل',
+      title: 'ماکارونی، نودل، رشته و سویا',
       icon: '🍝',
-      itemIds: ['pasta', 'vermicelli', 'lasagna', 'rice-noodles'],
-      keywords: ['ماکارونی', 'پاستا', 'اسپاگتی', 'رشته', 'رشته پلویی', 'رشته آشی', 'ورمیشل', 'لازانیا', 'فرمی', 'نودل', 'رشته فرنگی'],
+      itemIds: ['pasta', 'vermicelli', 'lasagna', 'rice-noodles', 'noodles', 'soy-protein'],
+      keywords: ['ماکارونی', 'پاستا', 'اسپاگتی', 'رشته', 'رشته پلویی', 'رشته آشی', 'ورمیشل', 'لازانیا', 'فرمی', 'نودل', 'رشته فرنگی', 'سویا', 'سویای خوراکی'],
       summary: 'ماکارونی با گندم دوروم/سمولینا ساخته می‌شود و حرارت دیدن را بهتر تحمل می‌کند. فهرست مواد و ظاهر خشک آن مهم‌ترین نشانه‌های کیفیت هستند.',
       sections: [
         label([
@@ -98,10 +98,10 @@ export var staplesGroup = defineGroup({
     }),
     defineGuide({
       id: 'flour-baking',
-      title: 'آرد، نشاسته و بکینگ پودر',
+      title: 'آرد، نشاسته، وانیل و بکینگ پودر',
       icon: '🌾',
-      itemIds: ['flour', 'corn-starch', 'baking-powder', 'cake-powder', 'pancake-powder', 'breadcrumbs'],
-      keywords: ['آرد', 'آرد گندم', 'آرد سفید', 'آرد کامل', 'نشاسته', 'نشاسته ذرت', 'بکینگ پودر', 'بیکینگ پودر', 'جوش شیرین', 'پودر کیک', 'پودر پنکیک', 'پودر سوخاری', 'آرد سوخاری', 'سوخاری'],
+      itemIds: ['flour', 'corn-starch', 'baking-powder', 'cake-powder', 'pancake-powder', 'breadcrumbs', 'vanilla'],
+      keywords: ['آرد', 'آرد گندم', 'آرد سفید', 'آرد کامل', 'نشاسته', 'نشاسته ذرت', 'بکینگ پودر', 'بیکینگ پودر', 'جوش شیرین', 'پودر کیک', 'پودر پنکیک', 'پودر سوخاری', 'آرد سوخاری', 'سوخاری', 'وانیل'],
       summary: 'آرد را بر اساس مصرف (نان، شیرینی، سرخ‌کردنی) انتخاب کنید و تازگی را چک کنید؛ آرد کهنه بوی تند و بافت ضعیف می‌دهد.',
       sections: [
         check([
@@ -128,10 +128,10 @@ export var staplesGroup = defineGroup({
     }),
     defineGuide({
       id: 'salt-sugar',
-      title: 'نمک، شکر و نبات',
+      title: 'نمک، قند، شکر و نبات',
       icon: '🧂',
-      itemIds: ['salt', 'sugar', 'rock-candy'],
-      keywords: ['نمک', 'نمک یددار', 'شکر', 'قند', 'نبات', 'شکر سفید', 'نمک دریا'],
+      itemIds: ['salt', 'sugar', 'rock-candy', 'sugar-cubes'],
+      keywords: ['نمک', 'نمک یددار', 'شکر', 'قند', 'نبات', 'شکر سفید', 'نمک دریا', 'کله قند'],
       summary: 'نمک را یددار انتخاب کنید و در شکر و نبات به خلوص، خشکی و نبود ناخالصی توجه کنید.',
       sections: [
         label([
@@ -274,10 +274,10 @@ export var staplesGroup = defineGroup({
     }),
     defineGuide({
       id: 'spices',
-      title: 'ادویه و ادویه‌جات',
+      title: 'ادویه، عصاره و سوپ آماده',
       icon: '🌶️',
-      itemIds: ['spices', 'dried-herbs', 'sesame', 'lime-dried'],
-      keywords: ['ادویه', 'زردچوبه', 'فلفل سیاه', 'دارچین', 'زیره', 'هل', 'سماق', 'گرم ماسالا', 'پاپریکا', 'زنجبیل', 'کاری', 'فلفل قرمز', 'سبزی خشک', 'کنجد', 'ادویه کباب', 'لیمو عمانی'],
+      itemIds: ['spices', 'dried-herbs', 'sesame', 'lime-dried', 'soup-powder'],
+      keywords: ['ادویه', 'زردچوبه', 'فلفل سیاه', 'دارچین', 'زیره', 'هل', 'سماق', 'گرم ماسالا', 'پاپریکا', 'زنجبیل', 'کاری', 'فلفل قرمز', 'سبزی خشک', 'کنجد', 'ادویه کباب', 'لیمو عمانی', 'سوپ آماده', 'عصاره مرغ', 'عصاره گوشت'],
       excludeKeywords: ['سس'],
       summary: 'ادویه تازه عطر قوی و رنگ طبیعی دارد؛ رنگ بسیار تند و بی‌بو بودن نشانه خطر است. ادویه آسیاب‌شده زودتر کیفیت را از دست می‌دهد.',
       sections: [
@@ -333,10 +333,10 @@ export var staplesGroup = defineGroup({
     }),
     defineGuide({
       id: 'legumes-canned',
-      title: 'حبوبات و کنسرو',
+      title: 'حبوبات، تن ماهی، کمپوت و کنسرو',
       icon: '🫘',
-      itemIds: ['beans', 'broad-beans', 'corn', 'okra', 'canned-food'],
-      keywords: ['لوبیا', 'عدس', 'نخود', 'ماش', 'باقلا', 'کنسرو', 'ذرت', 'بامیه', 'لپه', 'کنسرو ماهی', 'کنسرو لوبیا'],
+      itemIds: ['beans', 'broad-beans', 'corn', 'okra', 'canned-food', 'canned-tuna', 'compote'],
+      keywords: ['لوبیا', 'عدس', 'نخود', 'ماش', 'باقلا', 'کنسرو', 'ذرت', 'بامیه', 'لپه', 'کنسرو ماهی', 'کنسرو لوبیا', 'تن ماهی', 'کمپوت', 'کنسرو تن ماهی'],
       summary: 'حبوبات خشک را بر اساس یکنواختی و سلامت دانه و کنسرو را بر اساس سلامت قوطی و فهرست مواد انتخاب کنید.',
       sections: [
         check([

@@ -20,7 +20,7 @@ export var sugarsPolyolsGroup = defineIngredientGroup({
       role: 'شیرین‌کردن و همچنین حفظ بافت، رنگ و ماندگاری در شیرینی، مربا و نوشیدنی.',
       verdict: Verdict.CAUTION,
       verdictNote: 'WHO توصیه می‌کند قند آزاد کمتر از ۱۰٪ انرژی روزانه باشد و کاهش بیشتر به زیر ۵٪ (حدود ۲۵ گرم) فایده‌ی بیشتری دارد. هر چه شکر یا شربت در ابتدای فهرست مواد بیاید، سهمش در محصول بیشتر است.',
-      itemIds: ['sugar', 'jam', 'breakfast-jam', 'honey', 'chocolate', 'chocolate-sauce', 'dry-pastry', 'cereal', 'snacks', 'guest-snacks', 'soft-drink', 'malt-drink', 'syrup', 'hot-chocolate', 'lavashak', 'halva', 'ice-cream', 'cake-powder', 'pancake-powder', 'jelly-powder', 'rock-candy', 'dates', 'sauce'],
+      itemIds: ['sugar', 'jam', 'breakfast-jam', 'honey', 'chocolate', 'chocolate-sauce', 'dry-pastry', 'cereal', 'snacks', 'guest-snacks', 'soft-drink', 'malt-drink', 'syrup', 'hot-chocolate', 'lavashak', 'halva', 'ice-cream', 'cake-powder', 'pancake-powder', 'jelly-powder', 'rock-candy', 'dates', 'sauce', 'biscuits-cookies', 'gummies-candy', 'hard-candy', 'sugar-cubes', 'fruit-juice', 'energy-drink', 'chocolate-spread', 'date-grape-syrup', 'compote'],
       sources: [WHO_NEWS, WHO_GUIDELINE]
     }),
     defineIngredient({
@@ -31,7 +31,7 @@ export var sugarsPolyolsGroup = defineIngredientGroup({
       role: 'شیرین‌کردن آدامس، شکلات و آب‌نبات بدون قند و حفظ رطوبت بافت.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'برای آن‌ها ADI مشخص نشده و در منابع علمی خطر خاصی گزارش نشده است. مشکل اصلی اثر ملین و نفخ در مصرف زیاد است. در اتحادیه اروپا محصول با بیش از ۱۰٪ پلی‌ال باید عبارت «مصرف بیش از حد ممکن است اثر ملین داشته باشد» را داشته باشد. EFSA بازبینی سوربیتول و زایلیتول را هنوز در جریان اعلام کرده است.',
-      itemIds: ['chocolate', 'snacks', 'guest-snacks', 'dry-pastry', 'jelly-powder', 'cereal', 'syrup', 'ice-cream', 'lavashak', 'cake-powder'],
+      itemIds: ['chocolate', 'snacks', 'guest-snacks', 'dry-pastry', 'jelly-powder', 'cereal', 'syrup', 'ice-cream', 'lavashak', 'cake-powder', 'chewing-gum', 'hard-candy'],
       sources: [POLYOL_REVIEW, BFR_SWEETENERS, EFSA_SWEETENERS]
     }),
     defineIngredient({

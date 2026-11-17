@@ -1,7 +1,7 @@
 export var defaultChecklistDefinitions = [
   {
     id: "staples",
-    version: 2,
+    version: 3,
     title: "مواد غذایی پایه",
     description: "اقلام خشک و مصرفی که معمولاً هر ماه خریداری می‌شوند",
     icon: "🛒",
@@ -70,7 +70,21 @@ export var defaultChecklistDefinitions = [
           { id: "lemon-juice", title: "آبلیمو", note: "" },
           { id: "saffron", title: "زعفران", note: "" },
           { id: "dried-herbs", title: "سبزی خشک", note: "" },
-          { id: "nuts", title: "آجیل و مغزها", note: "" }
+          { id: "nuts", title: "آجیل و مغزها", note: "" },
+          { id: "chips", title: "چیپس", note: "ساده، خلال یا طعم‌دار" },
+          { id: "puffs-snacks", title: "پفک و اسنک", note: "" },
+          { id: "biscuits-cookies", title: "بیسکویت و کلوچه", note: "ساده، کرم‌دار یا ویفر" },
+          { id: "gummies-candy", title: "پاستیل و دراژه", note: "" },
+          { id: "hard-candy", title: "آبنبات و تافی", note: "" },
+          { id: "sugar-cubes", title: "قند", note: "شکسته یا کله‌قند" },
+          { id: "canned-tuna", title: "تن ماهی", note: "روغنی یا رژیمی" },
+          { id: "soy-protein", title: "سویای خوراکی", note: "برای ماکارونی و خورش" },
+          { id: "noodles", title: "نودل فوری", note: "" },
+          { id: "soup-powder", title: "سوپ آماده و عصاره", note: "عصاره مرغ یا گوشت و سوپ نیمه‌آماده" },
+          { id: "raisins", title: "کشمش و مویز", note: "پلویی یا آجیلی" },
+          { id: "compote", title: "کمپوت", note: "آناناس، گیلاس یا هلو" },
+          { id: "rosewater", title: "گلاب", note: "" },
+          { id: "vanilla", title: "وانیل", note: "برای کیک و شیرینی‌پزی" }
         ]
       }
     ]
@@ -126,7 +140,7 @@ export var defaultChecklistDefinitions = [
   },
   {
     id: "dairy-protein",
-    version: 2,
+    version: 3,
     title: "لبنیات و پروتئین",
     description: "مواد تازه و مصرفی یخچال",
     icon: "🥛",
@@ -160,13 +174,15 @@ export var defaultChecklistDefinitions = [
           { id: "frozen-fries", title: "سیب‌زمینی نیمه‌آماده", note: "" }
           ,{ id: "nuggets", title: "ناگت", note: "" }
           ,{ id: "falafel", title: "فلافل", note: "" }
+          ,{ id: "burger", title: "همبرگر", note: "آماده و منجمد" }
+          ,{ id: "schnitzel", title: "شنیسل و فیله سوخاری", note: "منجمد و نیمه‌آماده" }
         ]
       }
     ]
   },
   {
     id: "personal-care",
-    version: 2,
+    version: 3,
     title: "بهداشت شخصی",
     description: "اقلام مصرفی بهداشت و مراقبت روزانه",
     icon: "🧴",
@@ -201,14 +217,20 @@ export var defaultChecklistDefinitions = [
           { id: "hand-cream", title: "کرم دست", note: "" },
           { id: "lip-balm", title: "بالم لب", note: "" },
           { id: "perfume", title: "عطر و ادکلن", note: "" },
-          { id: "nail-care", title: "لوازم مراقبت ناخن", note: "" }
+          { id: "nail-care", title: "لوازم مراقبت ناخن", note: "" },
+          { id: "baby-care", title: "شامپو و لوسیون کودک", note: "ضد سوزش چشم و ملایم" },
+          { id: "body-lotion", title: "لوسیون بدن", note: "مرطوب‌کننده بعد از حمام" },
+          { id: "body-spray", title: "بادی اسپلش و اسپری بدن", note: "خوشبوکننده بدن" },
+          { id: "makeup-remover", title: "میسلار واتر و پاک‌کننده آرایش", note: "محلول یا شیرپاک‌کن" },
+          { id: "cotton-wool", title: "پنبه بهداشتی", note: "توپی یا رولی" },
+          { id: "bath-sponge", title: "لیف و اسفنج حمام", note: "" }
         ]
       }
     ]
   },
   {
     id: "cleaning-supplies",
-    version: 2,
+    version: 3,
     title: "شوینده و نظافت",
     description: "مواد مصرفی نظافت خانه و لباس",
     icon: "🧽",
@@ -241,14 +263,16 @@ export var defaultChecklistDefinitions = [
           { id: "dishwasher-cleaner", title: "جرم‌گیر ماشین ظرفشویی", note: "" },
           { id: "fabric-stain-remover", title: "لکه‌بر لباس", note: "" },
           { id: "scouring-powder", title: "پودر شوینده سطوح", note: "" },
-          { id: "mop-refill", title: "یدک تی", note: "" }
+          { id: "mop-refill", title: "یدک تی", note: "" },
+          { id: "dishwasher-salt", title: "نمک ماشین ظرفشویی", note: "" },
+          { id: "carpet-shampoo", title: "شامپو فرش و مبل", note: "" }
         ]
       }
     ]
   },
   {
     id: "kitchen-consumables",
-    version: 2,
+    version: 3,
     title: "مصرفی آشپزخانه",
     description: "اقلامی که برای نگهداری و مصرف روزانه غذا تمام می‌شوند",
     icon: "🍽️",
@@ -277,13 +301,15 @@ export var defaultChecklistDefinitions = [
           ,{ id: "wooden-skewers", title: "سیخ چوبی", note: "" }
           ,{ id: "coffee-filters", title: "فیلتر قهوه", note: "" }
           ,{ id: "cake-candles", title: "شمع تولد", note: "مصرف مناسبتی" }
+          ,{ id: "disposable-cutlery", title: "قاشق و چنگال یک‌بارمصرف", note: "قاشق، چنگال و کارد" }
+          ,{ id: "firestarter-gel", title: "ژل آتش‌زا", note: "برای باربیکیو و زغال" }
         ]
       }
     ]
   },
   {
     id: "home-consumables",
-    version: 1,
+    version: 2,
     title: "مصرفی خانه",
     description: "اقلام کوچک و مصرفی برای استفاده روزمره خانه",
     icon: "🏠",
@@ -304,14 +330,17 @@ export var defaultChecklistDefinitions = [
           { id: "plant-soil", title: "خاک و کود گیاه", note: "در صورت داشتن گیاه" },
           { id: "pet-food", title: "غذای حیوان خانگی", note: "در صورت نیاز" },
           { id: "pet-litter", title: "خاک گربه", note: "در صورت نیاز" },
-          { id: "first-aid-refill", title: "اقلام مصرفی کمک‌های اولیه", note: "چسب زخم و باند" }
+          { id: "first-aid-refill", title: "اقلام مصرفی کمک‌های اولیه", note: "چسب زخم و باند" },
+          { id: "vacuum-bags", title: "پاکت جاروبرقی", note: "یک‌بارمصرف یا دائمی" },
+          { id: "lighter-gas", title: "گاز فندک", note: "" },
+          { id: "rubbing-alcohol", title: "الکل بهداشتی و صنعتی", note: "برای ضدعفونی و نظافت" }
         ]
       }
     ]
   },
   {
     id: "breakfast-drinks",
-    version: 2,
+    version: 3,
     title: "صبحانه و نوشیدنی",
     description: "اقلامی برای صبحانه و نوشیدنی‌های روزانه",
     icon: "☕",
@@ -339,6 +368,12 @@ export var defaultChecklistDefinitions = [
           { id: "syrup", title: "شربت و پودر نوشیدنی", note: "" }
           ,{ id: "soft-drink", title: "نوشابه", note: "" }
           ,{ id: "malt-drink", title: "دلستر", note: "" }
+          ,{ id: "fruit-juice", title: "آبمیوه", note: "طبیعی یا پاکتی" }
+          ,{ id: "energy-drink", title: "نوشیدنی انرژی‌زا", note: "" }
+          ,{ id: "chocolate-spread", title: "شکلات صبحانه", note: "" }
+          ,{ id: "tahini-paste", title: "ارده", note: "کنجد خالص" }
+          ,{ id: "date-grape-syrup", title: "شیره خرما و انگور", note: "شیره طبیعی یا سه شیره" }
+          ,{ id: "chewing-gum", title: "آدامس", note: "بدون شکر یا طعم‌دار" }
         ]
       }
     ]

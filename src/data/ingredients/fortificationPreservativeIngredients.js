@@ -17,7 +17,7 @@ export var fortificationPreservativeGroup = defineIngredientGroup({
       role: 'غنی‌سازی مواد غذایی پایه؛ طبق WHO، غنی‌سازی با اسید فولیک در چند کشور از جمله ایران موارد نقص لوله عصبی را به‌طور قابل‌توجهی کاهش داده است.',
       verdict: Verdict.GOOD,
       verdictNote: 'وجود آن در آرد و فرآورده‌های آرد معمولاً نکته مثبت است. مصرف دوز بالای مکمل باید با نظر پزشک باشد؛ این صفحه توصیه پزشکی نیست.',
-      itemIds: ['flour', 'bread', 'breakfast-bread', 'toast-bread', 'pasta', 'cereal', 'cake-powder', 'pancake-powder', 'breadcrumbs', 'lasagna', 'vermicelli'],
+      itemIds: ['flour', 'bread', 'breakfast-bread', 'toast-bread', 'pasta', 'cereal', 'cake-powder', 'pancake-powder', 'breadcrumbs', 'lasagna', 'vermicelli', 'noodles', 'biscuits-cookies'],
       sources: [WHO_FLOUR]
     }),
     defineIngredient({
@@ -28,7 +28,7 @@ export var fortificationPreservativeGroup = defineIngredientGroup({
       role: 'افزایش ماندگاری نوشیدنی، سس و ترشی.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'EFSA در بازبینی ۲۰۱۶ نگرانی ژنوتوکسیسیتی نیافت و ADI گروهی بنزوات‌ها ۵ میلی‌گرم بر کیلوگرم وزن بدن است. مشکل مصرف زیاد محصولات دارای آن (نوشابه و سس) است، نه یک بسته مجزا.',
-      itemIds: ['soft-drink', 'malt-drink', 'syrup', 'sauce', 'mayonnaise-sauce', 'pickles', 'jam', 'breakfast-jam', 'lavashak', 'salad-seasoning', 'chocolate-sauce'],
+      itemIds: ['soft-drink', 'malt-drink', 'syrup', 'sauce', 'mayonnaise-sauce', 'pickles', 'jam', 'breakfast-jam', 'lavashak', 'salad-seasoning', 'chocolate-sauce', 'energy-drink', 'fruit-juice'],
       sources: [EFSA_BENZOATE]
     }),
     defineIngredient({
@@ -39,7 +39,7 @@ export var fortificationPreservativeGroup = defineIngredientGroup({
       role: 'ماندگاری پنیر، مربا، سس و محصولات نانوایی.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'EFSA برای اسید سوربیک و سوربات پتاسیم ADI گروهی ۱۱ میلی‌گرم (بر پایه اسید سوربیک) بر کیلوگرم وزن بدن تعیین کرده و مصرف در موارد مجاز را نگران‌کننده نمی‌داند. یک منبع غیررسمی عدد دیگری هم نوشته که تأیید نشد؛ عدد رسمی بالا را ملاک بگیرید.',
-      itemIds: ['cheese', 'cottage-cheese', 'jam', 'breakfast-jam', 'sauce', 'mayonnaise-sauce', 'olives', 'pickles', 'dry-pastry', 'toast-bread', 'syrup'],
+      itemIds: ['cheese', 'cottage-cheese', 'jam', 'breakfast-jam', 'sauce', 'mayonnaise-sauce', 'olives', 'pickles', 'dry-pastry', 'toast-bread', 'syrup', 'chocolate-spread', 'fruit-juice', 'biscuits-cookies'],
       sources: [EU_SORBATE]
     })
   ]

@@ -8,7 +8,7 @@ var CIR_SLES = source('CIR Final Report of the Amended Safety Assessment of Sodi
 var WHO_FLUORIDE = source('WHO Essential Medicines expert review: Fluoride toothpaste, dental caries', 'https://cdn.who.int/media/docs/default-source/essential-medicines/2021-eml-expert-committee/expert-reviews/a14_fluoridetp_rev2.pdf?sfvrsn=c35d4123_7')
 var COCHRANE_FLUORIDE = source('Cochrane review: Fluoride toothpastes of different concentrations for preventing dental caries', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6398117/')
 
-var CARE_ITEMS = ['shampoo', 'body-wash', 'liquid-soap', 'face-wash', 'conditioner', 'hair-mask', 'hair-gel', 'moisturizer', 'hand-cream', 'sunscreen', 'wet-wipes', 'deodorant', 'lip-balm']
+var CARE_ITEMS = ['shampoo', 'body-wash', 'liquid-soap', 'face-wash', 'conditioner', 'hair-mask', 'hair-gel', 'moisturizer', 'hand-cream', 'sunscreen', 'wet-wipes', 'deodorant', 'lip-balm', 'baby-care', 'body-lotion', 'body-spray', 'makeup-remover']
 
 export var personalCareIngredientsGroup = defineIngredientGroup({
   id: 'personal-care-ingredients',
@@ -34,7 +34,7 @@ export var personalCareIngredientsGroup = defineIngredientGroup({
       role: 'کف و پاک‌کنندگی در شامپو، شامپو بدن، خمیردندان و مایع دستشویی.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'CIR می‌گوید SLS در محصول شست‌وشو که سریع آبکشی می‌شود ایمن است، ولی در تماس طولانی با پوست از غلظت ۱٪ نباید بیشتر باشد؛ تحریک چشم و پوست با غلظت بیشتر می‌شود. SLES هم تحریک‌کننده است ولی حساسیت‌زا نیست. پوست حساس یا خشک بهتر است فرمول بدون سولفات را امتحان کند.',
-      itemIds: ['shampoo', 'body-wash', 'liquid-soap', 'face-wash', 'toothpaste', 'wet-wipes'],
+      itemIds: ['shampoo', 'body-wash', 'liquid-soap', 'face-wash', 'toothpaste', 'wet-wipes', 'carpet-shampoo', 'baby-care'],
       sources: [CIR_ALKYL_SULFATES, CIR_SLES]
     }),
     defineIngredient({

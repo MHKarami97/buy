@@ -10,10 +10,10 @@ export var personalCareGroup = defineGroup({
   guides: [
     defineGuide({
       id: 'cleansers',
-      title: 'صابون، شامپو و شامپو بدن',
+      title: 'صابون، شامپو، شامپو بدن، محصولات کودک و لیف',
       icon: '🧼',
-      itemIds: ['soap', 'liquid-soap', 'body-wash', 'shampoo'],
-      keywords: ['صابون', 'مایع دستشویی', 'شامپو', 'شامپو بدن', 'شامپو سر', 'ژل دوش', 'مایع دست'],
+      itemIds: ['soap', 'liquid-soap', 'body-wash', 'shampoo', 'baby-care', 'bath-sponge'],
+      keywords: ['صابون', 'مایع دستشویی', 'شامپو', 'شامپو بدن', 'شامپو سر', 'ژل دوش', 'مایع دست', 'شامپو بچه', 'لوسیون کودک', 'لیف', 'اسفنج حمام'],
       summary: 'نوع پوست یا مو، ملایم بودن شوینده و عطر بیشتر از قیمت و تبلیغ در انتخاب مهم است.',
       sections: [
         label([
@@ -120,10 +120,10 @@ export var personalCareGroup = defineGroup({
     }),
     defineGuide({
       id: 'skin-care',
-      title: 'شوینده صورت، مرطوب‌کننده، کرم دست و بالم لب',
+      title: 'شوینده صورت، مرطوب‌کننده، لوسیون بدن و پاک‌کننده آرایش',
       icon: '🧴',
-      itemIds: ['face-wash', 'moisturizer', 'hand-cream', 'lip-balm'],
-      keywords: ['شوینده صورت', 'ژل شستشوی صورت', 'مرطوب کننده', 'کرم مرطوب کننده', 'کرم دست', 'بالم لب', 'کرم', 'لوسیون', 'کرم پوست', 'کرم صورت', 'کرم پا'],
+      itemIds: ['face-wash', 'moisturizer', 'hand-cream', 'lip-balm', 'body-lotion', 'makeup-remover'],
+      keywords: ['شوینده صورت', 'ژل شستشوی صورت', 'مرطوب کننده', 'کرم مرطوب کننده', 'کرم دست', 'بالم لب', 'کرم', 'لوسیون', 'کرم پوست', 'کرم صورت', 'کرم پا', 'لوسیون بدن', 'میسلار واتر', 'پاک کننده آرایش', 'شیر پاک کن', 'میسلار'],
       summary: 'نوع پوست، فهرست مواد و ایمنی (مجوز و تاریخ) در محصولات مراقبت پوست مهم‌تر از وعده‌های تبلیغاتی است.',
       sections: [
         label([
@@ -176,10 +176,10 @@ export var personalCareGroup = defineGroup({
     }),
     defineGuide({
       id: 'deodorant-perfume',
-      title: 'ضدتعریق، عطر و ادکلن',
+      title: 'ضدتعریق، عطر، ادکلن و بادی اسپلش',
       icon: '🌸',
-      itemIds: ['deodorant', 'perfume'],
-      keywords: ['ضدتعریق', 'ضد تعریق', 'دئودورانت', 'رول', 'عطر', 'ادکلن', 'اسپری بدن'],
+      itemIds: ['deodorant', 'perfume', 'body-spray'],
+      keywords: ['ضدتعریق', 'ضد تعریق', 'دئودورانت', 'رول', 'عطر', 'ادکلن', 'اسپری بدن', 'بادی اسپلش', 'اسپری خوشبو کننده'],
       summary: 'ضدتعریق با دئودورانت متفاوت است و اصالت عطر را فقط از فروشنده معتبر و کد/برچسب می‌توان اطمینان کرد.',
       sections: [
         label([
@@ -227,10 +227,10 @@ export var personalCareGroup = defineGroup({
     }),
     defineGuide({
       id: 'sanitary-ear-nail',
-      title: 'پد بهداشتی، گوش‌پاک‌کن و لوازم ناخن',
+      title: 'پد بهداشتی، پنبه، گوش‌پاک‌کن و لوازم ناخن',
       icon: '🩹',
-      itemIds: ['cotton-swabs', 'cotton-pads', 'nail-care'],
-      keywords: ['پد بهداشتی', 'نوار بهداشتی', 'گوش پاک کن', 'گوشپاککن', 'پد', 'لوازم ناخن', 'ناخن گیر', 'سوهان ناخن', 'لاک', 'پنبه'],
+      itemIds: ['cotton-swabs', 'cotton-pads', 'nail-care', 'cotton-wool'],
+      keywords: ['پد بهداشتی', 'نوار بهداشتی', 'گوش پاک کن', 'گوشپاککن', 'پد', 'لوازم ناخن', 'ناخن گیر', 'سوهان ناخن', 'لاک', 'پنبه', 'پنبه بهداشتی'],
       summary: 'در محصولات بهداشتی، مجوز بهداشت معتبر و جذب مناسب مهم‌ترین معیارند؛ سلامت و راحتی را به قیمت ترجیح دهید.',
       sections: [
         check([

@@ -18,7 +18,7 @@ export var foodExtraGroup = defineIngredientGroup({
       role: 'افزایش هوشیاری و طعم تلخ.',
       verdict: Verdict.NEUTRAL,
       verdictNote: 'EFSA می‌گوید مصرف روزانه تا ۴۰۰ میلی‌گرم و دوز یک‌باره تا ۲۰۰ میلی‌گرم (از همه‌ی منابع) برای بزرگسال سالم، به‌جز زنان باردار، نگرانی ایمنی ندارد. مصرف ۱۰۰ میلی‌گرم نزدیک خواب می‌تواند خواب را در برخی افراد مختل کند. برای زنان باردار یا شیرده سقف روزانه ۲۰۰ میلی‌گرم است. برای کودکان و نوجوانان سقف ۳ میلی‌گرم به ازای هر کیلوگرم وزن بدن توصیه شده است.',
-      itemIds: ['coffee', 'instant-coffee', 'tea', 'black-tea', 'tea-bags', 'green-tea', 'soft-drink', 'hot-chocolate', 'chocolate', 'cocoa'],
+      itemIds: ['coffee', 'instant-coffee', 'tea', 'black-tea', 'tea-bags', 'green-tea', 'soft-drink', 'hot-chocolate', 'chocolate', 'cocoa', 'energy-drink'],
       sources: [EFSA_CAFFEINE, EFSA_CAFFEINE_OP]
     }),
     defineIngredient({
