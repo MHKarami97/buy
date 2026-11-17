@@ -129,3 +129,79 @@ test('syncLabels updates template and category labels and is idempotent', () => 
   assert.equal(template.categories[0].name, 'اقلام پایه')
   assert.equal(DefaultsReconciler.syncLabels(template, definition), false)
 })
+
+test('reconcile seamlessly migrates legacy single categories into subcategories without losing progress', () => {
+  var legacyTemplate = {
+    id: 'tpl-1',
+    sourceDefinitionId: 'staples',
+    version: 3,
+    categories: [
+      {
+        id: 'staples-food',
+        name: 'مواد غذایی پایه',
+        items: [
+          { id: 'rice', title: 'برنج', quantity: 4, isHidden: false, isPostponed: false, isCustom: false, isEssential: true },
+          { id: 'beans', title: 'حبوبات', quantity: 2, isHidden: true, isPostponed: true, isCustom: false, isEssential: true },
+          { id: 'my-custom-grain', title: 'دانه سفارشی من', quantity: 1, isCustom: true, isEssential: false }
+        ],
+        findItem(id) {
+          return this.items.find((i) => i.id === id) ?? null
+        },
+        addItem(item) {
+          this.items.push(item)
+        }
+      }
+    ],
+    findCategory(id) {
+      return this.categories.find((c) => c.id === id) ?? null
+    }
+  }
+
+  var newDefinition = {
+    id: 'staples',
+    version: 4,
+    title: 'مواد غذایی پایه',
+    categories: [
+      {
+        id: 'staples-grains',
+        name: 'غلات',
+        items: [
+          { id: 'rice', title: 'برنج', isEssential: true },
+          { id: 'pasta', title: 'ماکارونی', isEssential: true }
+        ]
+      },
+      {
+        id: 'staples-legumes',
+        name: 'حبوبات',
+        items: [
+          { id: 'beans', title: 'حبوبات', isEssential: true }
+        ]
+      }
+    ]
+  }
+
+  var mutated = DefaultsReconciler.reconcile(legacyTemplate, newDefinition)
+  assert.equal(mutated, true)
+  assert.equal(legacyTemplate.version, 4)
+  // Obsolete staples-food removed
+  assert.equal(legacyTemplate.findCategory('staples-food'), null)
+  // New subcategories created
+  assert.ok(legacyTemplate.findCategory('staples-grains'))
+  assert.ok(legacyTemplate.findCategory('staples-legumes'))
+
+  // Existing rice quantity preserved in staples-grains
+  var rice = legacyTemplate.findCategory('staples-grains').findItem('rice')
+  assert.equal(rice.quantity, 4)
+
+  // Existing beans state preserved in staples-legumes
+  var beans = legacyTemplate.findCategory('staples-legumes').findItem('beans')
+  assert.equal(beans.quantity, 2)
+  assert.equal(beans.isHidden, true)
+  assert.equal(beans.isPostponed, true)
+
+  // Custom item preserved in the first subcategory
+  var customItem = legacyTemplate.findCategory('staples-grains').findItem('my-custom-grain')
+  assert.ok(customItem)
+  assert.equal(customItem.title, 'دانه سفارشی من')
+  assert.equal(customItem.quantity, 1)
+})

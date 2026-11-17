@@ -10,7 +10,7 @@ import { QuantityHistoryRepository } from '../services/QuantityHistoryRepository
 var props = defineProps({
   item: { type: Object, required: true }
 })
-var emit = defineEmits(['toggle', 'update-quantity', 'remove', 'toggle-visibility'])
+var emit = defineEmits(['toggle', 'update-quantity', 'remove', 'toggle-visibility', 'toggle-essential'])
 
 var store = useChecklistStore()
 
@@ -30,9 +30,22 @@ function changeQuantity(amount) {
   <div class="space-y-2 rounded-2xl border border-slate-100 bg-white px-3 py-3 animate-fade-in dark:border-slate-700/60 dark:bg-slate-800">
     <div class="flex items-center gap-3">
       <div class="min-w-0 flex-1">
-        <p class="text-sm sm:text-base text-slate-800 dark:text-slate-100">
-          {{ item.title }}
-        </p>
+        <div class="flex items-center gap-2">
+          <p class="text-sm sm:text-base text-slate-800 dark:text-slate-100">
+            {{ item.title }}
+          </p>
+          <button
+            type="button"
+            class="text-[11px] px-2 py-0.5 rounded-full font-medium transition-colors cursor-pointer select-none"
+            :class="item.isEssential
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+              : 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'"
+            :title="item.isEssential ? 'پرمصرف است؛ برای تغییر به کم‌مصرف کلیک کنید' : 'کم‌مصرف است؛ برای تغییر به پرمصرف کلیک کنید'"
+            @click="emit('toggle-essential', item.id)"
+          >
+            {{ item.isEssential ? 'پرمصرف' : 'کم‌مصرف' }}
+          </button>
+        </div>
         <p v-if="item.note" class="mt-0.5 text-xs text-slate-400">{{ item.note }}</p>
       </div>
 

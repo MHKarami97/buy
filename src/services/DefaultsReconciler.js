@@ -1,4 +1,5 @@
 import { ChecklistFactory } from './ChecklistFactory'
+import { storageService } from './StorageService'
 
 /**
  * DefaultsReconciler
@@ -58,6 +59,28 @@ export class DefaultsReconciler {
     return `${parts.length}:${(hash >>> 0).toString(36)}`
   }
 
+  static remapStorageKeys(renames) {
+    if (typeof localStorage === 'undefined' || !Array.isArray(renames) || renames.length === 0) return
+    var storageKeys = ['quantity-history', 'quantity-snapshot', 'item-prices']
+    storageKeys.forEach((key) => {
+      try {
+        var raw = storageService.get(key, null)
+        if (!raw || typeof raw !== 'object') return
+        var changed = false
+        renames.forEach(({ oldKey, newKey }) => {
+          if (raw[oldKey] !== undefined) {
+            raw[newKey] = raw[oldKey]
+            delete raw[oldKey]
+            changed = true
+          }
+        })
+        if (changed) storageService.set(key, raw)
+      } catch {
+        // ignore storage errors
+      }
+    })
+  }
+
   /**
    * @param {ChecklistTemplate} template - persisted template instance
    * @param {object} definition - current definition from source code
@@ -71,11 +94,56 @@ export class DefaultsReconciler {
 
     var mutated = false
 
+    // Check for obsolete categories (e.g. when a legacy category is split into subcategories)
+    var defCategoryIds = new Set((definition.categories ?? []).map((c) => c.id))
+    var obsoleteCategories = (template.categories ?? []).filter((c) => !defCategoryIds.has(c.id))
+
+    var oldItemsMap = new Map()
+    var oldCustomItems = []
+    var storageKeyRenames = []
+
+    if (obsoleteCategories.length > 0) {
+      obsoleteCategories.forEach((oldCat) => {
+        ;(oldCat.items ?? []).forEach((oldItem) => {
+          if (oldItem.isCustom) {
+            oldCustomItems.push(oldItem)
+          } else {
+            oldItemsMap.set(oldItem.id, {
+              item: oldItem,
+              oldCategoryId: oldCat.id
+            })
+          }
+        })
+      })
+
+      // Remove obsolete categories from template
+      template.categories = template.categories.filter((c) => defCategoryIds.has(c.id))
+      mutated = true
+    }
+
     definition.categories.forEach((defCategory) => {
       var category = template.findCategory(defCategory.id)
 
       if (!category) {
-        template.categories.push(ChecklistFactory.createCategoryFromDefinition(defCategory))
+        category = ChecklistFactory.createCategoryFromDefinition(defCategory)
+        // If any of the newly created items existed in the obsolete category, restore user state
+        category.items.forEach((item) => {
+          var oldRecord = oldItemsMap.get(item.id)
+          if (oldRecord) {
+            var oldItem = oldRecord.item
+            if (oldItem.quantity !== undefined) item.quantity = oldItem.quantity
+            if (oldItem.isHidden !== undefined) item.isHidden = oldItem.isHidden
+            if (oldItem.isPostponed !== undefined) item.isPostponed = oldItem.isPostponed
+            if (oldItem.isEssential !== undefined) item.isEssential = oldItem.isEssential
+            if (template.id) {
+              storageKeyRenames.push({
+                oldKey: `${template.id}::${oldRecord.oldCategoryId}::${item.id}`,
+                newKey: `${template.id}::${defCategory.id}::${item.id}`
+              })
+            }
+          }
+        })
+        template.categories.push(category)
         mutated = true
         return
       }
@@ -83,11 +151,40 @@ export class DefaultsReconciler {
       defCategory.items.forEach((defItem) => {
         var existingItem = category.findItem(defItem.id)
         if (!existingItem) {
-          category.addItem(ChecklistFactory.createItemFromDefinition(defItem))
+          var newItem = ChecklistFactory.createItemFromDefinition(defItem)
+          var oldRecord = oldItemsMap.get(defItem.id)
+          if (oldRecord) {
+            var oldItem = oldRecord.item
+            if (oldItem.quantity !== undefined) newItem.quantity = oldItem.quantity
+            if (oldItem.isHidden !== undefined) newItem.isHidden = oldItem.isHidden
+            if (oldItem.isPostponed !== undefined) newItem.isPostponed = oldItem.isPostponed
+            if (oldItem.isEssential !== undefined) newItem.isEssential = oldItem.isEssential
+            if (template.id) {
+              storageKeyRenames.push({
+                oldKey: `${template.id}::${oldRecord.oldCategoryId}::${newItem.id}`,
+                newKey: `${template.id}::${defCategory.id}::${newItem.id}`
+              })
+            }
+          }
+          category.addItem(newItem)
           mutated = true
         }
       })
     })
+
+    // Preserve custom items by adding them to the first category if any
+    if (oldCustomItems.length > 0 && template.categories[0]) {
+      oldCustomItems.forEach((customItem) => {
+        if (!template.categories[0].findItem(customItem.id)) {
+          template.categories[0].addItem(customItem)
+        }
+      })
+      mutated = true
+    }
+
+    if (storageKeyRenames.length > 0) {
+      DefaultsReconciler.remapStorageKeys(storageKeyRenames)
+    }
 
     if (isOutdated) template.version = definition.version
     return mutated
@@ -127,6 +224,9 @@ export class DefaultsReconciler {
         if (!item || item.isCustom) return
         assign(item, 'title', defItem.title)
         assign(item, 'note', defItem.note ?? '')
+        if (item.isEssential === undefined && defItem.isEssential !== undefined) {
+          assign(item, 'isEssential', defItem.isEssential)
+        }
       })
     })
 

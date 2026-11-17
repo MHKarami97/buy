@@ -76,6 +76,17 @@ function handleDeleteTemplate() {
       <div class="flex items-center gap-2 flex-shrink-0">
         <button
           type="button"
+          class="min-h-[44px] px-3 rounded-xl border text-xs sm:text-sm font-medium transition-colors"
+          :class="store.hasVisibleNonEssential
+            ? 'border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40'
+            : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'"
+          :title="store.hasVisibleNonEssential ? 'پنهان‌سازی همه کالاهای کم‌مصرف این لیست' : 'نمایش کالاهای کم‌مصرف پنهان‌شده'"
+          @click="store.toggleHideNonEssential()"
+        >
+          {{ store.hasVisibleNonEssential ? '⚡ پنهان‌سازی کم‌مصرف‌ها' : '👁️ نمایش کم‌مصرف‌ها' }}
+        </button>
+        <button
+          type="button"
           class="min-h-[44px] px-3 rounded-xl border border-slate-300 dark:border-slate-600 text-xs sm:text-sm"
           @click="handleResetTemplate"
         >
@@ -126,6 +137,7 @@ function handleDeleteTemplate() {
         @update-quantity="store.updateItemQuantity($event.id, $event.quantity)"
         @remove="handleRemoveItem"
         @toggle-visibility="store.toggleItemVisibility"
+        @toggle-essential="store.toggleItemEssential"
       />
       <AddItemForm @add="(title) => store.addItem(title)" />
 
@@ -140,6 +152,7 @@ function handleDeleteTemplate() {
             @update-quantity="store.updateItemQuantity($event.id, $event.quantity)"
             @remove="handleRemoveItem"
             @toggle-visibility="store.toggleItemVisibility"
+            @toggle-essential="store.toggleItemEssential"
           />
         </div>
       </div>

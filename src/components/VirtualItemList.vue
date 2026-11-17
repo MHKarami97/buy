@@ -13,7 +13,7 @@ var props = defineProps({
   rowHeight: { type: Number, default: 64 },
   viewportHeight: { type: Number, default: 480 }
 })
-var emit = defineEmits(['toggle', 'update-quantity', 'remove', 'toggle-visibility'])
+var emit = defineEmits(['toggle', 'update-quantity', 'remove', 'toggle-visibility', 'toggle-essential'])
 
 var scrollTop = ref(0)
 var isVirtualized = computed(() => props.items.length > props.threshold)
@@ -50,6 +50,7 @@ function onScroll(event) {
       @update-quantity="emit('update-quantity', $event)"
       @remove="emit('remove', $event)"
       @toggle-visibility="emit('toggle-visibility', $event)"
+      @toggle-essential="emit('toggle-essential', $event)"
     />
     <div v-if="isVirtualized" :style="{ height: bottomSpacerHeight + 'px' }" />
     <p v-if="!items.length" class="text-center text-sm text-slate-400 py-8">آیتمی برای نمایش وجود ندارد</p>

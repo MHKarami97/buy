@@ -8,7 +8,8 @@ export class ChecklistItem {
     isCustom = false,
     createdAt = Date.now(),
     isHidden = false,
-    isPostponed = false
+    isPostponed = false,
+    isEssential = true
   }) {
     this.id = id
     this.title = title
@@ -18,10 +19,16 @@ export class ChecklistItem {
     this.createdAt = createdAt
     this.isHidden = isHidden
     this.isPostponed = isPostponed
+    this.isEssential = isEssential !== undefined ? Boolean(isEssential) : true
   }
 
   setQuantity(quantity) {
     this.quantity = ChecklistItem.normalizeQuantity(quantity)
+    return this
+  }
+
+  toggleEssential() {
+    this.isEssential = !this.isEssential
     return this
   }
 
@@ -53,7 +60,8 @@ export class ChecklistItem {
       isCustom: this.isCustom,
       createdAt: this.createdAt,
       isHidden: this.isHidden,
-      isPostponed: this.isPostponed
+      isPostponed: this.isPostponed,
+      isEssential: this.isEssential
     }
   }
 

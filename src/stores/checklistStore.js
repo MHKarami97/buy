@@ -157,6 +157,16 @@ export var useChecklistStore = defineStore("checklist", {
     notesFor(state) {
       return (scope) => state[notesFieldOf(scope)];
     },
+
+    hasVisibleNonEssential(state) {
+      var template = state.templates.find(
+        (tpl) => tpl.id === state.activeTemplateId,
+      );
+      if (!template) return false;
+      return template.categories.some((category) =>
+        category.items.some((item) => !item.isEssential && !item.isHidden),
+      );
+    },
   },
 
   actions: {
@@ -269,6 +279,56 @@ export var useChecklistStore = defineStore("checklist", {
       if (item) {
         item.isHidden = !item.isHidden;
         this.schedulePersist();
+      }
+    },
+
+    toggleItemEssential(
+      itemId,
+      categoryId = this.activeCategoryId,
+      templateId = this.activeTemplateId,
+    ) {
+      var item = this.findItemRef(itemId, categoryId, templateId);
+      if (!item) return;
+      item.toggleEssential();
+      this.schedulePersist();
+    },
+
+    hideNonEssentialItems(templateId = this.activeTemplateId) {
+      var template = this.templates.find((tpl) => tpl.id === templateId);
+      if (!template) return;
+      template.categories.forEach((category) => {
+        category.items.forEach((item) => {
+          if (!item.isEssential) {
+            item.isHidden = true;
+          }
+        });
+      });
+      this.schedulePersist();
+    },
+
+    restoreNonEssentialItems(templateId = this.activeTemplateId) {
+      var template = this.templates.find((tpl) => tpl.id === templateId);
+      if (!template) return;
+      template.categories.forEach((category) => {
+        category.items.forEach((item) => {
+          if (!item.isEssential) {
+            item.isHidden = false;
+          }
+        });
+      });
+      this.schedulePersist();
+    },
+
+    toggleHideNonEssential(templateId = this.activeTemplateId) {
+      var template = this.templates.find((tpl) => tpl.id === templateId);
+      if (!template) return;
+      var hasVisible = template.categories.some((category) =>
+        category.items.some((item) => !item.isEssential && !item.isHidden),
+      );
+      if (hasVisible) {
+        this.hideNonEssentialItems(templateId);
+      } else {
+        this.restoreNonEssentialItems(templateId);
       }
     },
 

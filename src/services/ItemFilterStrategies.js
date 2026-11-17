@@ -48,6 +48,18 @@ class MoreThanOneQuantityStrategy extends BaseStrategy {
   }
 }
 
+class EssentialOnlyStrategy extends BaseStrategy {
+  filter(items) {
+    return items.filter((item) => item.isEssential)
+  }
+}
+
+class NonEssentialOnlyStrategy extends BaseStrategy {
+  filter(items) {
+    return items.filter((item) => !item.isEssential)
+  }
+}
+
 class AlphabeticalSortStrategy extends BaseStrategy {
   sort(items) {
     return [...items].sort((a, b) => a.title.localeCompare(b.title, 'fa'))
@@ -64,6 +76,8 @@ export const FilterStrategies = {
   all: new AllItemsStrategy(),
   pending: new PendingOnlyStrategy(),
   completed: new CompletedOnlyStrategy(),
+  essential: new EssentialOnlyStrategy(),
+  nonEssential: new NonEssentialOnlyStrategy(),
   half: new HalfQuantityStrategy(),
   one: new OneQuantityStrategy(),
   moreThanOne: new MoreThanOneQuantityStrategy()

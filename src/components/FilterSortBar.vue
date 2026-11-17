@@ -7,6 +7,8 @@ var filterOptions = [
   { key: 'all', label: 'همه' },
   { key: 'pending', label: 'موجود' },
   { key: 'completed', label: 'تمام شده' },
+  { key: 'essential', label: 'پرمصرف' },
+  { key: 'nonEssential', label: 'کم‌مصرف' },
   { key: 'half', label: 'نیم واحد' },
   { key: 'one', label: 'یک واحد' },
   { key: 'moreThanOne', label: 'بیشتر از یک' }
