@@ -146,19 +146,36 @@ function switchCamera() {
 }
 
 var lastScanTimestamp = 0
+var pendingCandidate = null
+var candidateStreak = 0
 
 async function runScanningLoop() {
   if (!isScanning.value || currentResult.value) return
 
   var now = Date.now()
-  // Throttle scanning to every 120ms to save CPU and battery
-  if (now - lastScanTimestamp > 120 && videoRef.value && videoRef.value.readyState >= 2) {
+  // Throttle scanning to every 100ms
+  if (now - lastScanTimestamp > 100 && videoRef.value && videoRef.value.readyState >= 2) {
     lastScanTimestamp = now
     try {
       var detected = await barcodeScannerEngine.detect(videoRef.value)
       if (detected && detected.rawValue) {
-        handleSuccessfulScan(detected.rawValue, detected.format)
-        return
+        if (pendingCandidate === detected.rawValue) {
+          candidateStreak++
+        } else {
+          pendingCandidate = detected.rawValue
+          candidateStreak = 1
+        }
+
+        // Require 2 consecutive matching frames to eliminate noise/blur misreads
+        if (candidateStreak >= 2) {
+          pendingCandidate = null
+          candidateStreak = 0
+          handleSuccessfulScan(detected.rawValue, detected.format)
+          return
+        }
+      } else {
+        candidateStreak = 0
+        pendingCandidate = null
       }
     } catch {
       // ignore frame detection glitches
@@ -241,6 +258,11 @@ function handleManualSubmit() {
   isManualModalOpen.value = false
   manualCodeInput.value = ''
   handleSuccessfulScan(code, 'manual')
+}
+
+function openManualEdit(code) {
+  manualCodeInput.value = code
+  isManualModalOpen.value = true
 }
 
 function copyCode(value) {
@@ -487,9 +509,19 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <!-- Raw Barcode value -->
-        <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/60 font-mono text-sm sm:text-base text-center tracking-wider text-slate-800 dark:text-slate-200 break-all select-all">
-          {{ currentResult.normalizedValue || currentResult.rawValue }}
+        <!-- Raw Barcode value with Edit action -->
+        <div class="flex items-center gap-2">
+          <div class="flex-1 rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/60 font-mono text-sm sm:text-base text-center tracking-wider text-slate-800 dark:text-slate-200 break-all select-all">
+            {{ currentResult.normalizedValue || currentResult.rawValue }}
+          </div>
+          <button
+            type="button"
+            class="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-brand-600 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-200 transition-colors"
+            title="ویرایش یا تصحیح دستی رقم بارکد"
+            @click="openManualEdit(currentResult.normalizedValue || currentResult.rawValue)"
+          >
+            ✏️
+          </button>
         </div>
 
         <!-- Country Detection Info -->

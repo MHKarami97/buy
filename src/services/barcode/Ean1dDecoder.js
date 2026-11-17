@@ -76,26 +76,43 @@ function decodeRun(runs, startIndex, moduleWidth, patterns) {
 }
 
 /**
- * Scans an ImageData row and finds alternating run-lengths
+ * Scans an ImageData row and finds alternating run-lengths with local window threshold
  */
 function getRunsFromRow(imageData, y) {
   var width = imageData.width
   var data = imageData.data
   var rowOffset = y * width * 4
 
-  // Compute adaptive average threshold for this row
-  var totalLum = 0
+  var lums = new Float32Array(width)
   for (var x = 0; x < width; x++) {
-    totalLum += getLuminance(data, rowOffset + x * 4)
+    var idx = rowOffset + x * 4
+    lums[x] = (data[idx] * 299 + data[idx + 1] * 587 + data[idx + 2] * 114) / 1000
   }
-  var threshold = totalLum / width
+
+  var win = 16
+  var sum = 0
+  var count = 0
+  for (var k = 0; k < Math.min(win, width); k++) {
+    sum += lums[k]
+    count++
+  }
 
   var runs = []
-  var currentIsDark = getLuminance(data, rowOffset) < threshold
+  var firstIsDark = lums[0] < (sum / count) * 0.94
+  var currentIsDark = firstIsDark
   var currentRun = 0
 
   for (var col = 0; col < width; col++) {
-    var isDark = getLuminance(data, rowOffset + col * 4) < threshold
+    if (col + win < width) {
+      sum += lums[col + win]
+      count++
+    }
+    if (col - win - 1 >= 0) {
+      sum -= lums[col - win - 1]
+      count--
+    }
+    var localThreshold = (sum / count) * 0.94
+    var isDark = lums[col] < localThreshold
     if (isDark === currentIsDark) {
       currentRun++
     } else {
@@ -109,7 +126,7 @@ function getRunsFromRow(imageData, y) {
 }
 
 /**
- * Matches 4 runs to digit patterns
+ * Matches 4 runs to digit patterns using minimum Euclidean module variance
  */
 function matchDigit(runs, startIndex, isRight) {
   var r1 = runs[startIndex].length
@@ -119,16 +136,6 @@ function matchDigit(runs, startIndex, isRight) {
   var total = r1 + r2 + r3 + r4
   if (total === 0) return null
 
-  // Normalize to 7 modules
-  var m1 = Math.max(1, Math.round((r1 / total) * 7))
-  var m2 = Math.max(1, Math.round((r2 / total) * 7))
-  var m3 = Math.max(1, Math.round((r3 / total) * 7))
-  var m4 = 7 - (m1 + m2 + m3)
-  if (m4 < 1) return null
-
-  var pattern = '' + m1 + m2 + m3 + m4
-
-  // EAN-13 pattern widths for [r1, r2, r3, r4]
   var L_WIDTHS = [
     '3211', '2221', '2122', '1411', '1132',
     '1231', '1114', '1312', '1213', '3112'
@@ -137,22 +144,34 @@ function matchDigit(runs, startIndex, isRight) {
     '1123', '1222', '2212', '1141', '2311',
     '1321', '4111', '2131', '3121', '2113'
   ]
-  var R_WIDTHS = L_WIDTHS // R widths match L widths reversed or inverted
+  var R_WIDTHS = L_WIDTHS
 
-  if (isRight) {
+  var best = null
+  var minDiff = 999
+
+  function testPatterns(widths, parity) {
     for (var d = 0; d < 10; d++) {
-      if (pattern === R_WIDTHS[d]) return { digit: d, parity: 'R' }
-    }
-  } else {
-    for (var l = 0; l < 10; l++) {
-      if (pattern === L_WIDTHS[l]) return { digit: l, parity: 'L' }
-    }
-    for (var g = 0; g < 10; g++) {
-      if (pattern === G_WIDTHS[g]) return { digit: g, parity: 'G' }
+      var w = widths[d]
+      var diff =
+        Math.abs(r1 / total - parseInt(w[0], 10) / 7) +
+        Math.abs(r2 / total - parseInt(w[1], 10) / 7) +
+        Math.abs(r3 / total - parseInt(w[2], 10) / 7) +
+        Math.abs(r4 / total - parseInt(w[3], 10) / 7)
+      if (diff < minDiff) {
+        minDiff = diff
+        best = { digit: d, parity: parity }
+      }
     }
   }
 
-  return null
+  if (isRight) {
+    testPatterns(R_WIDTHS, 'R')
+  } else {
+    testPatterns(L_WIDTHS, 'L')
+    testPatterns(G_WIDTHS, 'G')
+  }
+
+  return minDiff < 0.36 ? best : null
 }
 
 /**
@@ -230,14 +249,26 @@ export function decode1dBarcodeFromImageData(imageData) {
   if (!imageData || !imageData.width || !imageData.height) return null
   var height = imageData.height
 
-  // Sample lines at various heights
-  var sampleRows = [0.5, 0.4, 0.6, 0.3, 0.7, 0.45, 0.55, 0.35, 0.65]
+  var sampleRows = [0.5, 0.45, 0.55, 0.4, 0.6, 0.35, 0.65, 0.3, 0.7]
+  var candidates = new Map()
 
   for (var frac of sampleRows) {
     var y = Math.floor(height * frac)
     var runs = getRunsFromRow(imageData, y)
     var result = decodeRowEan13(runs)
-    if (result) return result
+    if (result) {
+      var count = (candidates.get(result.code) || 0) + 1
+      candidates.set(result.code, count)
+      if (count >= 2) {
+        return result
+      }
+    }
+  }
+
+  // If only 1 line matched, fallback to it
+  if (candidates.size === 1) {
+    var code = candidates.keys().next().value
+    return { code, format: 'ean_13' }
   }
 
   return null
