@@ -5,6 +5,7 @@ import ToggleSwitch from './ToggleSwitch.vue'
 import ShoppingEntryRow from './ShoppingEntryRow.vue'
 import ShoppingNotesCard from './ShoppingNotesCard.vue'
 import ShoppingListExportDialog from './ShoppingListExportDialog.vue'
+import AppIcon from './AppIcon.vue'
 import { preferencesRepository } from '../services/PreferencesRepository'
 import { guideRepository } from '../data/guides'
 import { useIngredientPreferences } from '../composables/useIngredientPreferences'
@@ -97,9 +98,12 @@ function restore(entry) {
         <ToggleSwitch v-model="showLowStock" label="نمایش مواد کم" />
         <button
           type="button"
-          class="min-h-[44px] px-4 rounded-xl border border-brand-300 text-brand-600 dark:text-brand-300 text-sm font-medium hover:bg-brand-50 dark:hover:bg-slate-800 transition-colors"
+          class="min-h-[44px] px-4 rounded-xl border border-brand-300 text-brand-600 dark:text-brand-300 text-sm font-medium hover:bg-brand-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5"
           @click="isExportOpen = true"
-        >📄 خروجی PDF</button>
+        >
+          <AppIcon name="document" :size="16" />
+          <span>خروجی PDF</span>
+        </button>
       </div>
     </div>
 
@@ -107,8 +111,9 @@ function restore(entry) {
       v-if="avoidedCount"
       class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-900/10 px-3 py-1"
     >
-      <p class="text-xs text-red-700 dark:text-red-300">
-        🚫 {{ flaggedCount }} آیتم دارای ماده‌ی پرهیزی (از {{ avoidedCount }} ماده‌ی علامت‌خورده)
+      <p class="text-xs text-red-700 dark:text-red-300 flex items-center gap-1.5">
+        <AppIcon name="ban" :size="15" class="shrink-0" />
+        <span>{{ flaggedCount }} آیتم دارای ماده‌ی پرهیزی (از {{ avoidedCount }} ماده‌ی علامت‌خورده)</span>
       </p>
       <ToggleSwitch v-model="onlyAvoided" label="فقط آیتم‌های هشداردار" />
     </div>
@@ -132,7 +137,12 @@ function restore(entry) {
             <span class="block text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-100">{{ group.template.title }}</span>
             <span class="block text-xs text-slate-400 mt-0.5">{{ group.entries.length }} آیتم برای خرید</span>
           </span>
-          <span class="text-lg text-slate-400" aria-hidden="true">{{ isListExpanded(group.template.id) ? '⌃' : '⌄' }}</span>
+          <AppIcon
+            name="chevron"
+            :size="18"
+            class="text-slate-400 transition-transform duration-200"
+            :class="isListExpanded(group.template.id) ? 'rotate-90' : '-rotate-90'"
+          />
         </button>
 
         <div v-if="isListExpanded(group.template.id)" class="space-y-2 border-t border-slate-100 dark:border-slate-700/60 p-2">
@@ -164,7 +174,12 @@ function restore(entry) {
           <span class="block text-sm font-semibold text-slate-600 dark:text-slate-300">حذف‌شده‌های موقت</span>
           <span class="block text-xs text-slate-400 mt-0.5">{{ postponedCount }} آیتم فعلاً در لیست خرید نیست</span>
         </span>
-        <span class="text-lg text-slate-400" aria-hidden="true">{{ isPostponedExpanded ? '⌃' : '⌄' }}</span>
+        <AppIcon
+          name="chevron"
+          :size="18"
+          class="text-slate-400 transition-transform duration-200"
+          :class="isPostponedExpanded ? 'rotate-90' : '-rotate-90'"
+        />
       </button>
 
       <div v-if="isPostponedExpanded" class="space-y-3 border-t border-slate-100 dark:border-slate-700/60 p-2">

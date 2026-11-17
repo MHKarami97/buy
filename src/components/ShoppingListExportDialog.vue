@@ -9,6 +9,7 @@ import { JalaliDate } from '../services/JalaliDate.js'
 import { ShoppingListDocumentBuilder } from '../services/export/ShoppingListDocumentBuilder'
 import { PrintService } from '../services/export/PrintService'
 import { useIngredientPreferences } from '../composables/useIngredientPreferences'
+import AppIcon from './AppIcon.vue'
 
 var props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -140,8 +141,18 @@ onBeforeUnmount(() => {
           class="flex w-full sm:max-w-xl max-h-[88vh] flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-xl"
         >
           <header class="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 px-4 py-3">
-            <h2 class="flex-1 text-base font-bold">📄 خروجی PDF</h2>
-            <button type="button" class="min-w-[44px] min-h-[44px] rounded-lg text-slate-400 hover:text-slate-700" aria-label="بستن" @click="close">✕</button>
+            <h2 class="flex-1 text-base font-bold flex items-center gap-2">
+              <AppIcon name="document" :size="20" class="text-brand-500" />
+              <span>خروجی PDF</span>
+            </h2>
+            <button
+              type="button"
+              class="flex size-11 items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="بستن پنجره"
+              @click="close"
+            >
+              <AppIcon name="close" :size="20" />
+            </button>
           </header>
 
           <div class="flex-1 overflow-y-auto space-y-4 p-4">

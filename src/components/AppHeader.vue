@@ -1,6 +1,7 @@
 <script setup>
 import { useChecklistStore } from '../stores/checklistStore'
 import AppIcon from './AppIcon.vue'
+import AppLogo from './AppLogo.vue'
 
 var store = useChecklistStore()
 </script>
@@ -10,15 +11,16 @@ var store = useChecklistStore()
     class="sticky top-0 z-20 backdrop-blur bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800"
   >
     <div class="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-      <RouterLink to="/" class="flex items-center gap-2 font-bold text-lg">
-        <img
-          src="/icons/icon-144.png"
-          alt="لوگوی خرید هوشمند"
-          class="w-8 h-8 object-contain"
-          width="32"
-          height="32"
-        />
-        <span>خرید هوشمند</span>
+      <RouterLink to="/" class="flex items-center gap-2.5 group">
+        <AppLogo :size="34" class="transition-transform group-hover:scale-105" />
+        <div class="flex flex-col">
+          <span class="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white leading-none">
+            خرید هوشمند
+          </span>
+          <span class="text-[10px] font-medium text-brand-600 dark:text-brand-400 leading-tight mt-0.5">
+            دستیار هوشمند کالا
+          </span>
+        </div>
       </RouterLink>
 
       <div class="flex items-center gap-1">

@@ -7,6 +7,7 @@ import { useDebouncedValue } from '../composables/useDebounce'
 import { useGuideDialog } from '../composables/useGuideDialog'
 import { useIngredientPreferences } from '../composables/useIngredientPreferences'
 import IngredientCard from '../components/IngredientCard.vue'
+import AppIcon from '../components/AppIcon.vue'
 
 var route = useRoute()
 var { open } = useGuideDialog()
@@ -48,8 +49,11 @@ onMounted(() => {
       </div>
       <RouterLink
         to="/compare"
-        class="min-h-[44px] px-4 rounded-xl border border-violet-300 text-violet-600 dark:text-violet-300 text-sm flex items-center justify-center"
-      >⚖️ مقایسه‌ی دو کالا</RouterLink>
+        class="min-h-[44px] px-4 rounded-xl border border-violet-300 text-violet-600 dark:text-violet-300 text-sm flex items-center justify-center gap-1.5 hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-colors"
+      >
+        <AppIcon name="scale" :size="18" />
+        <span>مقایسه‌ی دو کالا</span>
+      </RouterLink>
     </div>
 
     <input
@@ -63,7 +67,10 @@ onMounted(() => {
       class="rounded-xl border border-dashed border-red-300 dark:border-red-800 p-3 space-y-2"
       aria-label="مواد پرهیزی من"
     >
-      <h2 class="text-sm font-semibold text-red-700 dark:text-red-300">🚫 مواد پرهیزی من</h2>
+      <h2 class="text-sm font-semibold text-red-700 dark:text-red-300 flex items-center gap-1.5">
+        <AppIcon name="ban" :size="16" />
+        <span>مواد پرهیزی من</span>
+      </h2>
       <p v-if="!avoidedIngredients.length" class="text-xs text-slate-400">
         ماده‌ای را جستجو کنید و دکمه‌ی «این ماده را پرهیز می‌کنم» را بزنید. آیتم‌های مرتبط در لیست خرید علامت می‌خورند.
       </p>
@@ -71,10 +78,13 @@ onMounted(() => {
         <li v-for="ingredient in avoidedIngredients" :key="ingredient.id">
           <button
             type="button"
-            class="min-h-[36px] px-3 rounded-full bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200 text-xs"
+            class="min-h-[36px] px-3 rounded-full bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200 text-xs inline-flex items-center gap-1.5 hover:bg-red-200 transition-colors"
             :aria-label="`حذف ${ingredient.name} از فهرست پرهیز`"
             @click="toggleAvoided(ingredient.id)"
-          >{{ ingredient.name }} ✕</button>
+          >
+            <span>{{ ingredient.name }}</span>
+            <AppIcon name="close" :size="12" />
+          </button>
         </li>
       </ul>
     </section>

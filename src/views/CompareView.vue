@@ -5,6 +5,7 @@ import { guideRepository } from '../data/guides'
 import { GuideComparer } from '../services/GuideComparer'
 import { useIngredientPreferences } from '../composables/useIngredientPreferences'
 import GuidePicker from '../components/GuidePicker.vue'
+import AppIcon from '../components/AppIcon.vue'
 
 var KIND_ICONS = { check: '✅', avoid: '⛔', label: '🏷️', storage: '🧊', tip: '💡' }
 
@@ -44,7 +45,10 @@ function chipClass(ingredient) {
   <section class="space-y-5">
     <div>
       <RouterLink to="/guide" class="inline-flex items-center min-h-[44px] text-sm text-brand-600 dark:text-brand-300">→ راهنمای خرید</RouterLink>
-      <h1 class="text-xl sm:text-2xl font-bold">⚖️ مقایسه‌ی دو کالا</h1>
+      <h1 class="text-xl sm:text-2xl font-bold flex items-center gap-2">
+        <AppIcon name="scale" :size="26" class="text-fuchsia-600 dark:text-fuchsia-400" />
+        <span>مقایسه‌ی دو کالا</span>
+      </h1>
       <p class="text-sm text-slate-400 mt-1">دو کالا را جستجو و انتخاب کنید تا نکته‌ها و مواد تشکیل‌دهنده‌شان کنار هم دیده شود.</p>
     </div>
 
@@ -58,10 +62,13 @@ function chipClass(ingredient) {
       />
       <button
         type="button"
-        class="min-h-[44px] w-full md:w-11 rounded-xl border border-slate-300 dark:border-slate-600 text-lg hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-transform"
+        class="min-h-[44px] w-full md:w-11 rounded-xl border border-slate-300 dark:border-slate-600 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-transform"
         aria-label="جابه‌جایی دو کالا"
+        title="جابه‌جایی دو کالا"
         @click="swap"
-      >⇄</button>
+      >
+        <AppIcon name="swap" :size="20" class="text-slate-600 dark:text-slate-300" />
+      </button>
       <GuidePicker
         v-model="secondId"
         label="کالای دوم"

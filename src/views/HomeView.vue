@@ -126,8 +126,11 @@ onMounted(loadInsights)
       </ul>
     </section>
 
-    <section v-if="spending && !spending.hasAnyPrice" class="rounded-2xl border border-dashed border-slate-300 p-4 text-sm leading-7 text-slate-500 dark:border-slate-600 dark:text-slate-400">
-      💰 برای دیدن هزینه‌ی ماهانه، در «لیست خرید» قیمت واحد آیتم‌ها را وارد کنید.
+    <section v-if="spending && !spending.hasAnyPrice" class="flex items-center gap-3 rounded-2xl border border-dashed border-slate-300 p-4 text-sm leading-7 text-slate-500 dark:border-slate-600 dark:text-slate-400">
+      <span class="flex size-9 items-center justify-center rounded-xl bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-300 shrink-0">
+        <AppIcon name="wallet" :size="20" />
+      </span>
+      <span>برای دیدن هزینه‌ی ماهانه، در «لیست خرید» قیمت واحد آیتم‌ها را وارد کنید.</span>
     </section>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

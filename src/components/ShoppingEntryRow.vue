@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import GuideLinkButton from './GuideLinkButton.vue'
 import IngredientWarningBadge from './IngredientWarningBadge.vue'
 import ItemPriceField from './ItemPriceField.vue'
+import AppIcon from './AppIcon.vue'
 import { QuantityHistoryRepository } from '../services/QuantityHistoryRepository.js'
 
 var props = defineProps({
@@ -100,7 +101,7 @@ function confirm() {
           title="حذف موقت از لیست خرید"
           @click="emit('postpone')"
         >
-          ✕
+          <AppIcon name="close" :size="16" />
         </button>
       </div>
     </div>

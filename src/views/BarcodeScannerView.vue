@@ -363,52 +363,22 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="space-y-6">
+  <section class="space-y-5 sm:space-y-6">
     <!-- Navigation header -->
     <div class="flex items-center justify-between">
       <RouterLink
         to="/"
-        class="inline-flex min-h-[44px] items-center text-sm font-medium text-brand-600 dark:text-brand-300"
+        class="inline-flex min-h-[36px] items-center gap-1 text-xs sm:text-sm font-semibold text-brand-600 dark:text-brand-300 hover:text-brand-700 transition-colors"
       >
-        → بازگشت به خانه
+        <AppIcon name="chevron" :size="16" class="rotate-180 shrink-0" />
+        <span>بازگشت به خانه</span>
       </RouterLink>
-
-      <!-- Tabs toggle -->
-      <div class="inline-flex rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
-        <button
-          type="button"
-          class="rounded-xl px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors"
-          :class="activeTab === 'scanner' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-400'"
-          @click="activeTab = 'scanner'"
-        >
-          📷 اسکنر
-        </button>
-        <button
-          type="button"
-          class="rounded-xl px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors"
-          :class="activeTab === 'logos' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-400'"
-          @click="activeTab = 'logos'"
-        >
-          🏷️ راهنمای نمادها
-        </button>
-        <button
-          type="button"
-          class="rounded-xl px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"
-          :class="activeTab === 'history' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-400'"
-          @click="activeTab = 'history'"
-        >
-          <span>🕒 تاریخچه</span>
-          <span v-if="historyItems.length" class="rounded-full bg-slate-200 px-1.5 py-0.2 text-[10px] dark:bg-slate-600">
-            {{ historyItems.length }}
-          </span>
-        </button>
-      </div>
     </div>
 
     <!-- Title & Description -->
     <div>
       <h1 class="text-xl sm:text-2xl font-bold flex items-center gap-2">
-        <span class="flex size-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300">
+        <span class="flex size-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300 shrink-0">
           <AppIcon name="scan" :size="24" />
         </span>
         <span>بارکدخوان و راهنمای نمادهای کالا</span>
@@ -416,6 +386,48 @@ onBeforeUnmount(() => {
       <p class="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
         اسکن سریع بارکدها و QR کد، تشخیص کشور و شرکت سازنده همراه با راهنمای جامع نمادهای بسته‌بندی، استاندارد و سلامت
       </p>
+    </div>
+
+    <!-- Tabs Segmented Control (full width on mobile, perfectly aligned) -->
+    <div class="grid grid-cols-3 w-full rounded-2xl bg-slate-100 p-1 dark:bg-slate-800 shadow-inner">
+      <button
+        type="button"
+        class="flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        :class="activeTab === 'scanner' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+        @click="activeTab = 'scanner'"
+      >
+        <AppIcon name="camera" :size="16" class="shrink-0" />
+        <span class="hidden sm:inline">اسکنر بارکد</span>
+        <span class="sm:hidden">اسکنر</span>
+      </button>
+
+      <button
+        type="button"
+        class="flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        :class="activeTab === 'logos' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+        @click="activeTab = 'logos'"
+      >
+        <AppIcon name="tag" :size="16" class="shrink-0" />
+        <span class="hidden sm:inline">راهنمای نمادها</span>
+        <span class="sm:hidden">نمادهای کالا</span>
+      </button>
+
+      <button
+        type="button"
+        class="flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        :class="activeTab === 'history' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+        @click="activeTab = 'history'"
+      >
+        <AppIcon name="history" :size="16" class="shrink-0" />
+        <span>تاریخچه</span>
+        <span
+          v-if="historyItems.length"
+          class="rounded-full px-1.5 py-0.2 text-[10px] font-bold leading-none shrink-0"
+          :class="activeTab === 'history' ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'"
+        >
+          {{ historyItems.length }}
+        </span>
+      </button>
     </div>
 
     <!-- TAB 1: SCANNER -->
@@ -480,7 +492,7 @@ onBeforeUnmount(() => {
               title="فلش / چراغ‌قوه"
               @click="toggleTorch"
             >
-              ⚡
+              <AppIcon name="flash" :size="18" />
             </button>
             <button
               type="button"
@@ -488,7 +500,7 @@ onBeforeUnmount(() => {
               title="تغییر دوربین"
               @click="switchCamera"
             >
-              🔄
+              <AppIcon name="refresh" :size="18" />
             </button>
           </div>
         </div>
@@ -501,7 +513,7 @@ onBeforeUnmount(() => {
           class="flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 text-xs sm:text-sm font-medium text-slate-700 shadow-sm hover:border-brand-400 hover:text-brand-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 transition-colors"
           @click="fileInputRef?.click()"
         >
-          <span>🖼️</span>
+          <AppIcon name="image" :size="18" class="text-brand-500" />
           <span>اسکن از عکس گالری</span>
         </button>
         <button
@@ -509,7 +521,7 @@ onBeforeUnmount(() => {
           class="flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 text-xs sm:text-sm font-medium text-slate-700 shadow-sm hover:border-brand-400 hover:text-brand-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 transition-colors"
           @click="isManualModalOpen = true"
         >
-          <span>⌨️</span>
+          <AppIcon name="keyboard" :size="18" class="text-brand-500" />
           <span>ورود دستی بارکد</span>
         </button>
         <input
@@ -546,7 +558,8 @@ onBeforeUnmount(() => {
             class="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
             @click="copyCode(currentResult.normalizedValue || currentResult.rawValue)"
           >
-            <span>{{ copiedNotice ? 'کپی شد! ✓' : 'کپی بارکد' }}</span>
+            <AppIcon :name="copiedNotice ? 'check' : 'copy'" :size="15" :class="copiedNotice ? 'text-emerald-500' : ''" />
+            <span>{{ copiedNotice ? 'کپی شد!' : 'کپی بارکد' }}</span>
           </button>
         </div>
 
@@ -561,7 +574,7 @@ onBeforeUnmount(() => {
             title="ویرایش یا تصحیح دستی رقم بارکد"
             @click="openManualEdit(currentResult.normalizedValue || currentResult.rawValue)"
           >
-            ✏️
+            <AppIcon name="edit" :size="18" />
           </button>
         </div>
 
@@ -638,7 +651,7 @@ onBeforeUnmount(() => {
             class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl bg-brand-500 text-white text-xs sm:text-sm font-semibold hover:bg-brand-600 transition-colors shadow-md shadow-brand-500/20"
             @click="openAddToChecklistModal"
           >
-            <span>+</span>
+            <AppIcon name="plus" :size="18" />
             <span>افزودن به لیست خرید</span>
           </button>
           <button
@@ -646,7 +659,7 @@ onBeforeUnmount(() => {
             class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium hover:bg-slate-100 transition-colors"
             @click="resumeScanner"
           >
-            <span>🔄</span>
+            <AppIcon name="refresh" :size="16" />
             <span>اسکن مورد بعدی</span>
           </button>
         </div>
@@ -725,7 +738,7 @@ onBeforeUnmount(() => {
                 title="کپی بارکد"
                 @click="copyCode(item.code)"
               >
-                📋
+                <AppIcon name="copy" :size="16" />
               </button>
               <button
                 type="button"
@@ -747,7 +760,7 @@ onBeforeUnmount(() => {
 
       <!-- Empty state -->
       <div v-else class="text-center py-12 text-slate-400 space-y-2">
-        <span class="text-4xl block">📦</span>
+        <AppIcon name="box" :size="44" class="mx-auto text-slate-300 dark:text-slate-600" />
         <p class="text-sm">تاریخچه اسکن خالی است.</p>
         <p class="text-xs text-slate-500">بارکد یا کد QR محصولی را اسکن کنید تا اینجا ثبت شود.</p>
       </div>
@@ -783,7 +796,7 @@ onBeforeUnmount(() => {
 
       <!-- Quick Guidance Banner -->
       <div class="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-3.5 text-xs text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200 flex items-start gap-2.5">
-        <span class="text-base shrink-0">💡</span>
+        <AppIcon name="lightbulb" :size="20" class="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
         <div class="space-y-1">
           <p class="font-bold">راهنمای شناخت نشان‌ها و علائم درج‌شده روی کالاهای مصرفی</p>
           <p class="text-[11px] leading-relaxed text-amber-900/90 dark:text-amber-300">
@@ -841,7 +854,7 @@ onBeforeUnmount(() => {
 
       <!-- Empty state when no logo matches -->
       <div v-else class="text-center py-12 text-slate-400 space-y-2">
-        <span class="text-4xl block">🔍</span>
+        <AppIcon name="search" :size="44" class="mx-auto text-slate-300 dark:text-slate-600" />
         <p class="text-sm">نمادی با این عنوان یا مشخصات یافت نشد.</p>
         <p class="text-xs text-slate-500">کلمات دیگری مانند استاندارد، سلامت، بازیافت یا پلاستیک را امتحان کنید.</p>
       </div>
@@ -880,9 +893,10 @@ onBeforeUnmount(() => {
           <button
             type="button"
             class="flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 transition-colors"
+            aria-label="بستن پنجره"
             @click="closeLogoDetail"
           >
-            ✕
+            <AppIcon name="close" :size="18" />
           </button>
         </div>
 
@@ -905,7 +919,7 @@ onBeforeUnmount(() => {
           <!-- Verification Box -->
           <div class="rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5 dark:border-sky-900/50 dark:bg-sky-950/30 space-y-1.5">
             <div class="flex items-center gap-1.5 font-bold text-sky-900 dark:text-sky-200">
-              <span>🔍</span>
+              <AppIcon name="search" :size="16" />
               <span>نحوه بررسی و استعلام اصالت:</span>
             </div>
             <p class="text-xs text-sky-800 dark:text-sky-300">

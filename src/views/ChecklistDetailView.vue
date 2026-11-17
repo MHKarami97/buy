@@ -9,6 +9,7 @@ import AddItemForm from '../components/AddItemForm.vue'
 import VirtualItemList from '../components/VirtualItemList.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import ChecklistItem from '../components/ChecklistItem.vue'
+import AppIcon from '../components/AppIcon.vue'
 import { useRoute } from 'vue-router'
 
 var props = defineProps({ id: { type: String, required: true } })
@@ -76,29 +77,32 @@ function handleDeleteTemplate() {
       <div class="flex items-center gap-2 flex-shrink-0">
         <button
           type="button"
-          class="min-h-[44px] px-3 rounded-xl border text-xs sm:text-sm font-medium transition-colors"
+          class="min-h-[44px] px-3 rounded-xl border text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"
           :class="store.hasVisibleNonEssential
             ? 'border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40'
             : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'"
           :title="store.hasVisibleNonEssential ? 'پنهان‌سازی همه کالاهای کم‌مصرف این لیست' : 'نمایش کالاهای کم‌مصرف پنهان‌شده'"
           @click="store.toggleHideNonEssential()"
         >
-          {{ store.hasVisibleNonEssential ? '⚡ پنهان‌سازی کم‌مصرف‌ها' : '👁️ نمایش کم‌مصرف‌ها' }}
+          <AppIcon :name="store.hasVisibleNonEssential ? 'eyeOff' : 'eye'" :size="16" />
+          <span>{{ store.hasVisibleNonEssential ? 'پنهان‌سازی کم‌مصرف‌ها' : 'نمایش کم‌مصرف‌ها' }}</span>
         </button>
         <button
           type="button"
-          class="min-h-[44px] px-3 rounded-xl border border-slate-300 dark:border-slate-600 text-xs sm:text-sm"
+          class="min-h-[44px] px-3 rounded-xl border border-slate-300 dark:border-slate-600 text-xs sm:text-sm flex items-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           @click="handleResetTemplate"
         >
-          ریست
+          <AppIcon name="refresh" :size="14" />
+          <span>ریست</span>
         </button>
         <button
           v-if="template.isCustom"
           type="button"
-          class="min-h-[44px] px-3 rounded-xl border border-red-300 text-red-500 text-xs sm:text-sm"
+          class="min-h-[44px] px-3 rounded-xl border border-red-300 text-red-500 text-xs sm:text-sm flex items-center gap-1.5 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
           @click="handleDeleteTemplate"
         >
-          حذف
+          <AppIcon name="trash" :size="14" />
+          <span>حذف</span>
         </button>
       </div>
     </div>
