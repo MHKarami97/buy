@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { guideRepository } from '../data/guides'
 import { GuideComparer } from '../services/GuideComparer'
 import { useIngredientPreferences } from '../composables/useIngredientPreferences'
+import GuidePicker from '../components/GuidePicker.vue'
 
 var KIND_ICONS = { check: '✅', avoid: '⛔', label: '🏷️', storage: '🧊', tip: '💡' }
 
@@ -44,36 +45,30 @@ function chipClass(ingredient) {
     <div>
       <RouterLink to="/guide" class="inline-flex items-center min-h-[44px] text-sm text-brand-600 dark:text-brand-300">→ راهنمای خرید</RouterLink>
       <h1 class="text-xl sm:text-2xl font-bold">⚖️ مقایسه‌ی دو کالا</h1>
-      <p class="text-sm text-slate-400 mt-1">دو راهنما را انتخاب کنید تا نکته‌ها و مواد تشکیل‌دهنده‌شان کنار هم دیده شود.</p>
+      <p class="text-sm text-slate-400 mt-1">دو کالا را جستجو و انتخاب کنید تا نکته‌ها و مواد تشکیل‌دهنده‌شان کنار هم دیده شود.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-2 items-center">
-      <select
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-2 items-end">
+      <GuidePicker
         v-model="firstId"
-        aria-label="کالای اول"
-        class="min-h-[44px] w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
-      >
-        <option value="">کالای اول را انتخاب کنید</option>
-        <optgroup v-for="group in guideRepository.groups" :key="group.id" :label="`${group.icon} ${group.name}`">
-          <option v-for="guide in group.guides" :key="guide.id" :value="guide.id">{{ guide.icon }} {{ guide.title }}</option>
-        </optgroup>
-      </select>
+        label="کالای اول"
+        placeholder="کالای اول را جستجو کنید"
+        :groups="guideRepository.groups"
+        :exclude-id="secondId"
+      />
       <button
         type="button"
-        class="min-h-[44px] min-w-[44px] rounded-xl border border-slate-300 dark:border-slate-600 text-lg hover:bg-slate-50 dark:hover:bg-slate-800"
+        class="min-h-[44px] w-full md:w-11 rounded-xl border border-slate-300 dark:border-slate-600 text-lg hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-transform"
         aria-label="جابه‌جایی دو کالا"
         @click="swap"
       >⇄</button>
-      <select
+      <GuidePicker
         v-model="secondId"
-        aria-label="کالای دوم"
-        class="min-h-[44px] w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
-      >
-        <option value="">کالای دوم را انتخاب کنید</option>
-        <optgroup v-for="group in guideRepository.groups" :key="group.id" :label="`${group.icon} ${group.name}`">
-          <option v-for="guide in group.guides" :key="guide.id" :value="guide.id">{{ guide.icon }} {{ guide.title }}</option>
-        </optgroup>
-      </select>
+        label="کالای دوم"
+        placeholder="کالای دوم را جستجو کنید"
+        :groups="guideRepository.groups"
+        :exclude-id="firstId"
+      />
     </div>
 
     <p v-if="!comparison" class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 px-3 py-10 text-center text-sm text-slate-400">
