@@ -98,6 +98,7 @@ var ifdaHistoryItems = ref([])
 var standardInput = ref('')
 var standardCaptchaInput = ref('')
 var standardCaptchaImage = ref('')
+var standardCaptchaError = ref('')
 var standardSessionId = ref('')
 var isFetchingStandardCaptcha = ref(false)
 var isFetchingStandard = ref(false)
@@ -152,13 +153,24 @@ watch([mappedQuery, mappedFilter], loadMappedItems)
 
 async function refreshStandardCaptcha() {
   isFetchingStandardCaptcha.value = true
+  standardCaptchaError.value = ''
   standardCaptchaInput.value = ''
   try {
-    var res = await standardLookupService.fetchCaptcha()
+    var res = await standardLookupService.fetchCaptcha(3000)
     if (res.ok) {
       standardCaptchaImage.value = res.captchaImage
       standardSessionId.value = res.sessionId
+      standardCaptchaError.value = ''
+    } else {
+      standardCaptchaImage.value = ''
+      standardCaptchaError.value = res.errorMessage || 'دریافت کد امنیتی از سامانه استاندارد با خطا مواجه شد.'
+      // Open in-app portal automatically so the user is directly unblocked
+      isStandardPortalOpen.value = true
     }
+  } catch (err) {
+    standardCaptchaImage.value = ''
+    standardCaptchaError.value = 'خطا در ارتباط با سامانه استاندارد.'
+    isStandardPortalOpen.value = true
   } finally {
     isFetchingStandardCaptcha.value = false
   }
@@ -177,7 +189,7 @@ async function submitStandardInquiry(sampleCode) {
       licenseNumber: targetCode,
       captcha: standardCaptchaInput.value,
       sessionId: standardSessionId.value
-    })
+    }, 3500)
     standardResult.value = res
     if (res.ok && res.data) {
       standardHistoryRepository.add({
@@ -196,7 +208,12 @@ async function submitStandardInquiry(sampleCode) {
       loadMappedItems()
     } else if (res?.error === 'invalid_captcha') {
       await refreshStandardCaptcha()
+    } else {
+      // If inquiry failed due to network or geoblock, open the portal
+      isStandardPortalOpen.value = true
     }
+  } catch {
+    isStandardPortalOpen.value = true
   } finally {
     isFetchingStandard.value = false
   }
@@ -247,6 +264,30 @@ function handleClearIfdaHistory() {
 function handleRemoveIfdaHistoryItem(id) {
   ifdaHistoryRepository.remove(id)
   loadIfdaHistory()
+}
+
+function openMapModal(params = {}) {
+  mapModalParams.value = {
+    initialItem: params.initialItem || null,
+    initialBarcode: params.initialBarcode || '',
+    initialIfdaCode: params.initialIfdaCode || '',
+    initialStandardCode: params.initialStandardCode || '',
+    initialBrand: params.initialBrand || '',
+    initialProductTitle: params.initialProductTitle || '',
+    initialManufacturer: params.initialManufacturer || '',
+    initialLicenseStatus: params.initialLicenseStatus || ''
+  }
+  isMapModalOpen.value = true
+}
+
+function copyLicenseAndOpenPortal() {
+  var code = standardInput.value.trim() || '7339969923'
+  if (navigator?.clipboard) {
+    navigator.clipboard.writeText(code)
+    copiedNotice.value = true
+    setTimeout(() => { copiedNotice.value = false }, 2000)
+  }
+  isStandardPortalOpen.value = true
 }
 
 function openMapModalFromIfda(itemOrResult) {
@@ -1405,6 +1446,55 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
+        <!-- Captcha Failure / Security Warning Banner -->
+        <div
+          v-if="standardCaptchaError"
+          class="rounded-2xl border border-amber-300 bg-amber-50/90 p-3.5 text-xs text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-200 space-y-2 animate-fade-in"
+        >
+          <div class="flex items-center justify-between gap-2 font-bold">
+            <div class="flex items-center gap-1.5">
+              <span class="text-base">⚠️</span>
+              <span>سامانه استاندارد ارتباط سرورهای خارج کشور را مسدود کرده است</span>
+            </div>
+            <button
+              type="button"
+              class="text-xs font-semibold text-amber-800 hover:underline dark:text-amber-300"
+              @click="standardCaptchaError = ''"
+            >
+              ✕
+            </button>
+          </div>
+          <p class="leading-relaxed text-[11px] text-amber-800/90 dark:text-amber-300/90">
+            به دلیل گواهی امنیتی داخلی (SSL 526) و فایروال سرور دولتی استاندارد، امکان دریافت خودکار تصویر کپچا از خارج کشور وجود ندارد؛ اما <strong>پرتال رسمی استاندارد در زیر باز شده است</strong> و شما مستقیماً در مرورگر خود بدون واسطه می‌توانید شماره پروانه را استعلام کنید.
+          </p>
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded-xl bg-amber-700 px-3 py-1.5 font-bold text-white shadow-sm hover:bg-amber-800 transition-colors"
+              @click="copyLicenseAndOpenPortal()"
+            >
+              <AppIcon name="clipboard" :size="13" />
+              <span>کپی شماره «{{ standardInput || '۷۳۳۹۹۶۹۹۲۳' }}» و مشاهده در پرتال</span>
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-3 py-1.5 font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors"
+              @click="openSmsInquiry()"
+            >
+              <span>📲</span>
+              <span>پیامک سریع به ۱۰۰۰۱۵۱۷</span>
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded-xl bg-brand-600 px-3 py-1.5 font-bold text-white shadow-sm hover:bg-brand-700 transition-colors"
+              @click="openMapModal({ initialStandardCode: standardInput || '7339969923' })"
+            >
+              <AppIcon name="tag" :size="13" />
+              <span>ثبت مشخصات و اتصال به کالا</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Captcha Section -->
         <div class="space-y-2 border-t border-slate-100 pt-3 dark:border-slate-700">
           <div class="flex items-center justify-between">
@@ -1436,9 +1526,9 @@ onBeforeUnmount(() => {
                 <div class="size-4 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
                 <span>در حال دریافت...</span>
               </div>
-              <div v-else class="text-center text-[11px] text-slate-400 py-1">
+              <div v-else class="text-center text-[11px] text-slate-500 py-1">
                 <button type="button" class="text-sky-600 font-bold hover:underline" @click="refreshStandardCaptcha()">
-                  دریافت کد تصویر
+                  دریافت مجدد کد
                 </button>
               </div>
             </div>
@@ -1522,8 +1612,57 @@ onBeforeUnmount(() => {
             بستن ✕
           </button>
         </div>
+
+        <!-- Portal Toolbar -->
+        <div class="flex flex-wrap items-center justify-between gap-2 bg-sky-50 dark:bg-sky-950/40 p-2.5 rounded-2xl border border-sky-200 dark:border-sky-800 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="text-slate-500">شماره استعلام:</span>
+            <span class="font-mono font-bold text-sky-800 dark:text-sky-200">{{ standardInput || '۷۳۳۹۹۶۹۹۲۳' }}</span>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded-lg bg-sky-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-sky-700 transition-colors shadow-sm"
+              @click="copyCode(standardInput || '7339969923')"
+            >
+              <AppIcon name="clipboard" :size="12" />
+              <span>کپی شماره</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 transition-colors shadow-sm"
+              @click="openSmsInquiry()"
+            >
+              <span>📲</span>
+              <span>پیامک به ۱۰۰۰۱۵۱۷</span>
+            </button>
+
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded-lg bg-brand-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-brand-700 transition-colors shadow-sm"
+              @click="openMapModal({
+                initialStandardCode: standardInput || '7339969923',
+                initialLicenseStatus: 'معتبر'
+              })"
+            >
+              <AppIcon name="tag" :size="12" />
+              <span>ثبت در کالاها</span>
+            </button>
+
+            <a
+              href="https://isom.inso.gov.ir/parvaneh/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 hover:text-sky-900 dark:text-sky-300"
+            >
+              <span>باز کردن در تب جداگانه ↗</span>
+            </a>
+          </div>
+        </div>
+
         <p class="text-[11px] text-slate-500 dark:text-slate-400">
-          این سامانه مستقیماً درون اپلیکیشن بارگذاری شده و بدون نیاز به سرور واسط، می‌توانید شماره پروانه و کپچا را درون آن مشاهده و وارد کنید.
+          این سامانه مستقیماً از داخل ایران بارگذاری شده و بدون نیاز به سرور واسط، می‌توانید کد پروانه و تصویر امنیتی را در کادر زیر مشاهده و دکمه «نمایش» را بزنید.
         </p>
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-700">
           <iframe

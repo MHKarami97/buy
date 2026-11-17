@@ -108,11 +108,16 @@ export class StandardLookupService {
       bases.push(this.proxyBaseUrl.replace(/\/+$/, ''))
     }
     bases.push('/api')
-    bases.push('https://smart-buy-proxy.mhkarami97.workers.dev/api')
-    return bases
+
+    // If already running directly on the worker or if custom proxy provided, avoid redundant worker call
+    var isAlreadyOnProxy = typeof window !== 'undefined' && window.location?.origin?.includes('smart-buy-proxy')
+    if (!isAlreadyOnProxy && !this.proxyBaseUrl) {
+      bases.push('https://smart-buy-proxy.mhkarami97.workers.dev/api')
+    }
+    return Array.from(new Set(bases))
   }
 
-  async fetchCaptcha(timeoutMs = 8000) {
+  async fetchCaptcha(timeoutMs = 3000) {
     var bases = this.getCandidateBases()
     var lastError = null
 
@@ -139,6 +144,17 @@ export class StandardLookupService {
               usedBase: base
             }
           }
+          if (data && !data.ok) {
+            return {
+              ok: false,
+              error: data.error || 'captcha_failed',
+              errorMessage: data.errorMessage || 'دریافت کد امنیتی از سامانه استاندارد انجام نشد.'
+            }
+          }
+        } else if (response.status === 524 || response.status === 526 || response.status === 502) {
+          // Worker returned gateway timeout or SSL 526 from inso.gov.ir; don't loop endlessly
+          lastError = new Error(`HTTP ${response.status}`)
+          break
         }
       } catch (err) {
         clearTimeout(timer)
@@ -149,12 +165,12 @@ export class StandardLookupService {
     return {
       ok: false,
       error: 'captcha_failed',
-      errorMessage: 'دریافت کد امنیتی از سامانه استاندارد با خطا مواجه شد.',
+      errorMessage: 'سامانه پروانه استاندارد به دلیل محدودیت‌های شبکه دولتی/SSL از سرورهای خارج کشور در دسترس نیست.',
       details: lastError?.message
     }
   }
 
-  async inquire({ licenseNumber, captcha, sessionId }, timeoutMs = 12000) {
+  async inquire({ licenseNumber, captcha, sessionId }, timeoutMs = 4000) {
     var normNumber = normalizeLicenseNumber(licenseNumber)
     if (!normNumber) {
       return {
@@ -200,6 +216,9 @@ export class StandardLookupService {
         if (response.ok) {
           var result = await response.json()
           return result
+        } else if (response.status === 524 || response.status === 526 || response.status === 502) {
+          lastError = new Error(`HTTP ${response.status}`)
+          break
         }
       } catch (err) {
         clearTimeout(timer)

@@ -111,3 +111,14 @@ test('StandardHistoryRepository manages history records correctly', () => {
   repo.remove(added.id)
   assert.equal(repo.getAll().length, 0)
 })
+
+test('StandardLookupService candidate bases and fast timeout', () => {
+  const service = new StandardLookupService()
+  const bases = service.getCandidateBases()
+  assert.ok(bases.includes('/api'))
+  assert.ok(bases.includes('https://smart-buy-proxy.mhkarami97.workers.dev/api'))
+
+  const custom = new StandardLookupService('https://custom-proxy.example.com')
+  const customBases = custom.getCandidateBases()
+  assert.equal(customBases[0], 'https://custom-proxy.example.com')
+})

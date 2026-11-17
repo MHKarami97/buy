@@ -170,10 +170,14 @@ export default {
 
     // 3. Standard Captcha: /api/standard/captcha
     if (path === '/api/standard/captcha' || path === '/standard/captcha') {
+      const abortCtrl = new AbortController()
+      const timer = setTimeout(() => abortCtrl.abort(), 3500)
+
       try {
         // Step 1: Handshake with ArvanCloud on HTTP port 80 (avoids SSL 526)
         const resp1 = await fetch('http://isom.inso.gov.ir/parvaneh/', {
           redirect: 'manual',
+          signal: abortCtrl.signal,
           headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
         })
         const setCookies1 = resp1.headers.getSetCookie ? resp1.headers.getSetCookie() : [resp1.headers.get('set-cookie')]
@@ -182,6 +186,7 @@ export default {
         // Step 2: Request with ArvanCloud cookies to get PHP session
         const resp2 = await fetch('http://isom.inso.gov.ir/parvaneh/', {
           redirect: 'manual',
+          signal: abortCtrl.signal,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Cookie': cookies1.join('; ')
@@ -192,12 +197,14 @@ export default {
 
         // Step 3: Fetch captcha JPEG image
         const captchaResp = await fetch('http://isom.inso.gov.ir/standard/verif_img.php', {
+          signal: abortCtrl.signal,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Referer': 'http://isom.inso.gov.ir/parvaneh/',
             'Cookie': allCookies.join('; ')
           }
         })
+        clearTimeout(timer)
 
         if (!captchaResp.ok) {
           return jsonResponse({ ok: false, error: 'captcha_failed', errorMessage: `خطای سامانه استاندارد (${captchaResp.status})` }, 502)
@@ -226,7 +233,13 @@ export default {
           captchaImage: dataUrl
         })
       } catch (err) {
-        return jsonResponse({ ok: false, error: 'captcha_failed', errorMessage: err.message }, 500)
+        clearTimeout(timer)
+        return jsonResponse({
+          ok: false,
+          error: 'portal_unreachable',
+          errorMessage: 'سامانه پروانه استاندارد به دلیل محدودیت‌های گواهی امنیتی داخلی یا فایروال دولتی از خارج کشور در دسترس نیست.',
+          details: err.message
+        }, 502)
       }
     }
 
@@ -236,11 +249,15 @@ export default {
         return jsonResponse({ ok: false, error: 'method_not_allowed' }, 405)
       }
 
+      const abortCtrl = new AbortController()
+      const timer = setTimeout(() => abortCtrl.abort(), 4000)
+
       try {
         const payload = await request.json()
         const { licenseNumber, captcha, sessionId } = payload
 
         if (!licenseNumber || !captcha) {
+          clearTimeout(timer)
           return jsonResponse({ ok: false, error: 'missing_fields', errorMessage: 'شماره پروانه و کد امنیتی الزامی است.' }, 400)
         }
 
@@ -260,6 +277,7 @@ export default {
 
         const postResp = await fetch('http://isom.inso.gov.ir/parvaneh/', {
           method: 'POST',
+          signal: abortCtrl.signal,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Referer': 'http://isom.inso.gov.ir/parvaneh/',
@@ -268,12 +286,19 @@ export default {
           },
           body: formData.toString()
         })
+        clearTimeout(timer)
 
         const html = await postResp.text()
         const parsed = parseStandardHtml(html)
         return jsonResponse(parsed)
       } catch (err) {
-        return jsonResponse({ ok: false, error: 'inquiry_failed', errorMessage: err.message }, 500)
+        clearTimeout(timer)
+        return jsonResponse({
+          ok: false,
+          error: 'inquiry_failed',
+          errorMessage: 'پاسخی از سامانه پروانه استاندارد دریافت نشد.',
+          details: err.message
+        }, 502)
       }
     }
 
