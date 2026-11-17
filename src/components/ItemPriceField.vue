@@ -50,7 +50,7 @@ function cancel() {
 </script>
 
 <template>
-  <div class="w-full">
+  <div :class="isEditing ? 'w-full' : 'min-w-0'">
     <div v-if="isEditing" class="flex items-stretch gap-2">
       <div class="relative flex-1">
         <input
@@ -88,7 +88,7 @@ function cancel() {
     <button
       v-else
       type="button"
-      class="inline-flex min-h-[36px] items-center gap-2 rounded-full px-3 text-xs transition-colors"
+      class="inline-flex min-h-[36px] items-center gap-2 rounded-full px-3 text-xs transition-colors active:scale-95"
       :class="current
         ? 'bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-300'
         : 'border border-dashed border-slate-300 text-slate-500 hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:text-slate-400'"

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { guideRepository } from '../data/guides'
 import { useGuideDialog } from '../composables/useGuideDialog'
+import AppIcon from './AppIcon.vue'
 
 var props = defineProps({
   item: { type: Object, required: true }
@@ -15,11 +16,11 @@ var guide = computed(() => guideRepository.findForItem(props.item))
   <button
     v-if="guide"
     type="button"
-    class="inline-flex items-center gap-1 min-h-[32px] px-2 rounded-lg text-xs text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-slate-700 transition-colors"
+    class="inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-brand-50 px-3 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-100 active:scale-95 dark:bg-brand-700/20 dark:text-brand-200 dark:hover:bg-brand-700/30"
     :aria-label="`راهنمای خرید ${item.title}`"
     @click.stop="open(guide)"
   >
-    <span aria-hidden="true">📖</span>
-    <span>راهنمای خرید</span>
+    <AppIcon name="book" :size="16" />
+    <span>راهنما</span>
   </button>
 </template>

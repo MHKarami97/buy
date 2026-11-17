@@ -1,34 +1,35 @@
 <script setup>
-import { computed } from 'vue';
-import { useChecklistStore } from '../stores/checklistStore';
+import { computed } from 'vue'
+import { useChecklistStore } from '../stores/checklistStore'
+import AppIcon from './AppIcon.vue'
 
 var props = defineProps({
   item: { type: Object, required: true }
-});
+})
 
-var store = useChecklistStore();
+var store = useChecklistStore()
 
 var target = computed(function () {
-  var templateId = store.activeTemplateId;
-  var categoryId = store.activeCategory ? store.activeCategory.id : null;
+  var templateId = store.activeTemplateId
+  var categoryId = store.activeCategory ? store.activeCategory.id : null
   if (!templateId || !categoryId) {
-    return null;
+    return null
   }
   return {
     name: 'item-history',
     params: { templateId: templateId, categoryId: categoryId, itemId: props.item.id }
-  };
-});
+  }
+})
 </script>
 
 <template>
   <RouterLink
     v-if="target"
     :to="target"
-    class="min-w-44px min-h-44px flex items-center justify-center text-slate-400 hover:text-brand-500 transition-colors"
+    class="flex size-10 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-brand-50 hover:text-brand-600 active:scale-90 dark:hover:bg-slate-700"
     aria-label="نمودار و تاریخچه مصرف"
     title="نمودار و تاریخچه مصرف"
   >
-    <span aria-hidden="true">📈</span>
+    <AppIcon name="trend" :size="20" />
   </RouterLink>
 </template>
