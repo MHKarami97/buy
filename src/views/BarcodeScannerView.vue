@@ -6,6 +6,7 @@ import { barcodeScannerEngine } from '../services/barcode/BarcodeScannerEngine'
 import { BarcodeLookupService } from '../services/barcode/BarcodeLookupService'
 import { barcodeHistoryRepository } from '../services/barcode/BarcodeHistoryRepository'
 import { JalaliDate } from '../services/JalaliDate'
+import { PACKAGING_LOGOS, LOGO_CATEGORIES } from '../data/packagingLogos.js'
 import AppIcon from '../components/AppIcon.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useConfirm } from '../composables/useConfirm'
@@ -14,7 +15,7 @@ var router = useRouter()
 var store = useChecklistStore()
 var { isPending, pendingLabel, requestConfirm, confirmAction, cancelAction } = useConfirm()
 
-var activeTab = ref('scanner') // 'scanner' | 'history'
+var activeTab = ref('scanner') // 'scanner' | 'history' | 'logos'
 var videoRef = ref(null)
 var fileInputRef = ref(null)
 
@@ -34,6 +35,36 @@ var copiedNotice = ref(false)
 var historyQuery = ref('')
 var historyFilter = ref('all') // 'all' | 'barcode' | 'qr' | 'iran'
 var historyItems = ref([])
+
+// Packaging Logos Guide state
+var logoQuery = ref('')
+var selectedLogoCategory = ref('all')
+var selectedLogoModal = ref(null)
+
+var filteredLogos = computed(() => {
+  var q = logoQuery.value.trim().toLowerCase()
+  var cat = selectedLogoCategory.value
+
+  return PACKAGING_LOGOS.filter((logo) => {
+    if (cat !== 'all' && logo.category !== cat) return false
+    if (!q) return true
+    return (
+      logo.titleFa.toLowerCase().includes(q) ||
+      logo.authorityFa.toLowerCase().includes(q) ||
+      logo.summaryFa.toLowerCase().includes(q) ||
+      logo.descriptionFa.toLowerCase().includes(q) ||
+      (logo.badge && logo.badge.toLowerCase().includes(q))
+    )
+  })
+})
+
+function openLogoDetail(logo) {
+  selectedLogoModal.value = logo
+}
+
+function closeLogoDetail() {
+  selectedLogoModal.value = null
+}
 
 // Add to checklist state
 var isAddModalOpen = ref(false)
@@ -315,7 +346,9 @@ watch(activeTab, (tab) => {
     startCamera()
   } else {
     stopCamera()
-    loadHistory()
+    if (tab === 'history') {
+      loadHistory()
+    }
   }
 })
 
@@ -344,7 +377,7 @@ onBeforeUnmount(() => {
       <div class="inline-flex rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
         <button
           type="button"
-          class="rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors"
+          class="rounded-xl px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors"
           :class="activeTab === 'scanner' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-400'"
           @click="activeTab = 'scanner'"
         >
@@ -352,7 +385,15 @@ onBeforeUnmount(() => {
         </button>
         <button
           type="button"
-          class="rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"
+          class="rounded-xl px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors"
+          :class="activeTab === 'logos' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-400'"
+          @click="activeTab = 'logos'"
+        >
+          🏷️ راهنمای نمادها
+        </button>
+        <button
+          type="button"
+          class="rounded-xl px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"
           :class="activeTab === 'history' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-400'"
           @click="activeTab = 'history'"
         >
@@ -370,10 +411,10 @@ onBeforeUnmount(() => {
         <span class="flex size-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300">
           <AppIcon name="scan" :size="24" />
         </span>
-        <span>بارکدخوان هوشمند</span>
+        <span>بارکدخوان و راهنمای نمادهای کالا</span>
       </h1>
       <p class="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-        اسکن سریع انواع بارکدهای میله‌ای و QR کد، تشخیص خودکار کشور سازنده و مشخصات محصول
+        اسکن سریع بارکدها و QR کد، تشخیص کشور و شرکت سازنده همراه با راهنمای جامع نمادهای بسته‌بندی، استاندارد و سلامت
       </p>
     </div>
 
@@ -576,6 +617,20 @@ onBeforeUnmount(() => {
           </a>
         </div>
 
+        <!-- Packaging logos guide quick tip -->
+        <div class="flex items-center justify-between rounded-2xl border border-sky-100 bg-sky-50/60 p-2.5 dark:border-sky-900/40 dark:bg-sky-950/20 text-xs">
+          <span class="text-slate-600 dark:text-slate-300">
+            🏷️ نیاز به بررسی نشان استاندارد، سیب سلامت یا علائم روی بسته دارید؟
+          </span>
+          <button
+            type="button"
+            class="font-bold text-sky-600 dark:text-sky-400 hover:underline shrink-0 px-2 py-1"
+            @click="activeTab = 'logos'"
+          >
+            راهنمای نمادها ←
+          </button>
+        </div>
+
         <!-- Action buttons -->
         <div class="grid grid-cols-2 gap-2 pt-2">
           <button
@@ -695,6 +750,180 @@ onBeforeUnmount(() => {
         <span class="text-4xl block">📦</span>
         <p class="text-sm">تاریخچه اسکن خالی است.</p>
         <p class="text-xs text-slate-500">بارکد یا کد QR محصولی را اسکن کنید تا اینجا ثبت شود.</p>
+      </div>
+    </div>
+
+    <!-- TAB 3: PACKAGING LOGOS GUIDE -->
+    <div v-show="activeTab === 'logos'" class="space-y-4">
+      <!-- Search & Filters -->
+      <div class="space-y-3">
+        <div class="relative">
+          <input
+            v-model="logoQuery"
+            type="search"
+            placeholder="جستجو در نمادها (استاندارد، سیب سلامت، حلال، بازیافت، مایکروویو...)"
+            class="w-full min-h-[44px] rounded-2xl border border-slate-200 bg-white px-4 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-400"
+          />
+        </div>
+
+        <!-- Category pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+          <button
+            v-for="cat in LOGO_CATEGORIES"
+            :key="cat.id"
+            type="button"
+            class="min-h-[32px] px-3 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
+            :class="selectedLogoCategory === cat.id ? 'bg-brand-500 text-white shadow-sm' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'"
+            @click="selectedLogoCategory = cat.id"
+          >
+            {{ cat.titleFa }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Guidance Banner -->
+      <div class="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-3.5 text-xs text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200 flex items-start gap-2.5">
+        <span class="text-base shrink-0">💡</span>
+        <div class="space-y-1">
+          <p class="font-bold">راهنمای شناخت نشان‌ها و علائم درج‌شده روی کالاهای مصرفی</p>
+          <p class="text-[11px] leading-relaxed text-amber-900/90 dark:text-amber-300">
+            برای اطمینان از اصالت کالاهای دارای علامت استاندارد، کد ۱۰ رقمی زیر نشان را به شماره پیامکی <strong>۱۰۰۰۱۵۱۷</strong> ارسال کنید. برای استعلام فرآورده‌های سلامت و دارو نیز از سامانه تی‌تک (ttac.ir) استفاده نمایید.
+          </p>
+        </div>
+      </div>
+
+      <!-- Logos Grid -->
+      <div v-if="filteredLogos.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <article
+          v-for="logo in filteredLogos"
+          :key="logo.id"
+          class="group flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm hover:border-brand-400 hover:shadow-md dark:border-slate-700/70 dark:bg-slate-800 transition-all cursor-pointer"
+          @click="openLogoDetail(logo)"
+        >
+          <div>
+            <div class="flex items-start gap-3">
+              <!-- SVG Icon Preview -->
+              <div
+                class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-900/60 p-2 text-slate-800 dark:text-slate-100 transition-transform group-hover:scale-105"
+                v-html="logo.svg"
+              />
+
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                  <span
+                    class="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+                    :class="logo.badgeTone === 'emerald' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : (logo.badgeTone === 'sky' ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300' : (logo.badgeTone === 'rose' ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'))"
+                  >
+                    {{ logo.badge }}
+                  </span>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                  {{ logo.titleFa }}
+                </h3>
+                <p class="text-[11px] text-slate-400 line-clamp-1">
+                  {{ logo.authorityFa }}
+                </p>
+              </div>
+            </div>
+
+            <p class="mt-2.5 text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+              {{ logo.summaryFa }}
+            </p>
+          </div>
+
+          <div class="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+            <span class="text-brand-600 dark:text-brand-400 font-medium group-hover:underline">
+              مشاهده توضیحات و نحوه استعلام ←
+            </span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Empty state when no logo matches -->
+      <div v-else class="text-center py-12 text-slate-400 space-y-2">
+        <span class="text-4xl block">🔍</span>
+        <p class="text-sm">نمادی با این عنوان یا مشخصات یافت نشد.</p>
+        <p class="text-xs text-slate-500">کلمات دیگری مانند استاندارد، سلامت، بازیافت یا پلاستیک را امتحان کنید.</p>
+      </div>
+    </div>
+
+    <!-- LOGO DETAIL MODAL -->
+    <div
+      v-if="selectedLogoModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      @click.self="closeLogoDetail"
+    >
+      <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-5 sm:p-6 shadow-2xl dark:bg-slate-800 space-y-4">
+        <!-- Header with large SVG -->
+        <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-700">
+          <div class="flex items-center gap-3.5">
+            <div
+              class="flex size-16 sm:size-20 shrink-0 items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-900/60 p-2.5 shadow-inner"
+              v-html="selectedLogoModal.svg"
+            />
+            <div>
+              <span
+                class="inline-block rounded-md px-2 py-0.5 text-[11px] font-semibold mb-1"
+                :class="selectedLogoModal.badgeTone === 'emerald' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : (selectedLogoModal.badgeTone === 'sky' ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300' : (selectedLogoModal.badgeTone === 'rose' ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'))"
+              >
+                {{ selectedLogoModal.badge }}
+              </span>
+              <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                {{ selectedLogoModal.titleFa }}
+              </h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                مرجع صدور: {{ selectedLogoModal.authorityFa }}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="flex size-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 transition-colors"
+            @click="closeLogoDetail"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Description -->
+        <div class="space-y-3.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+          <div>
+            <h4 class="font-bold text-slate-900 dark:text-slate-100 mb-1">
+              مفهوم و اهمیت نشان:
+            </h4>
+            <p>{{ selectedLogoModal.descriptionFa }}</p>
+          </div>
+
+          <div v-if="selectedLogoModal.whereFa">
+            <h4 class="font-bold text-slate-900 dark:text-slate-100 mb-1">
+              معمولاً روی چه کالاهایی درج می‌شود؟
+            </h4>
+            <p class="text-slate-600 dark:text-slate-400">{{ selectedLogoModal.whereFa }}</p>
+          </div>
+
+          <!-- Verification Box -->
+          <div class="rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5 dark:border-sky-900/50 dark:bg-sky-950/30 space-y-1.5">
+            <div class="flex items-center gap-1.5 font-bold text-sky-900 dark:text-sky-200">
+              <span>🔍</span>
+              <span>نحوه بررسی و استعلام اصالت:</span>
+            </div>
+            <p class="text-xs text-sky-800 dark:text-sky-300">
+              {{ selectedLogoModal.verificationFa }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+          <button
+            type="button"
+            class="min-h-[40px] px-5 rounded-xl bg-brand-500 text-white text-xs sm:text-sm font-semibold hover:bg-brand-600 transition-colors shadow-sm"
+            @click="closeLogoDetail"
+          >
+            متوجه شدم
+          </button>
+        </div>
       </div>
     </div>
 
