@@ -8,9 +8,15 @@ var props = defineProps({
   priceKey: { type: String, required: true }
 })
 
+var MODES = [
+  { id: 'new', label: 'قیمت جدید', hint: 'از الان اعمال می‌شود؛ خریدهای قبلی با قیمت قبلی می‌مانند.' },
+  { id: 'fix', label: 'اصلاح اشتباه', hint: 'قیمت قبلی در همه‌ی گزارش‌ها با این مقدار جایگزین می‌شود.' }
+]
+
 var current = ref(itemPriceRepository.getCurrent(props.priceKey))
 var isEditing = ref(false)
 var draft = ref('')
+var mode = ref('new')
 var inputElement = ref(null)
 
 watch(
@@ -23,6 +29,7 @@ watch(
 
 async function startEditing() {
   draft.value = current.value ? groupDigits(String(current.value)) : ''
+  mode.value = 'new'
   isEditing.value = true
   await nextTick()
   inputElement.value?.focus()
@@ -38,8 +45,12 @@ function onInput(event) {
 function save() {
   var value = Number(parseTomanInput(draft.value))
   if (value > 0) {
-    itemPriceRepository.record(props.priceKey, value)
-    current.value = value
+    if (current.value && mode.value === 'fix') {
+      itemPriceRepository.correctLast(props.priceKey, value)
+    } else {
+      itemPriceRepository.record(props.priceKey, value)
+    }
+    current.value = itemPriceRepository.getCurrent(props.priceKey)
   }
   isEditing.value = false
 }
@@ -51,38 +62,61 @@ function cancel() {
 
 <template>
   <div :class="isEditing ? 'w-full' : 'min-w-0'">
-    <div v-if="isEditing" class="flex items-stretch gap-2">
-      <div class="relative flex-1">
-        <input
-          ref="inputElement"
-          :value="draft"
-          type="text"
-          inputmode="numeric"
-          dir="ltr"
-          autocomplete="off"
-          placeholder="مثلاً 120,000"
-          aria-label="قیمت واحد به تومان"
-          class="h-11 w-full rounded-xl border border-brand-300 bg-white pl-16 pr-3 text-left text-sm font-semibold tabular-nums text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-400 dark:border-brand-700 dark:bg-slate-700 dark:text-slate-100"
-          @input="onInput"
-          @keydown.enter.prevent="save"
-          @keydown.esc.prevent="cancel"
-        />
-        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-xs text-slate-400">تومان</span>
+    <div v-if="isEditing" class="space-y-2">
+      <div v-if="current" class="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700/60" role="radiogroup" aria-label="نوع ویرایش قیمت">
+        <button
+          v-for="option in MODES"
+          :key="option.id"
+          type="button"
+          role="radio"
+          :aria-checked="mode === option.id"
+          class="min-h-[36px] rounded-lg px-2 text-xs transition-colors"
+          :class="mode === option.id
+            ? 'bg-white font-semibold text-brand-700 shadow-sm dark:bg-slate-800 dark:text-brand-200'
+            : 'text-slate-500 dark:text-slate-400'"
+          @click="mode = option.id"
+        >
+          {{ option.label }}
+        </button>
       </div>
-      <button
-        type="button"
-        class="flex size-11 items-center justify-center rounded-xl bg-emerald-500 text-white transition-colors hover:bg-emerald-600"
-        aria-label="ذخیره‌ی قیمت"
-        @click="save"
-      >✓</button>
-      <button
-        type="button"
-        class="flex size-11 items-center justify-center rounded-xl border border-slate-300 text-slate-500 transition-colors hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
-        aria-label="انصراف"
-        @click="cancel"
-      >
-        <AppIcon name="close" :size="18" />
-      </button>
+
+      <div class="flex items-stretch gap-2">
+        <div class="relative flex-1">
+          <input
+            ref="inputElement"
+            :value="draft"
+            type="text"
+            inputmode="numeric"
+            dir="ltr"
+            autocomplete="off"
+            placeholder="مثلاً 120,000"
+            aria-label="قیمت واحد به تومان"
+            class="h-11 w-full rounded-xl border border-brand-300 bg-white pl-16 pr-3 text-left text-sm font-semibold tabular-nums text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-400 dark:border-brand-700 dark:bg-slate-700 dark:text-slate-100"
+            @input="onInput"
+            @keydown.enter.prevent="save"
+            @keydown.esc.prevent="cancel"
+          />
+          <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-xs text-slate-400">تومان</span>
+        </div>
+        <button
+          type="button"
+          class="flex size-11 items-center justify-center rounded-xl bg-emerald-500 text-white transition-colors hover:bg-emerald-600"
+          aria-label="ذخیره‌ی قیمت"
+          @click="save"
+        >✓</button>
+        <button
+          type="button"
+          class="flex size-11 items-center justify-center rounded-xl border border-slate-300 text-slate-500 transition-colors hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700"
+          aria-label="انصراف"
+          @click="cancel"
+        >
+          <AppIcon name="close" :size="18" />
+        </button>
+      </div>
+
+      <p v-if="current" class="px-1 text-[11px] leading-5 text-slate-400">
+        {{ MODES.find((option) => option.id === mode).hint }}
+      </p>
     </div>
 
     <button
