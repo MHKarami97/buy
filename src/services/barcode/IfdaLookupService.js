@@ -192,11 +192,11 @@ export class IfdaLookupService {
     var controller = new AbortController()
     var timer = setTimeout(() => controller.abort(), timeoutMs)
 
-    var candidateUrls = []
-    if (typeof window !== 'undefined' && window.location) {
-      candidateUrls.push(`/api/cerfood/p/${norm.part1}/${norm.part2}`)
-    }
-    candidateUrls.push(directUrl)
+    var candidateUrls = [
+      `/api/cerfood/p/${norm.part1}/${norm.part2}`,
+      `https://smart-buy-proxy.mhkarami97.workers.dev/api/cerfood/p/${norm.part1}/${norm.part2}`,
+      directUrl
+    ]
 
     var lastError = null
 
@@ -231,15 +231,19 @@ export class IfdaLookupService {
             code: norm.normalized
           }
         } else if (response.status === 404) {
-          clearTimeout(timer)
-          return {
-            ok: false,
-            status: 'not_found',
-            error: 'دیتا دریافت نشد یا خطا خورد',
-            errorMessage: 'پروانه‌ای با این شماره در سامانه سرفود ثبت نشده است (کد ۴۰۴).',
-            url: directUrl,
-            code: norm.normalized
+          // If 404 came from the direct cerfood.ir URL, it's genuinely not found
+          if (targetUrl === directUrl) {
+            clearTimeout(timer)
+            return {
+              ok: false,
+              status: 'not_found',
+              error: 'دیتا دریافت نشد یا خطا خورد',
+              errorMessage: 'پروانه‌ای با این شماره در سامانه سرفود ثبت نشده است (کد ۴۰۴).',
+              url: directUrl,
+              code: norm.normalized
+            }
           }
+          // If 404 came from a relative proxy, continue to next candidate
         }
       } catch (err) {
         lastError = err
@@ -252,7 +256,7 @@ export class IfdaLookupService {
       ok: false,
       status: 'failed',
       error: 'دیتا دریافت نشد یا خطا خورد',
-      errorMessage: 'امکان برقراری ارتباط با سامانه سرفود در این مرورگر وجود ندارد یا پاسخی دریافت نشد.',
+      errorMessage: 'امکان واکشی مستقیم اطلاعات در این مرورگر به دلیل محدودیت‌های امنیتی (CORS) وجود ندارد. با کلیک روی پیوند زیر می‌توانید مستقیماً در سامانه سرفود بررسی نمایید.',
       details: lastError?.message,
       url: directUrl,
       code: norm.normalized

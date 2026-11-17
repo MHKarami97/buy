@@ -9,6 +9,9 @@ import { JalaliDate } from '../services/JalaliDate'
 import { PACKAGING_LOGOS, LOGO_CATEGORIES } from '../data/packagingLogos.js'
 import { IfdaLookupService, normalizeIfdaCode } from '../services/barcode/IfdaLookupService'
 import { ifdaHistoryRepository } from '../services/barcode/IfdaHistoryRepository'
+import { standardLookupService, normalizeLicenseNumber } from '../services/barcode/StandardLookupService'
+import { standardHistoryRepository } from '../services/barcode/StandardHistoryRepository'
+import { preferencesRepository } from '../services/PreferencesRepository'
 import { itemProductCodeRepository } from '../services/barcode/ItemProductCodeRepository'
 import MapItemCodeModal from '../components/MapItemCodeModal.vue'
 import ItemCodeDetailsModal from '../components/ItemCodeDetailsModal.vue'
@@ -91,6 +94,19 @@ var ifdaHistoryQuery = ref('')
 var ifdaHistoryStatusFilter = ref('all') // 'all' | 'valid' | 'invalid'
 var ifdaHistoryItems = ref([])
 
+// Standard (استاندارد) Inquiry state
+var standardInput = ref('')
+var standardCaptchaInput = ref('')
+var standardCaptchaImage = ref('')
+var standardSessionId = ref('')
+var isFetchingStandardCaptcha = ref(false)
+var isFetchingStandard = ref(false)
+var standardResult = ref(null)
+var standardHistoryQuery = ref('')
+var standardHistoryStatusFilter = ref('all') // 'all' | 'valid' | 'invalid'
+var standardHistoryItems = ref([])
+var isStandardPortalOpen = ref(false)
+
 // Mapped Items state
 var mappedQuery = ref('')
 var mappedFilter = ref('all') // 'all' | 'barcode' | 'ifda' | 'standard'
@@ -120,6 +136,10 @@ function loadIfdaHistory() {
   ifdaHistoryItems.value = ifdaHistoryRepository.filter(ifdaHistoryQuery.value, ifdaHistoryStatusFilter.value)
 }
 
+function loadStandardHistory() {
+  standardHistoryItems.value = standardHistoryRepository.filter(standardHistoryQuery.value, standardHistoryStatusFilter.value)
+}
+
 function loadMappedItems() {
   mappedItems.value = itemProductCodeRepository.filter(mappedQuery.value, mappedFilter.value)
   mappedCount.value = itemProductCodeRepository.getAll().length
@@ -127,7 +147,66 @@ function loadMappedItems() {
 
 watch([historyQuery, historyFilter], loadHistory)
 watch([ifdaHistoryQuery, ifdaHistoryStatusFilter], loadIfdaHistory)
+watch([standardHistoryQuery, standardHistoryStatusFilter], loadStandardHistory)
 watch([mappedQuery, mappedFilter], loadMappedItems)
+
+async function refreshStandardCaptcha() {
+  isFetchingStandardCaptcha.value = true
+  standardCaptchaInput.value = ''
+  try {
+    var res = await standardLookupService.fetchCaptcha()
+    if (res.ok) {
+      standardCaptchaImage.value = res.captchaImage
+      standardSessionId.value = res.sessionId
+    }
+  } finally {
+    isFetchingStandardCaptcha.value = false
+  }
+}
+
+async function submitStandardInquiry(sampleCode) {
+  var targetCode = (sampleCode || standardInput.value || '').trim()
+  if (!targetCode) return
+  standardInput.value = targetCode
+
+  isFetchingStandard.value = true
+  standardResult.value = null
+
+  try {
+    var res = await standardLookupService.inquire({
+      licenseNumber: targetCode,
+      captcha: standardCaptchaInput.value,
+      sessionId: standardSessionId.value
+    })
+    standardResult.value = res
+    if (res.ok && res.data) {
+      standardHistoryRepository.add({
+        licenseNumber: res.data.licenseNumber || targetCode,
+        licenseType: res.data.licenseType,
+        province: res.data.province,
+        manufacturer: res.data.manufacturer,
+        product: res.data.product,
+        brand: res.data.brand,
+        expiryDate: res.data.expiryDate,
+        status: res.status,
+        statusText: res.data.statusText,
+        reportUrl: res.data.reportUrl
+      })
+      loadStandardHistory()
+      loadMappedItems()
+    } else if (res?.error === 'invalid_captcha') {
+      await refreshStandardCaptcha()
+    }
+  } finally {
+    isFetchingStandard.value = false
+  }
+}
+
+function openSmsInquiry(code) {
+  var norm = normalizeLicenseNumber(code || standardInput.value || '')
+  if (!norm) return
+  window.location.href = `sms:10001517?body=${encodeURIComponent(norm)}`
+}
 
 async function submitIfdaInquiry(sampleCode) {
   var targetCode = (sampleCode || ifdaInput.value || '').trim()
@@ -559,6 +638,11 @@ watch(activeTab, (tab) => {
       loadHistory()
     } else if (tab === 'ifda') {
       loadIfdaHistory()
+    } else if (tab === 'standard') {
+      loadStandardHistory()
+      if (!standardCaptchaImage.value) {
+        refreshStandardCaptcha()
+      }
     } else if (tab === 'mapped') {
       loadMappedItems()
     }
@@ -568,6 +652,7 @@ watch(activeTab, (tab) => {
 onMounted(() => {
   loadHistory()
   loadIfdaHistory()
+  loadStandardHistory()
   loadMappedItems()
   unsubMapping = itemProductCodeRepository.subscribe(loadMappedItems)
   if (typeof window !== 'undefined') {
@@ -612,10 +697,10 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Tabs Segmented Control (Smooth horizontal scroll on mobile, flex on desktop) -->
-    <div class="flex items-center gap-1 overflow-x-auto no-scrollbar rounded-2xl bg-slate-100 p-1 dark:bg-slate-800 shadow-inner">
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar rounded-2xl bg-slate-100 p-1.5 dark:bg-slate-800 shadow-inner flex-nowrap">
       <button
         type="button"
-        class="flex-1 sm:flex-initial min-w-[75px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        class="shrink-0 md:flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-3 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
         :class="activeTab === 'scanner' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
         @click="activeTab = 'scanner'"
       >
@@ -625,7 +710,7 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        class="flex-1 sm:flex-initial min-w-[85px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        class="shrink-0 md:flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-3 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
         :class="activeTab === 'ifda' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
         @click="activeTab = 'ifda'"
       >
@@ -635,7 +720,17 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        class="flex-1 sm:flex-initial min-w-[85px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        class="shrink-0 md:flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-3 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        :class="activeTab === 'standard' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+        @click="activeTab = 'standard'"
+      >
+        <span class="text-sm shrink-0">🏅</span>
+        <span>استعلام استاندارد</span>
+      </button>
+
+      <button
+        type="button"
+        class="shrink-0 md:flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-3 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
         :class="activeTab === 'mapped' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
         @click="activeTab = 'mapped'"
       >
@@ -652,7 +747,7 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        class="flex-1 sm:flex-initial min-w-[70px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        class="shrink-0 md:flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-3 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
         :class="activeTab === 'history' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
         @click="activeTab = 'history'"
       >
@@ -669,7 +764,7 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        class="flex-1 sm:flex-initial min-w-[80px] flex items-center justify-center gap-1.5 rounded-xl py-2 px-2.5 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
+        class="shrink-0 md:flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-3 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-150"
         :class="activeTab === 'logos' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
         @click="activeTab = 'logos'"
       >
@@ -1274,6 +1369,401 @@ onBeforeUnmount(() => {
 
         <div v-else class="text-center py-6 text-slate-400 text-xs">
           تاریخچه استعلام غذا و دارو خالی است.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: STANDARD (استعلام پروانه نشان استاندارد) -->
+    <div v-show="activeTab === 'standard'" class="space-y-4">
+      <!-- Info Header -->
+      <div class="rounded-3xl border border-sky-200/80 bg-gradient-to-br from-sky-50/90 to-blue-50/50 p-4 sm:p-5 dark:border-sky-900/40 dark:from-sky-950/30 dark:to-blue-950/20 space-y-2">
+        <div class="flex items-center gap-2 text-sky-800 dark:text-sky-300 font-bold text-sm sm:text-base">
+          <span class="text-2xl">🏅</span>
+          <span>استعلام پروانه نشان استاندارد ملی ایران (isom.inso.gov.ir)</span>
+        </div>
+        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+          شماره پروانه کاربرد نشان استاندارد اجباری (۱۰ رقمی مانند <strong>۷۳۳۹۹۶۹۹۲۳</strong>)، استاندارد تشویقی (۹ رقمی) یا کد طلا (با پیشوند G) را وارد کنید و با وارد کردن کد امنیتی ۵ رقمی، اطلاعات کارخانه، برند و اعتبار را دریافت نمایید.
+        </p>
+      </div>
+
+      <!-- Input Form -->
+      <div class="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm dark:border-slate-700/80 dark:bg-slate-800 space-y-4">
+        <!-- License Number Input -->
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-200">
+            شماره پروانه استاندارد یا کد شناسایی طلا:
+          </label>
+          <div class="relative">
+            <input
+              v-model="standardInput"
+              type="text"
+              dir="ltr"
+              placeholder="مثال: 7339969923 یا G12345"
+              class="w-full min-h-[44px] rounded-2xl border border-slate-200 bg-slate-50 px-4 text-center font-mono text-base font-bold tracking-wider text-slate-800 shadow-inner dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-400"
+              @keydown.enter="submitStandardInquiry()"
+            />
+          </div>
+        </div>
+
+        <!-- Captcha Section -->
+        <div class="space-y-2 border-t border-slate-100 pt-3 dark:border-slate-700">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-200">
+              کد امنیتی ۵ رقمی تصویر:
+            </label>
+            <button
+              type="button"
+              class="text-[11px] font-semibold text-sky-600 hover:text-sky-800 dark:text-sky-400 flex items-center gap-1"
+              :disabled="isFetchingStandardCaptcha"
+              @click="refreshStandardCaptcha()"
+            >
+              <div v-if="isFetchingStandardCaptcha" class="size-3 animate-spin rounded-full border-2 border-sky-600 border-t-transparent" />
+              <AppIcon v-else name="history" :size="12" />
+              <span>تغییر تصویر کد امنیتی</span>
+            </button>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <!-- Captcha Image Container -->
+            <div class="flex items-center justify-center min-h-[46px] min-w-[130px] rounded-2xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-900 shadow-inner shrink-0 relative overflow-hidden">
+              <img
+                v-if="standardCaptchaImage"
+                :src="standardCaptchaImage"
+                alt="کد امنیتی سامانه استاندارد"
+                class="h-9 w-auto object-contain select-none rounded-lg"
+              />
+              <div v-else-if="isFetchingStandardCaptcha" class="flex items-center gap-2 text-xs text-slate-500 py-2">
+                <div class="size-4 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+                <span>در حال دریافت...</span>
+              </div>
+              <div v-else class="text-center text-[11px] text-slate-400 py-1">
+                <button type="button" class="text-sky-600 font-bold hover:underline" @click="refreshStandardCaptcha()">
+                  دریافت کد تصویر
+                </button>
+              </div>
+            </div>
+
+            <!-- Captcha Input Field -->
+            <div class="relative flex-1">
+              <input
+                v-model="standardCaptchaInput"
+                type="text"
+                dir="ltr"
+                maxlength="6"
+                placeholder="کد ۵ رقمی بالا را وارد کنید"
+                class="w-full min-h-[44px] rounded-2xl border border-slate-200 bg-slate-50 px-4 text-center font-mono text-base font-bold tracking-widest text-slate-800 shadow-inner dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                @keydown.enter="submitStandardInquiry()"
+              />
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="button"
+              class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl bg-sky-600 px-5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-sky-700 transition-colors disabled:opacity-50 shrink-0"
+              :disabled="!standardInput.trim() || !standardCaptchaInput.trim() || isFetchingStandard"
+              @click="submitStandardInquiry()"
+            >
+              <div v-if="isFetchingStandard" class="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <AppIcon v-else name="search" :size="16" />
+              <span>{{ isFetchingStandard ? 'در حال استعلام...' : 'استعلام پروانه' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Helpers and quick buttons -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs border-t border-slate-100 dark:border-slate-700">
+          <div class="flex items-center gap-2">
+            <span class="text-slate-400">نمونه پروانه:</span>
+            <button
+              type="button"
+              class="rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300 transition-colors"
+              @click="standardInput = '7339969923'"
+            >
+              ۷۳۳۹۹۶۹۹۲۳ (تکلان پاک)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- SMS 10001517 button -->
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 px-2.5 py-1 rounded-xl transition-colors border border-emerald-200 dark:border-emerald-800"
+              @click="openSmsInquiry()"
+            >
+              <span>📲</span>
+              <span>پیامک سریع به ۱۰۰۰۱۵۱۷</span>
+            </button>
+
+            <!-- Toggle in-app portal -->
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 hover:text-slate-900 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/60 px-2.5 py-1 rounded-xl transition-colors"
+              @click="isStandardPortalOpen = !isStandardPortalOpen"
+            >
+              <span>🌐</span>
+              <span>{{ isStandardPortalOpen ? 'بستن پرتال رسمی' : 'پرتال رسمی استاندارد' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- In-App Official Portal Frame (if toggled) -->
+      <div v-if="isStandardPortalOpen" class="rounded-3xl border border-sky-300 bg-white p-4 shadow-lg dark:border-sky-800 dark:bg-slate-800 space-y-3 animate-fade-in">
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
+            <span>🏛️</span>
+            <span>پرتال رسمی استعلام پروانه نشان استاندارد ملی (isom.inso.gov.ir)</span>
+          </div>
+          <button
+            type="button"
+            class="text-xs text-rose-600 hover:text-rose-800 font-bold"
+            @click="isStandardPortalOpen = false"
+          >
+            بستن ✕
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400">
+          این سامانه مستقیماً درون اپلیکیشن بارگذاری شده و بدون نیاز به سرور واسط، می‌توانید شماره پروانه و کپچا را درون آن مشاهده و وارد کنید.
+        </p>
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-700">
+          <iframe
+            src="https://isom.inso.gov.ir/parvaneh/"
+            class="w-full h-[480px] border-0"
+            title="پرتال استعلام استاندارد"
+          />
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div
+        v-if="standardResult"
+        class="rounded-3xl border p-4 sm:p-5 shadow-lg space-y-3.5 animate-fade-in"
+        :class="standardResult.ok ? 'border-sky-200 bg-white dark:border-sky-900/60 dark:bg-slate-800' : 'border-amber-200 bg-amber-50/70 dark:border-amber-900/40 dark:bg-amber-950/20'"
+      >
+        <!-- Success State -->
+        <div v-if="standardResult.ok && standardResult.data" class="space-y-3">
+          <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 dark:border-slate-700">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🏅</span>
+                <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                  {{ standardResult.data.product || standardResult.data.brand || 'پروانه استاندارد' }}
+                </h3>
+              </div>
+              <p v-if="standardResult.data.manufacturer" class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                واحد تولیدی: {{ standardResult.data.manufacturer }}
+              </p>
+            </div>
+
+            <!-- Status Badge -->
+            <span
+              class="inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold shrink-0"
+              :class="standardResult.status === 'valid'
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                : (standardResult.status === 'invalid'
+                    ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300')"
+            >
+              <span class="size-1.5 rounded-full" :class="standardResult.status === 'valid' ? 'bg-emerald-600' : (standardResult.status === 'invalid' ? 'bg-rose-600' : 'bg-amber-600')" />
+              <span>{{ standardResult.data.statusText || 'معتبر' }}</span>
+            </span>
+          </div>
+
+          <!-- Structured Details Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
+              <span class="text-slate-500">شماره پروانه:</span>
+              <span class="font-mono font-bold text-slate-800 dark:text-slate-200">
+                {{ standardResult.data.licenseNumber }}
+                <span v-if="standardResult.data.licenseType" class="text-[10px] text-sky-600 font-sans mr-1">({{ standardResult.data.licenseType }})</span>
+              </span>
+            </div>
+
+            <div v-if="standardResult.data.brand" class="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
+              <span class="text-slate-500">علامت تجاری:</span>
+              <span class="font-bold text-slate-800 dark:text-slate-200">{{ standardResult.data.brand }}</span>
+            </div>
+
+            <div v-if="standardResult.data.province" class="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
+              <span class="text-slate-500">استان:</span>
+              <span class="font-bold text-slate-800 dark:text-slate-200">{{ standardResult.data.province }}</span>
+            </div>
+
+            <div v-if="standardResult.data.expiryDate" class="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
+              <span class="text-slate-500">تاریخ اعتبار:</span>
+              <span class="font-mono font-bold text-slate-800 dark:text-slate-200">{{ standardResult.data.expiryDate }}</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-700">
+            <button
+              type="button"
+              class="flex items-center gap-1.5 rounded-xl bg-brand-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-brand-700 transition-colors"
+              @click="openMapModal({
+                initialStandardCode: standardResult.data.licenseNumber,
+                initialProductTitle: standardResult.data.product || standardResult.data.brand,
+                initialBrand: standardResult.data.brand,
+                initialManufacturer: standardResult.data.manufacturer,
+                initialLicenseStatus: standardResult.data.statusText
+              })"
+            >
+              <AppIcon name="tag" :size="14" />
+              <span>ثبت و اتصال به کالا در لیست خرید</span>
+            </button>
+
+            <a
+              v-if="standardResult.data.reportUrl"
+              :href="standardResult.data.reportUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400"
+            >
+              <span>مشاهده گزارش کامل در پرتال ↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Failure / Error State -->
+        <div v-else class="space-y-2 text-xs">
+          <div class="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+            <AppIcon name="alert-triangle" :size="16" />
+            <span>{{ standardResult.errorMessage || 'نتیجه‌ای دریافت نشد' }}</span>
+          </div>
+          <p v-if="standardResult.details" class="text-slate-500 text-[11px]">
+            جزئیات: {{ standardResult.details }}
+          </p>
+          <div class="flex items-center gap-2 pt-2">
+            <button
+              type="button"
+              class="rounded-xl bg-sky-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-sky-700 transition-colors"
+              @click="refreshStandardCaptcha()"
+            >
+              تلاش مجدد و دریافت کد جدید
+            </button>
+            <button
+              type="button"
+              class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300"
+              @click="isStandardPortalOpen = true"
+            >
+              نمایش پرتال رسمی استاندارد
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- History of Standard Inquiries -->
+      <div class="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm dark:border-slate-700/80 dark:bg-slate-800 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-700">
+          <div class="flex items-center gap-2 font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100">
+            <AppIcon name="history" :size="16" />
+            <span>تاریخچه استعلام‌های نشان استاندارد</span>
+            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+              {{ standardHistoryItems.length }}
+            </span>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="flex items-center gap-1 text-xs">
+            <button
+              type="button"
+              class="rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors"
+              :class="standardHistoryStatusFilter === 'all' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'"
+              @click="standardHistoryStatusFilter = 'all'"
+            >
+              همه
+            </button>
+            <button
+              type="button"
+              class="rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors"
+              :class="standardHistoryStatusFilter === 'valid' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'"
+              @click="standardHistoryStatusFilter = 'valid'"
+            >
+              معتبر
+            </button>
+            <button
+              type="button"
+              class="rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors"
+              :class="standardHistoryStatusFilter === 'invalid' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'"
+              @click="standardHistoryStatusFilter = 'invalid'"
+            >
+              منقضی/نامعتبر
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar in History -->
+        <div v-if="standardHistoryRepository.getAll().length > 3" class="relative">
+          <input
+            v-model="standardHistoryQuery"
+            type="text"
+            placeholder="جستجو در تاریخچه پروانه‌ها، شرکت و کالا..."
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-400"
+          />
+        </div>
+
+        <!-- List -->
+        <div v-if="standardHistoryItems.length" class="divide-y divide-slate-100 dark:divide-slate-700 max-h-[380px] overflow-y-auto">
+          <div
+            v-for="item in standardHistoryItems"
+            :key="item.id"
+            class="py-2.5 flex items-center justify-between gap-3 text-xs"
+          >
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono font-bold text-sky-700 dark:text-sky-300">{{ item.licenseNumber }}</span>
+                <span
+                  class="rounded-md px-1.5 py-0.2 text-[10px] font-bold"
+                  :class="item.status === 'valid' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'"
+                >
+                  {{ item.statusText || (item.status === 'valid' ? 'معتبر' : 'نامعتبر') }}
+                </span>
+              </div>
+              <p class="truncate text-slate-600 dark:text-slate-300 font-medium mt-0.5">
+                {{ item.product || item.brand || item.manufacturer || 'بدون عنوان' }}
+                <span v-if="item.manufacturer && item.product" class="text-slate-400 text-[10px]">({{ item.manufacturer }})</span>
+              </p>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                title="اتصال به کالا"
+                class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600 dark:hover:bg-slate-700"
+                @click="openMapModal({
+                  initialStandardCode: item.licenseNumber,
+                  initialProductTitle: item.product || item.brand,
+                  initialBrand: item.brand,
+                  initialManufacturer: item.manufacturer,
+                  initialLicenseStatus: item.statusText
+                })"
+              >
+                <AppIcon name="tag" :size="14" />
+              </button>
+
+              <button
+                type="button"
+                title="استعلام مجدد"
+                class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-sky-600 dark:hover:bg-slate-700"
+                @click="standardInput = item.licenseNumber; refreshStandardCaptcha()"
+              >
+                <AppIcon name="search" :size="14" />
+              </button>
+
+              <button
+                type="button"
+                title="حذف از تاریخچه"
+                class="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40"
+                @click="standardHistoryRepository.remove(item.id); loadStandardHistory()"
+              >
+                <AppIcon name="trash" :size="14" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="text-center py-6 text-slate-400 text-xs">
+          تاریخچه استعلام استاندارد خالی است.
         </div>
       </div>
     </div>

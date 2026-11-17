@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
+import { standardDevProxyPlugin } from './tools/standardDevProxyPlugin.js'
 
 export default defineConfig({
   server: {
@@ -21,6 +22,7 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    standardDevProxyPlugin(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['icons/icon-48.png'],

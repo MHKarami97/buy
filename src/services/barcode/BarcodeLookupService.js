@@ -222,11 +222,11 @@ export class BarcodeLookupService {
 
     // In dev environment or environments where a proxy is configured,
     // trying `/api/irancode/01/...` bypasses browser CORS restrictions.
-    var candidateUrls = []
-    if (typeof window !== 'undefined' && window.location) {
-      candidateUrls.push(`/api/irancode/01/${digits}`)
-    }
-    candidateUrls.push(directUrl)
+    var candidateUrls = [
+      `/api/irancode/01/${digits}`,
+      `https://smart-buy-proxy.mhkarami97.workers.dev/api/irancode/01/${digits}`,
+      directUrl
+    ]
 
     var lastError = null
 
@@ -261,15 +261,18 @@ export class BarcodeLookupService {
             barcode: digits
           }
         } else if (response.status === 404) {
-          clearTimeout(timer)
-          return {
-            ok: false,
-            status: 'not_found',
-            error: 'دیتا دریافت نشد یا خطا خورد',
-            errorMessage: 'این بارکد در پایگاه داده ایران‌کد یافت نشد (کد ۴۰۴).',
-            url: directUrl,
-            barcode: digits
+          if (targetUrl === directUrl) {
+            clearTimeout(timer)
+            return {
+              ok: false,
+              status: 'not_found',
+              error: 'دیتا دریافت نشد یا خطا خورد',
+              errorMessage: 'این بارکد در پایگاه داده ایران‌کد یافت نشد (کد ۴۰۴).',
+              url: directUrl,
+              barcode: digits
+            }
           }
+          // If proxy returned 404, continue to next candidate
         }
       } catch (err) {
         lastError = err
@@ -283,7 +286,7 @@ export class BarcodeLookupService {
       ok: false,
       status: 'failed',
       error: 'دیتا دریافت نشد یا خطا خورد',
-      errorMessage: 'امکان برقراری ارتباط با سامانه ایران‌کد در این مرورگر وجود ندارد یا پاسخی دریافت نشد.',
+      errorMessage: 'امکان واکشی مستقیم اطلاعات در این مرورگر به دلیل محدودیت‌های امنیتی (CORS) وجود ندارد. با کلیک روی پیوند زیر می‌توانید مستقیماً در سامانه ایران‌کد بررسی نمایید.',
       details: lastError?.message,
       url: directUrl,
       barcode: digits

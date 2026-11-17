@@ -1,0 +1,8 @@
+name = "smart-buy-proxy"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+
+# در صورت تمایل می‌توانید route زیر را به دامنه خود متصل کنید:
+# routes = [
+#   { pattern = "buy.mhkarami97.ir/api/*", zone_name = "mhkarami97.ir" }
+# ]
