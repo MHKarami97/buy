@@ -98,6 +98,7 @@ var ifdaHistoryItems = ref([])
 var standardInput = ref('')
 var isFetchingStandard = ref(false)
 var standardResult = ref(null)
+var showStandardDirectFrame = ref(false)
 var standardHistoryQuery = ref('')
 var standardHistoryStatusFilter = ref('all') // 'all' | 'valid' | 'invalid'
 var standardHistoryItems = ref([])
@@ -152,6 +153,7 @@ async function submitStandardInquiry(sampleCode) {
 
   isFetchingStandard.value = true
   standardResult.value = null
+  showStandardDirectFrame.value = false
 
   try {
     var res = await standardLookupService.fetchReport(targetCode)
@@ -172,7 +174,11 @@ async function submitStandardInquiry(sampleCode) {
       })
       loadStandardHistory()
       loadMappedItems()
+    } else {
+      showStandardDirectFrame.value = true
     }
+  } catch {
+    showStandardDirectFrame.value = true
   } finally {
     isFetchingStandard.value = false
   }
@@ -1421,6 +1427,16 @@ onBeforeUnmount(() => {
 
           <div class="flex items-center gap-2">
             <button
+              v-if="standardInput.trim()"
+              type="button"
+              class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 hover:text-sky-900 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 px-2.5 py-1 rounded-xl transition-colors border border-sky-200 dark:border-sky-800"
+              @click="showStandardDirectFrame = !showStandardDirectFrame"
+            >
+              <span>🌐</span>
+              <span>{{ showStandardDirectFrame ? 'بستن گزارش رسمی' : 'شناسنامه رسمی بدون واسطه' }}</span>
+            </button>
+
+            <button
               type="button"
               class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 px-2.5 py-1 rounded-xl transition-colors border border-emerald-200 dark:border-emerald-800"
               @click="openSmsInquiry()"
@@ -1546,31 +1562,124 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <!-- Failure / Error State -->
-        <div v-else class="space-y-2 text-xs">
-          <div class="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
-            <AppIcon name="alert-triangle" :size="16" />
-            <span>{{ standardResult.errorMessage || 'نتیجه‌ای دریافت نشد' }}</span>
+        <!-- Fallback to Direct In-App INSO Report -->
+        <div v-else class="space-y-3 text-xs">
+          <div class="rounded-2xl border border-sky-300 bg-sky-50/80 p-3 text-sky-900 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-200 space-y-1.5">
+            <div class="flex items-center gap-1.5 font-bold">
+              <span>🏛️</span>
+              <span>شناسنامه رسمی از درگاه مستقیم سازمان استاندارد (بدون واسطه و بدون کپچا)</span>
+            </div>
+            <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+              شناسنامه کامل پروانه مستقیماً از طریق شبکه اینترنت ایران در کادر زیر بارگذاری شده است:
+            </p>
           </div>
-          <p v-if="standardResult.details" class="text-slate-500 text-[11px]">
-            جزئیات: {{ standardResult.details }}
-          </p>
-          <div class="flex items-center gap-2 pt-2">
+
+          <!-- Quick Action Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="text-slate-500">شماره استعلام:</span>
+              <span class="font-mono font-bold text-slate-800 dark:text-slate-200">{{ standardInput }}</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 rounded-xl bg-brand-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-700 transition-colors shadow-sm"
+                @click="openMapModal({
+                  initialStandardCode: standardInput,
+                  initialLicenseStatus: 'معتبر'
+                })"
+              >
+                <AppIcon name="tag" :size="13" />
+                <span>ثبت در کالاهای خرید</span>
+              </button>
+
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors shadow-sm"
+                @click="openSmsInquiry()"
+              >
+                <span>📲</span>
+                <span>پیامک به ۱۰۰۰۱۵۱۷</span>
+              </button>
+
+              <a
+                :href="`https://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=${encodeURIComponent(standardInput)}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400"
+              >
+                <span>مشاهده در تب جداگانه ↗</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Embedded Direct Report Frame (Zero Captcha!) -->
+          <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 shadow-inner">
+            <iframe
+              :src="`https://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=${encodeURIComponent(standardInput)}`"
+              class="w-full h-[520px] border-0"
+              title="شناسنامه رسمی پروانه استاندارد"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Direct Frame (when toggled manually from top bar) -->
+      <div
+        v-if="showStandardDirectFrame && (!standardResult || standardResult.ok)"
+        class="rounded-3xl border border-sky-300 bg-white p-4 sm:p-5 shadow-lg space-y-3 animate-fade-in dark:border-sky-800 dark:bg-slate-800"
+      >
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-1.5 font-bold text-sky-800 dark:text-sky-200">
+            <span>🏛️</span>
+            <span>شناسنامه رسمی نشان استاندارد ملی (isom.inso.gov.ir)</span>
+          </div>
+          <button
+            type="button"
+            class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold"
+            @click="showStandardDirectFrame = false"
+          >
+            بستن ✕
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="text-slate-500">شماره استعلام:</span>
+            <span class="font-mono font-bold text-slate-800 dark:text-slate-200">{{ standardInput }}</span>
+          </div>
+
+          <div class="flex items-center gap-2">
             <button
               type="button"
-              class="rounded-xl bg-sky-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-sky-700 transition-colors"
-              @click="submitStandardInquiry()"
+              class="inline-flex items-center gap-1 rounded-xl bg-brand-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-700 transition-colors shadow-sm"
+              @click="openMapModal({
+                initialStandardCode: standardInput,
+                initialLicenseStatus: 'معتبر'
+              })"
             >
-              تلاش مجدد
+              <AppIcon name="tag" :size="13" />
+              <span>ثبت در کالاهای خرید</span>
             </button>
-            <button
-              type="button"
-              class="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors"
-              @click="openSmsInquiry()"
+
+            <a
+              :href="`https://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=${encodeURIComponent(standardInput)}`"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400"
             >
-              پیامک به ۱۰۰۰۱۵۱۷
-            </button>
+              <span>مشاهده در تب جداگانه ↗</span>
+            </a>
           </div>
+        </div>
+
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 shadow-inner">
+          <iframe
+            :src="`https://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=${encodeURIComponent(standardInput)}`"
+            class="w-full h-[520px] border-0"
+            title="شناسنامه رسمی پروانه استاندارد"
+          />
         </div>
       </div>
 

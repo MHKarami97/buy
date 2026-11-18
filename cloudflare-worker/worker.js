@@ -289,34 +289,47 @@ export default {
       }
 
       const cleanNo = String(licenseNo).trim()
-      const targetUrl = `http://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=${encodeURIComponent(cleanNo)}`
+      const targetUrl = `https://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=${encodeURIComponent(cleanNo)}`
 
       const abortCtrl = new AbortController()
-      const timer = setTimeout(() => abortCtrl.abort(), 6000)
+      const timer = setTimeout(() => abortCtrl.abort(), 8000)
 
       try {
-        const resp1 = await fetch(targetUrl, {
-          redirect: 'manual',
+        let resp = await fetch(targetUrl, {
+          redirect: 'follow',
           signal: abortCtrl.signal,
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'fa,en;q=0.9'
           }
         })
 
-        const setCookies1 = resp1.headers.getSetCookie ? resp1.headers.getSetCookie() : [resp1.headers.get('set-cookie')]
-        const cookies1 = (setCookies1 || []).map((c) => (c || '').split(';')[0]).filter(Boolean)
+        // If redirect was not followed or needs cookie handshake
+        if ([301, 302, 307, 308].includes(resp.status)) {
+          const setCookies = resp.headers.getSetCookie ? resp.headers.getSetCookie() : [resp.headers.get('set-cookie')]
+          const cookies = (setCookies || []).map((c) => (c || '').split(';')[0]).filter(Boolean)
+          const loc = resp.headers.get('location') || targetUrl
 
-        const resp2 = await fetch(targetUrl, {
-          signal: abortCtrl.signal,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Cookie': cookies1.join('; ')
-          }
-        })
+          resp = await fetch(loc, {
+            signal: abortCtrl.signal,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Cookie': cookies.join('; ')
+            }
+          })
+        }
         clearTimeout(timer)
 
-        const html = await resp2.text()
+        if (!resp.ok && resp.status !== 200) {
+          return jsonResponse({
+            ok: false,
+            error: 'upstream_error',
+            errorMessage: `سرور سازمان استاندارد کد وضعیت ${resp.status} را بازگرداند.`
+          }, resp.status >= 500 ? 502 : resp.status)
+        }
+
+        const html = await resp.text()
         const parsed = parseStandardReportHtml(html, cleanNo)
         return jsonResponse(parsed)
       } catch (err) {
