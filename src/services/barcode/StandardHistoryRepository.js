@@ -25,6 +25,7 @@ export class StandardHistoryRepository {
       licenseNumber: String(record.licenseNumber).trim(),
       licenseType: record.licenseType || '',
       province: record.province || '',
+      address: record.address || '',
       manufacturer: record.manufacturer || '',
       product: record.product || '',
       brand: record.brand || '',
@@ -75,6 +76,7 @@ export class StandardHistoryRepository {
         item.product,
         item.brand,
         item.province,
+        item.address,
         item.statusText
       ]
         .filter(Boolean)

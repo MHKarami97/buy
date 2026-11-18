@@ -1,6 +1,6 @@
 import https from 'node:https'
 import { URL } from 'node:url'
-import { parseStandardHtml } from '../src/services/barcode/StandardLookupService.js'
+import { parseStandardHtml, parseStandardReportHtml } from '../src/services/barcode/StandardLookupService.js'
 
 const agent = new https.Agent({ rejectUnauthorized: false })
 
@@ -56,6 +56,35 @@ export function standardDevProxyPlugin() {
       server.middlewares.use(async (req, res, next) => {
         const parsedUrl = new URL(req.url, 'http://localhost')
         const pathname = parsedUrl.pathname
+
+        if (pathname === '/api/standard/report' || pathname.startsWith('/api/standard/report/')) {
+          res.setHeader('Content-Type', 'application/json; charset=utf-8')
+          res.setHeader('Access-Control-Allow-Origin', '*')
+
+          const licenseNo = parsedUrl.searchParams.get('license_no') || pathname.split('/').filter(Boolean).pop()
+          if (!licenseNo || licenseNo === 'report') {
+            res.statusCode = 400
+            res.end(JSON.stringify({ ok: false, error: 'missing_license', errorMessage: 'شماره پروانه الزامی است.' }))
+            return
+          }
+
+          try {
+            const reportResp = await request(`https://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=${encodeURIComponent(licenseNo)}`)
+            const html = reportResp.body.toString('utf-8')
+            const parsed = parseStandardReportHtml(html, licenseNo)
+            res.end(JSON.stringify(parsed))
+          } catch (err) {
+            res.statusCode = 500
+            res.end(
+              JSON.stringify({
+                ok: false,
+                error: 'fetch_failed',
+                errorMessage: err?.message || 'خطا در دریافت گزارش استاندارد'
+              })
+            )
+          }
+          return
+        }
 
         if (pathname === '/api/standard/captcha') {
           res.setHeader('Content-Type', 'application/json; charset=utf-8')

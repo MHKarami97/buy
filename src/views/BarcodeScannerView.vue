@@ -96,17 +96,11 @@ var ifdaHistoryItems = ref([])
 
 // Standard (استاندارد) Inquiry state
 var standardInput = ref('')
-var standardCaptchaInput = ref('')
-var standardCaptchaImage = ref('')
-var standardCaptchaError = ref('')
-var standardSessionId = ref('')
-var isFetchingStandardCaptcha = ref(false)
 var isFetchingStandard = ref(false)
 var standardResult = ref(null)
 var standardHistoryQuery = ref('')
 var standardHistoryStatusFilter = ref('all') // 'all' | 'valid' | 'invalid'
 var standardHistoryItems = ref([])
-var isStandardPortalOpen = ref(false)
 
 // Mapped Items state
 var mappedQuery = ref('')
@@ -151,31 +145,6 @@ watch([ifdaHistoryQuery, ifdaHistoryStatusFilter], loadIfdaHistory)
 watch([standardHistoryQuery, standardHistoryStatusFilter], loadStandardHistory)
 watch([mappedQuery, mappedFilter], loadMappedItems)
 
-async function refreshStandardCaptcha() {
-  isFetchingStandardCaptcha.value = true
-  standardCaptchaError.value = ''
-  standardCaptchaInput.value = ''
-  try {
-    var res = await standardLookupService.fetchCaptcha(3000)
-    if (res.ok) {
-      standardCaptchaImage.value = res.captchaImage
-      standardSessionId.value = res.sessionId
-      standardCaptchaError.value = ''
-    } else {
-      standardCaptchaImage.value = ''
-      standardCaptchaError.value = res.errorMessage || 'دریافت کد امنیتی از سامانه استاندارد با خطا مواجه شد.'
-      // Open in-app portal automatically so the user is directly unblocked
-      isStandardPortalOpen.value = true
-    }
-  } catch (err) {
-    standardCaptchaImage.value = ''
-    standardCaptchaError.value = 'خطا در ارتباط با سامانه استاندارد.'
-    isStandardPortalOpen.value = true
-  } finally {
-    isFetchingStandardCaptcha.value = false
-  }
-}
-
 async function submitStandardInquiry(sampleCode) {
   var targetCode = (sampleCode || standardInput.value || '').trim()
   if (!targetCode) return
@@ -185,19 +154,16 @@ async function submitStandardInquiry(sampleCode) {
   standardResult.value = null
 
   try {
-    var res = await standardLookupService.inquire({
-      licenseNumber: targetCode,
-      captcha: standardCaptchaInput.value,
-      sessionId: standardSessionId.value
-    }, 3500)
+    var res = await standardLookupService.fetchReport(targetCode)
     standardResult.value = res
     if (res.ok && res.data) {
       standardHistoryRepository.add({
         licenseNumber: res.data.licenseNumber || targetCode,
-        licenseType: res.data.licenseType,
         province: res.data.province,
+        address: res.data.address,
         manufacturer: res.data.manufacturer,
         product: res.data.product,
+        model: res.data.model,
         brand: res.data.brand,
         expiryDate: res.data.expiryDate,
         status: res.status,
@@ -206,14 +172,7 @@ async function submitStandardInquiry(sampleCode) {
       })
       loadStandardHistory()
       loadMappedItems()
-    } else if (res?.error === 'invalid_captcha') {
-      await refreshStandardCaptcha()
-    } else {
-      // If inquiry failed due to network or geoblock, open the portal
-      isStandardPortalOpen.value = true
     }
-  } catch {
-    isStandardPortalOpen.value = true
   } finally {
     isFetchingStandard.value = false
   }
@@ -278,16 +237,6 @@ function openMapModal(params = {}) {
     initialLicenseStatus: params.initialLicenseStatus || ''
   }
   isMapModalOpen.value = true
-}
-
-function copyLicenseAndOpenPortal() {
-  var code = standardInput.value.trim() || '7339969923'
-  if (navigator?.clipboard) {
-    navigator.clipboard.writeText(code)
-    copiedNotice.value = true
-    setTimeout(() => { copiedNotice.value = false }, 2000)
-  }
-  isStandardPortalOpen.value = true
 }
 
 function openMapModalFromIfda(itemOrResult) {
@@ -681,9 +630,6 @@ watch(activeTab, (tab) => {
       loadIfdaHistory()
     } else if (tab === 'standard') {
       loadStandardHistory()
-      if (!standardCaptchaImage.value) {
-        refreshStandardCaptcha()
-      }
     } else if (tab === 'mapped') {
       loadMappedItems()
     }
@@ -1420,10 +1366,10 @@ onBeforeUnmount(() => {
       <div class="rounded-3xl border border-sky-200/80 bg-gradient-to-br from-sky-50/90 to-blue-50/50 p-4 sm:p-5 dark:border-sky-900/40 dark:from-sky-950/30 dark:to-blue-950/20 space-y-2">
         <div class="flex items-center gap-2 text-sky-800 dark:text-sky-300 font-bold text-sm sm:text-base">
           <span class="text-2xl">🏅</span>
-          <span>استعلام پروانه نشان استاندارد ملی ایران (isom.inso.gov.ir)</span>
+          <span>استعلام مستقیم پروانه نشان استاندارد ملی ایران</span>
         </div>
         <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-          شماره پروانه کاربرد نشان استاندارد اجباری (۱۰ رقمی مانند <strong>۷۳۳۹۹۶۹۹۲۳</strong>)، استاندارد تشویقی (۹ رقمی) یا کد طلا (با پیشوند G) را وارد کنید و با وارد کردن کد امنیتی ۵ رقمی، اطلاعات کارخانه، برند و اعتبار را دریافت نمایید.
+          شماره پروانه کاربرد نشان استاندارد اجباری (۱۰ رقمی مانند <strong>۷۳۳۹۹۶۹۹۲۳</strong>) یا استاندارد تشویقی (۹ رقمی) را وارد کنید تا اطلاعات کامل واحد تولیدی، فرآورده، برند، آدرس کارخانه و تاریخ اعتبار مستقیماً بدون نیاز به کد امنیتی دریافت و ثبت شود.
         </p>
       </div>
 
@@ -1432,116 +1378,16 @@ onBeforeUnmount(() => {
         <!-- License Number Input -->
         <div class="space-y-1.5">
           <label class="block text-xs font-bold text-slate-700 dark:text-slate-200">
-            شماره پروانه استاندارد یا کد شناسایی طلا:
+            شماره پروانه کاربرد نشان استاندارد:
           </label>
-          <div class="relative">
-            <input
-              v-model="standardInput"
-              type="text"
-              dir="ltr"
-              placeholder="مثال: 7339969923 یا G12345"
-              class="w-full min-h-[44px] rounded-2xl border border-slate-200 bg-slate-50 px-4 text-center font-mono text-base font-bold tracking-wider text-slate-800 shadow-inner dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-400"
-              @keydown.enter="submitStandardInquiry()"
-            />
-          </div>
-        </div>
-
-        <!-- Captcha Failure / Security Warning Banner -->
-        <div
-          v-if="standardCaptchaError"
-          class="rounded-2xl border border-amber-300 bg-amber-50/90 p-3.5 text-xs text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-200 space-y-2 animate-fade-in"
-        >
-          <div class="flex items-center justify-between gap-2 font-bold">
-            <div class="flex items-center gap-1.5">
-              <span class="text-base">⚠️</span>
-              <span>سامانه استاندارد ارتباط سرورهای خارج کشور را مسدود کرده است</span>
-            </div>
-            <button
-              type="button"
-              class="text-xs font-semibold text-amber-800 hover:underline dark:text-amber-300"
-              @click="standardCaptchaError = ''"
-            >
-              ✕
-            </button>
-          </div>
-          <p class="leading-relaxed text-[11px] text-amber-800/90 dark:text-amber-300/90">
-            به دلیل گواهی امنیتی داخلی (SSL 526) و فایروال سرور دولتی استاندارد، امکان دریافت خودکار تصویر کپچا از خارج کشور وجود ندارد؛ اما <strong>پرتال رسمی استاندارد در زیر باز شده است</strong> و شما مستقیماً در مرورگر خود بدون واسطه می‌توانید شماره پروانه را استعلام کنید.
-          </p>
-          <div class="flex flex-wrap items-center gap-2 pt-1">
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 rounded-xl bg-amber-700 px-3 py-1.5 font-bold text-white shadow-sm hover:bg-amber-800 transition-colors"
-              @click="copyLicenseAndOpenPortal()"
-            >
-              <AppIcon name="clipboard" :size="13" />
-              <span>کپی شماره «{{ standardInput || '۷۳۳۹۹۶۹۹۲۳' }}» و مشاهده در پرتال</span>
-            </button>
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-3 py-1.5 font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors"
-              @click="openSmsInquiry()"
-            >
-              <span>📲</span>
-              <span>پیامک سریع به ۱۰۰۰۱۵۱۷</span>
-            </button>
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 rounded-xl bg-brand-600 px-3 py-1.5 font-bold text-white shadow-sm hover:bg-brand-700 transition-colors"
-              @click="openMapModal({ initialStandardCode: standardInput || '7339969923' })"
-            >
-              <AppIcon name="tag" :size="13" />
-              <span>ثبت مشخصات و اتصال به کالا</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Captcha Section -->
-        <div class="space-y-2 border-t border-slate-100 pt-3 dark:border-slate-700">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-bold text-slate-700 dark:text-slate-200">
-              کد امنیتی ۵ رقمی تصویر:
-            </label>
-            <button
-              type="button"
-              class="text-[11px] font-semibold text-sky-600 hover:text-sky-800 dark:text-sky-400 flex items-center gap-1"
-              :disabled="isFetchingStandardCaptcha"
-              @click="refreshStandardCaptcha()"
-            >
-              <div v-if="isFetchingStandardCaptcha" class="size-3 animate-spin rounded-full border-2 border-sky-600 border-t-transparent" />
-              <AppIcon v-else name="history" :size="12" />
-              <span>تغییر تصویر کد امنیتی</span>
-            </button>
-          </div>
-
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <!-- Captcha Image Container -->
-            <div class="flex items-center justify-center min-h-[46px] min-w-[130px] rounded-2xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-900 shadow-inner shrink-0 relative overflow-hidden">
-              <img
-                v-if="standardCaptchaImage"
-                :src="standardCaptchaImage"
-                alt="کد امنیتی سامانه استاندارد"
-                class="h-9 w-auto object-contain select-none rounded-lg"
-              />
-              <div v-else-if="isFetchingStandardCaptcha" class="flex items-center gap-2 text-xs text-slate-500 py-2">
-                <div class="size-4 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
-                <span>در حال دریافت...</span>
-              </div>
-              <div v-else class="text-center text-[11px] text-slate-500 py-1">
-                <button type="button" class="text-sky-600 font-bold hover:underline" @click="refreshStandardCaptcha()">
-                  دریافت مجدد کد
-                </button>
-              </div>
-            </div>
-
-            <!-- Captcha Input Field -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
             <div class="relative flex-1">
               <input
-                v-model="standardCaptchaInput"
+                v-model="standardInput"
                 type="text"
                 dir="ltr"
-                maxlength="6"
-                placeholder="کد ۵ رقمی بالا را وارد کنید"
-                class="w-full min-h-[44px] rounded-2xl border border-slate-200 bg-slate-50 px-4 text-center font-mono text-base font-bold tracking-widest text-slate-800 shadow-inner dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                placeholder="مثال: 7339969923"
+                class="w-full min-h-[44px] rounded-2xl border border-slate-200 bg-slate-50 px-4 text-center font-mono text-base font-bold tracking-wider text-slate-800 shadow-inner dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-400"
                 @keydown.enter="submitStandardInquiry()"
               />
             </div>
@@ -1549,32 +1395,31 @@ onBeforeUnmount(() => {
             <!-- Submit Button -->
             <button
               type="button"
-              class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl bg-sky-600 px-5 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-sky-700 transition-colors disabled:opacity-50 shrink-0"
-              :disabled="!standardInput.trim() || !standardCaptchaInput.trim() || isFetchingStandard"
+              class="flex min-h-[44px] items-center justify-center gap-2 rounded-2xl bg-sky-600 px-6 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-sky-700 transition-colors disabled:opacity-50 shrink-0"
+              :disabled="!standardInput.trim() || isFetchingStandard"
               @click="submitStandardInquiry()"
             >
               <div v-if="isFetchingStandard" class="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
               <AppIcon v-else name="search" :size="16" />
-              <span>{{ isFetchingStandard ? 'در حال استعلام...' : 'استعلام پروانه' }}</span>
+              <span>{{ isFetchingStandard ? 'در حال دریافت اطلاعات...' : 'استعلام پروانه' }}</span>
             </button>
           </div>
         </div>
 
-        <!-- Helpers and quick buttons -->
+        <!-- Quick sample and SMS helper -->
         <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs border-t border-slate-100 dark:border-slate-700">
           <div class="flex items-center gap-2">
             <span class="text-slate-400">نمونه پروانه:</span>
             <button
               type="button"
               class="rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300 transition-colors"
-              @click="standardInput = '7339969923'"
+              @click="submitStandardInquiry('7339969923')"
             >
               ۷۳۳۹۹۶۹۹۲۳ (تکلان پاک)
             </button>
           </div>
 
           <div class="flex items-center gap-2">
-            <!-- SMS 10001517 button -->
             <button
               type="button"
               class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 px-2.5 py-1 rounded-xl transition-colors border border-emerald-200 dark:border-emerald-800"
@@ -1583,104 +1428,18 @@ onBeforeUnmount(() => {
               <span>📲</span>
               <span>پیامک سریع به ۱۰۰۰۱۵۱۷</span>
             </button>
-
-            <!-- Toggle in-app portal -->
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 hover:text-slate-900 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/60 px-2.5 py-1 rounded-xl transition-colors"
-              @click="isStandardPortalOpen = !isStandardPortalOpen"
-            >
-              <span>🌐</span>
-              <span>{{ isStandardPortalOpen ? 'بستن پرتال رسمی' : 'پرتال رسمی استاندارد' }}</span>
-            </button>
           </div>
-        </div>
-      </div>
-
-      <!-- In-App Official Portal Frame (if toggled) -->
-      <div v-if="isStandardPortalOpen" class="rounded-3xl border border-sky-300 bg-white p-4 shadow-lg dark:border-sky-800 dark:bg-slate-800 space-y-3 animate-fade-in">
-        <div class="flex items-center justify-between text-xs">
-          <div class="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
-            <span>🏛️</span>
-            <span>پرتال رسمی استعلام پروانه نشان استاندارد ملی (isom.inso.gov.ir)</span>
-          </div>
-          <button
-            type="button"
-            class="text-xs text-rose-600 hover:text-rose-800 font-bold"
-            @click="isStandardPortalOpen = false"
-          >
-            بستن ✕
-          </button>
-        </div>
-
-        <!-- Portal Toolbar -->
-        <div class="flex flex-wrap items-center justify-between gap-2 bg-sky-50 dark:bg-sky-950/40 p-2.5 rounded-2xl border border-sky-200 dark:border-sky-800 text-xs">
-          <div class="flex items-center gap-2">
-            <span class="text-slate-500">شماره استعلام:</span>
-            <span class="font-mono font-bold text-sky-800 dark:text-sky-200">{{ standardInput || '۷۳۳۹۹۶۹۹۲۳' }}</span>
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 rounded-lg bg-sky-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-sky-700 transition-colors shadow-sm"
-              @click="copyCode(standardInput || '7339969923')"
-            >
-              <AppIcon name="clipboard" :size="12" />
-              <span>کپی شماره</span>
-            </button>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 transition-colors shadow-sm"
-              @click="openSmsInquiry()"
-            >
-              <span>📲</span>
-              <span>پیامک به ۱۰۰۰۱۵۱۷</span>
-            </button>
-
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 rounded-lg bg-brand-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-brand-700 transition-colors shadow-sm"
-              @click="openMapModal({
-                initialStandardCode: standardInput || '7339969923',
-                initialLicenseStatus: 'معتبر'
-              })"
-            >
-              <AppIcon name="tag" :size="12" />
-              <span>ثبت در کالاها</span>
-            </button>
-
-            <a
-              href="https://isom.inso.gov.ir/parvaneh/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 hover:text-sky-900 dark:text-sky-300"
-            >
-              <span>باز کردن در تب جداگانه ↗</span>
-            </a>
-          </div>
-        </div>
-
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">
-          این سامانه مستقیماً از داخل ایران بارگذاری شده و بدون نیاز به سرور واسط، می‌توانید کد پروانه و تصویر امنیتی را در کادر زیر مشاهده و دکمه «نمایش» را بزنید.
-        </p>
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-700">
-          <iframe
-            src="https://isom.inso.gov.ir/parvaneh/"
-            class="w-full h-[480px] border-0"
-            title="پرتال استعلام استاندارد"
-          />
         </div>
       </div>
 
       <!-- Result Card -->
       <div
         v-if="standardResult"
-        class="rounded-3xl border p-4 sm:p-5 shadow-lg space-y-3.5 animate-fade-in"
+        class="rounded-3xl border p-4 sm:p-5 shadow-lg space-y-4 animate-fade-in"
         :class="standardResult.ok ? 'border-sky-200 bg-white dark:border-sky-900/60 dark:bg-slate-800' : 'border-amber-200 bg-amber-50/70 dark:border-amber-900/40 dark:bg-amber-950/20'"
       >
         <!-- Success State -->
-        <div v-if="standardResult.ok && standardResult.data" class="space-y-3">
+        <div v-if="standardResult.ok && standardResult.data" class="space-y-3.5">
           <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 dark:border-slate-700">
             <div>
               <div class="flex items-center gap-2">
@@ -1714,7 +1473,6 @@ onBeforeUnmount(() => {
               <span class="text-slate-500">شماره پروانه:</span>
               <span class="font-mono font-bold text-slate-800 dark:text-slate-200">
                 {{ standardResult.data.licenseNumber }}
-                <span v-if="standardResult.data.licenseType" class="text-[10px] text-sky-600 font-sans mr-1">({{ standardResult.data.licenseType }})</span>
               </span>
             </div>
 
@@ -1724,13 +1482,38 @@ onBeforeUnmount(() => {
             </div>
 
             <div v-if="standardResult.data.province" class="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
-              <span class="text-slate-500">استان:</span>
+              <span class="text-slate-500">استان و شهر:</span>
               <span class="font-bold text-slate-800 dark:text-slate-200">{{ standardResult.data.province }}</span>
             </div>
 
             <div v-if="standardResult.data.expiryDate" class="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50">
               <span class="text-slate-500">تاریخ اعتبار:</span>
               <span class="font-mono font-bold text-slate-800 dark:text-slate-200">{{ standardResult.data.expiryDate }}</span>
+            </div>
+
+            <div v-if="standardResult.data.model" class="col-span-full flex items-start justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50 gap-2">
+              <span class="text-slate-500 shrink-0">مدل / نوع بسته‌بندی:</span>
+              <span class="font-medium text-slate-800 dark:text-slate-200 text-left">{{ standardResult.data.model }}</span>
+            </div>
+
+            <div v-if="standardResult.data.address" class="col-span-full flex items-start justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-900/50 gap-2">
+              <span class="text-slate-500 shrink-0">آدرس کارخانه:</span>
+              <span class="font-medium text-slate-800 dark:text-slate-200 text-left">{{ standardResult.data.address }}</span>
+            </div>
+          </div>
+
+          <!-- History / Renewals -->
+          <div v-if="standardResult.data.history && standardResult.data.history.length" class="space-y-1.5 pt-1">
+            <h4 class="text-[11px] font-bold text-slate-600 dark:text-slate-400">سوابق پروانه و تمدیدها:</h4>
+            <div class="flex flex-wrap gap-1.5">
+              <span
+                v-for="(hist, idx) in standardResult.data.history"
+                :key="idx"
+                class="inline-flex items-center gap-1 rounded-lg bg-sky-50 px-2 py-1 text-[11px] font-medium text-sky-800 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-200 dark:border-sky-800"
+              >
+                <span>{{ hist.status }}</span>
+                <span class="text-slate-400">({{ hist.fromDate }})</span>
+              </span>
             </div>
           </div>
 
@@ -1758,7 +1541,7 @@ onBeforeUnmount(() => {
               rel="noopener noreferrer"
               class="inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400"
             >
-              <span>مشاهده گزارش کامل در پرتال ↗</span>
+              <span>مشاهده شناسنامه رسمی در سایت استاندارد ↗</span>
             </a>
           </div>
         </div>
@@ -1776,16 +1559,16 @@ onBeforeUnmount(() => {
             <button
               type="button"
               class="rounded-xl bg-sky-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-sky-700 transition-colors"
-              @click="refreshStandardCaptcha()"
+              @click="submitStandardInquiry()"
             >
-              تلاش مجدد و دریافت کد جدید
+              تلاش مجدد
             </button>
             <button
               type="button"
-              class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300"
-              @click="isStandardPortalOpen = true"
+              class="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors"
+              @click="openSmsInquiry()"
             >
-              نمایش پرتال رسمی استاندارد
+              پیامک به ۱۰۰۰۱۵۱۷
             </button>
           </div>
         </div>
@@ -1862,6 +1645,9 @@ onBeforeUnmount(() => {
                 {{ item.product || item.brand || item.manufacturer || 'بدون عنوان' }}
                 <span v-if="item.manufacturer && item.product" class="text-slate-400 text-[10px]">({{ item.manufacturer }})</span>
               </p>
+              <p v-if="item.address" class="truncate text-slate-400 text-[10px] mt-0.5">
+                📍 {{ item.address }}
+              </p>
             </div>
 
             <div class="flex items-center gap-1.5 shrink-0">
@@ -1884,7 +1670,7 @@ onBeforeUnmount(() => {
                 type="button"
                 title="استعلام مجدد"
                 class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-sky-600 dark:hover:bg-slate-700"
-                @click="standardInput = item.licenseNumber; refreshStandardCaptcha()"
+                @click="submitStandardInquiry(item.licenseNumber)"
               >
                 <AppIcon name="search" :size="14" />
               </button>

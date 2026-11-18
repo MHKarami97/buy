@@ -34,6 +34,119 @@ function normalizePersianText(str) {
     .trim()
 }
 
+function parseStandardReportHtml(html, defaultLicenseNo = '') {
+  if (!html || typeof html !== 'string') {
+    return { ok: false, error: 'empty_response', errorMessage: 'پاسخی از سامانه استاندارد دریافت نشد.' }
+  }
+
+  if (/شماره پروانه کاربرد علامت استاندارد نامشخص است|موردی یافت نشد|اطلاعاتی یافت نشد/i.test(html)) {
+    return { ok: false, error: 'not_found', errorMessage: 'پروانه‌ای با این شماره در سامانه استاندارد یافت نشد.' }
+  }
+
+  function clean(val) {
+    if (!val) return ''
+    var noHtml = val.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ')
+    return noHtml
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/ي/g, 'ی')
+      .replace(/ك/g, 'ک')
+      .replace(/[\u064B-\u065F]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
+  function extractByLabel(pattern) {
+    var rx = new RegExp('<label[^>]*>[^<]*' + pattern + '[^<]*<\\/label>\\s*([^<\\r\\n]+)', 'i')
+    var m = html.match(rx)
+    if (m && clean(m[1])) return clean(m[1])
+
+    var inlineRx = new RegExp(pattern + '[\\s\\t]*[:\\t]+[\\s\\t]*([^<\\r\\n]+)', 'i')
+    var inlineM = html.match(inlineRx)
+    if (inlineM && clean(inlineM[1])) return clean(inlineM[1])
+
+    return ''
+  }
+
+  var manufacturer = extractByLabel('نام[\\sـ]*واحد')
+  var province = extractByLabel('استان')
+  var address = extractByLabel('آدرس[\\sـ]*کارخانه')
+
+  var product = ''
+  var model = ''
+  var brand = ''
+  var licenseNumber = defaultLicenseNo || ''
+  var statusText = ''
+  var expiryDate = ''
+  var history = []
+
+  var tableMatch = html.match(/<table[^>]*>([\s\S]*?)<\/table>/i)
+  if (tableMatch) {
+    var rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi
+    var rowMatch
+    while ((rowMatch = rowRegex.exec(tableMatch[1])) !== null) {
+      var cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi
+      var cells = []
+      var cellMatch
+      while ((cellMatch = cellRegex.exec(rowMatch[1])) !== null) {
+        cells.push(clean(cellMatch[1]))
+      }
+
+      if (cells.length >= 7) {
+        if (/ردیف|رديف/i.test(cells[0]) || /فرآورده/i.test(cells[1]) || /شماره پروانه/i.test(cells[4])) {
+          continue
+        }
+        if (!product && cells[1]) product = cells[1]
+        if (!model && cells[2]) model = cells[2]
+        if (!brand && cells[3]) brand = cells[3]
+        if (cells[4]) licenseNumber = cells[4]
+        if (!statusText && cells[5]) statusText = cells[5]
+        if (!expiryDate && cells[6]) expiryDate = cells[6]
+
+        if (cells[7] && cells[8]) {
+          history.push({ status: cells[7], fromDate: cells[8] })
+        }
+      } else if (cells.length === 2 && cells[0] && cells[1]) {
+        if (!/وضعیت/i.test(cells[0]) && !/تاریخ/i.test(cells[1])) {
+          history.push({ status: cells[0], fromDate: cells[1] })
+        }
+      }
+    }
+  }
+
+  if (!manufacturer && !product && !statusText) {
+    var alertMatch = html.match(/alert\(['"]([^'"]+)['"]\)/)
+    if (alertMatch) {
+      return { ok: false, error: 'portal_error', errorMessage: alertMatch[1] }
+    }
+    return { ok: false, error: 'not_found', errorMessage: 'پروانه‌ای با این شماره در سامانه استاندارد یافت نشد.' }
+  }
+
+  var isSuspendedOrRevoked = /تعلیق|ابطال|منقضی|غیرفعال|غیر معتبر/i.test(statusText)
+  var isValid = /معتبر/i.test(statusText) && !isSuspendedOrRevoked
+
+  var reportUrl = licenseNumber
+    ? `https://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=${licenseNumber}`
+    : ''
+
+  return {
+    ok: true,
+    status: isValid ? 'valid' : (isSuspendedOrRevoked ? 'invalid' : 'unknown'),
+    data: {
+      licenseNumber: licenseNumber || defaultLicenseNo,
+      manufacturer,
+      province,
+      address,
+      product,
+      model,
+      brand,
+      statusText: statusText || 'معتبر',
+      expiryDate,
+      history,
+      reportUrl
+    }
+  }
+}
+
 function parseStandardHtml(html) {
   if (!html || typeof html !== 'string') {
     return { ok: false, error: 'empty_response', errorMessage: 'پاسخی از سامانه استاندارد دریافت نشد.' }
@@ -168,7 +281,56 @@ export default {
       }
     }
 
-    // 3. Standard Captcha: /api/standard/captcha
+    // 3. Standard Report (Direct, No Captcha): /api/standard/report?license_no=...
+    if (path.startsWith('/api/standard/report') || path.startsWith('/standard/report')) {
+      const licenseNo = url.searchParams.get('license_no') || path.split('/').filter(Boolean).pop()
+      if (!licenseNo || licenseNo === 'report') {
+        return jsonResponse({ ok: false, error: 'missing_license', errorMessage: 'شماره پروانه الزامی است.' }, 400)
+      }
+
+      const cleanNo = String(licenseNo).trim()
+      const targetUrl = `http://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=${encodeURIComponent(cleanNo)}`
+
+      const abortCtrl = new AbortController()
+      const timer = setTimeout(() => abortCtrl.abort(), 6000)
+
+      try {
+        const resp1 = await fetch(targetUrl, {
+          redirect: 'manual',
+          signal: abortCtrl.signal,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml'
+          }
+        })
+
+        const setCookies1 = resp1.headers.getSetCookie ? resp1.headers.getSetCookie() : [resp1.headers.get('set-cookie')]
+        const cookies1 = (setCookies1 || []).map((c) => (c || '').split(';')[0]).filter(Boolean)
+
+        const resp2 = await fetch(targetUrl, {
+          signal: abortCtrl.signal,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Cookie': cookies1.join('; ')
+          }
+        })
+        clearTimeout(timer)
+
+        const html = await resp2.text()
+        const parsed = parseStandardReportHtml(html, cleanNo)
+        return jsonResponse(parsed)
+      } catch (err) {
+        clearTimeout(timer)
+        return jsonResponse({
+          ok: false,
+          error: 'fetch_failed',
+          errorMessage: 'خطا در ارتباط با سرور سامانه استاندارد.',
+          details: err.message
+        }, 502)
+      }
+    }
+
+    // 4. Standard Captcha: /api/standard/captcha
     if (path === '/api/standard/captcha' || path === '/standard/captcha') {
       const abortCtrl = new AbortController()
       const timer = setTimeout(() => abortCtrl.abort(), 3500)

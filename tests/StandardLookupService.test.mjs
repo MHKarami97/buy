@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   normalizeLicenseNumber,
   parseStandardHtml,
+  parseStandardReportHtml,
   StandardLookupService
 } from '../src/services/barcode/StandardLookupService.js'
 import { StandardHistoryRepository } from '../src/services/barcode/StandardHistoryRepository.js'
@@ -78,6 +79,66 @@ test('parseStandardHtml detects suspended or expired status', () => {
   const res = parseStandardHtml(expiredHtml)
   assert.equal(res.ok, true)
   assert.equal(res.status, 'invalid')
+})
+
+test('parseStandardReportHtml extracts full report data including address and model', () => {
+  const sampleReportHtml = `
+    <html>
+      <body>
+        <label>نام واحد :</label> شركت ‌تكلان پاك<br>
+        <label>استان :</label> سمنان<br>
+        <label>آدرس کارخانه :</label> سمنان شهرك صنعتي شرق بلوار جمهوري خيابان نوآوران<br>
+        <table border="1">
+          <tr>
+            <td>ردیف</td>
+            <td>فرآورده</td>
+            <td>مدل</td>
+            <td>علامت تجاری</td>
+            <td>شماره پروانه</td>
+            <td>وضعیت فعلی</td>
+            <td>تاریخ اعتبار</td>
+            <td>وضعیت قبلی</td>
+            <td>از تاریخ</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>دستمال كاغذي</td>
+            <td>جعبه مقوايي و بسته بندي در كيسه هاي پلي اتيلني</td>
+            <td>تكلان پاك</td>
+            <td>7339969923</td>
+            <td>معتبر</td>
+            <td>1406/09/23</td>
+            <td>صدور</td>
+            <td>1391/09/23</td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `
+
+  const res = parseStandardReportHtml(sampleReportHtml, '7339969923')
+  assert.equal(res.ok, true)
+  assert.equal(res.status, 'valid')
+  assert.equal(res.data.manufacturer, 'شرکت تکلان پاک')
+  assert.equal(res.data.province, 'سمنان')
+  assert.equal(res.data.address, 'سمنان شهرک صنعتی شرق بلوار جمهوری خیابان نوآوران')
+  assert.equal(res.data.product, 'دستمال کاغذی')
+  assert.equal(res.data.model, 'جعبه مقوایی و بسته بندی در کیسه های پلی اتیلنی')
+  assert.equal(res.data.brand, 'تکلان پاک')
+  assert.equal(res.data.licenseNumber, '7339969923')
+  assert.equal(res.data.statusText, 'معتبر')
+  assert.equal(res.data.expiryDate, '1406/09/23')
+  assert.equal(res.data.reportUrl, 'https://isom.inso.gov.ir/parvaneh/m_p_report.php?license_no=7339969923')
+  assert.equal(res.data.history.length, 1)
+  assert.equal(res.data.history[0].status, 'صدور')
+  assert.equal(res.data.history[0].fromDate, '1391/09/23')
+})
+
+test('parseStandardReportHtml handles not found reports', () => {
+  const notFound = '<html><body>اطلاعاتی یافت نشد</body></html>'
+  const res = parseStandardReportHtml(notFound, '123')
+  assert.equal(res.ok, false)
+  assert.equal(res.error, 'not_found')
 })
 
 test('StandardHistoryRepository manages history records correctly', () => {
