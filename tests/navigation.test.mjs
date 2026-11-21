@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { FEATURES, PRIMARY_FEATURES, MORE_FEATURES, DASHBOARD_FEATURES, TONES, isFeatureActive } from '../src/data/appFeatures.js'
 import { ICON_PATHS } from '../src/data/iconPaths.js'
+import { scrollBehavior } from '../src/router/scrollBehavior.js'
 
 test('feature ids and routes are unique', () => {
   assert.equal(new Set(FEATURES.map((f) => f.id)).size, FEATURES.length)
@@ -36,4 +37,20 @@ test('active matching handles nested routes and does not leak from home', () => 
   assert.equal(isFeatureActive(byId.occasions, '/occasions/shopping'), true)
   assert.equal(isFeatureActive(byId.reports, '/history/a/b/c'), true)
   assert.equal(isFeatureActive(byId.guide, '/guidebook'), false)
+})
+
+test('scrollBehavior scrolls to top (0, 0) on new page transitions', () => {
+  var result = scrollBehavior({ path: '/lists' }, { path: '/' }, null)
+  assert.deepEqual(result, { top: 0, left: 0 })
+})
+
+test('scrollBehavior preserves savedPosition on history back/forward navigation', () => {
+  var saved = { left: 0, top: 450 }
+  var result = scrollBehavior({ path: '/' }, { path: '/lists' }, saved)
+  assert.deepEqual(result, saved)
+})
+
+test('scrollBehavior scrolls smoothly to anchor hash when provided', () => {
+  var result = scrollBehavior({ path: '/guide', hash: '#faq' }, { path: '/guide' }, null)
+  assert.deepEqual(result, { el: '#faq', behavior: 'smooth' })
 })

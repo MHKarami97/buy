@@ -1,4 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router'
+import { scrollBehavior } from './scrollBehavior.js'
 
 var HomeView = () => import('../views/HomeView.vue')
 var ListsView = () => import('../views/ListsView.vue')
@@ -30,8 +31,10 @@ var routes = [
 ]
 
 var router = createRouter({
-  history: createWebHistory(),
-  routes
+  history: typeof window !== 'undefined' ? createWebHistory() : createMemoryHistory(),
+  routes,
+  scrollBehavior
 })
 
+export { scrollBehavior }
 export default router
