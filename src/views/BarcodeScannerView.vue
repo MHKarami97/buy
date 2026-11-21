@@ -15,6 +15,7 @@ import { preferencesRepository } from '../services/PreferencesRepository'
 import { itemProductCodeRepository } from '../services/barcode/ItemProductCodeRepository'
 import { rapidOcrEngine } from '../services/ocr/RapidOcrEngine'
 import { toEnglishDigits, toPersianDigits } from '../services/ocr/digitNormalizer'
+import { ocrModelManager } from '../services/ocr/OcrModelManager'
 import MapItemCodeModal from '../components/MapItemCodeModal.vue'
 import ItemCodeDetailsModal from '../components/ItemCodeDetailsModal.vue'
 import OcrResultModal from '../components/OcrResultModal.vue'
@@ -92,6 +93,7 @@ var isOcrProcessing = ref(false)
 var isOcrModalOpen = ref(false)
 var ocrResultData = ref(null)
 var ocrNotice = ref(null)
+var isOcrModelReady = ref(false)
 
 // Manual input state
 var isManualModalOpen = ref(false)
@@ -771,8 +773,13 @@ watch(activeTab, (tab) => {
   }
 })
 
+async function checkOcrModelStatus() {
+  isOcrModelReady.value = await ocrModelManager.isModelDownloaded()
+}
+
 onMounted(() => {
   rapidOcrEngine.init().catch(() => {})
+  checkOcrModelStatus()
   loadHistory()
   loadIfdaHistory()
   loadStandardHistory()
@@ -780,6 +787,7 @@ onMounted(() => {
   unsubMapping = itemProductCodeRepository.subscribe(loadMappedItems)
   if (typeof window !== 'undefined') {
     window.addEventListener('item-product-codes-changed', loadMappedItems)
+    window.addEventListener('ocr-model-changed', checkOcrModelStatus)
   }
   startCamera()
 })
@@ -789,6 +797,7 @@ onBeforeUnmount(() => {
   if (unsubMapping) unsubMapping()
   if (typeof window !== 'undefined') {
     window.removeEventListener('item-product-codes-changed', loadMappedItems)
+    window.removeEventListener('ocr-model-changed', checkOcrModelStatus)
   }
 })
 </script>
@@ -919,6 +928,26 @@ onBeforeUnmount(() => {
           <AppIcon name="sparkle" :size="16" />
           <span>تشخیص عدد کالا (OCR)</span>
         </button>
+      </div>
+
+      <!-- Informative Model Banner in OCR Mode -->
+      <div
+        v-if="scanMode === 'ocr'"
+        class="flex items-center justify-between gap-3 rounded-2xl bg-indigo-50/90 dark:bg-indigo-950/40 p-3 text-xs border border-indigo-100 dark:border-indigo-900/60 shadow-sm animate-fade-in"
+      >
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-base shrink-0">💡</span>
+          <span class="text-slate-700 dark:text-slate-300">
+            {{ isOcrModelReady ? 'مدل هوش مصنوعی RapidOCR فعال است (دقت حداکثری)' : 'برای اسکن دقیق‌تر و بهتر انواع فونت‌ها، می‌توانید مدل هوش مصنوعی RapidOCR را دانلود کنید.' }}
+          </span>
+        </div>
+        <RouterLink
+          to="/settings#ai-ocr"
+          class="shrink-0 font-bold text-indigo-700 hover:text-indigo-900 dark:text-indigo-300 dark:hover:text-indigo-200 underline underline-offset-2 flex items-center gap-0.5"
+        >
+          <span>{{ isOcrModelReady ? 'تنظیمات' : 'دانلود مدل' }}</span>
+          <span class="text-[10px]">←</span>
+        </RouterLink>
       </div>
 
       <!-- Camera Viewport Card -->

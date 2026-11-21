@@ -125,6 +125,14 @@ function handleConfirm() {
                 {{ engine === 'onnx-rapidocr' ? 'RapidOCR (ONNX Runtime)' : 'موتور هوشمند محلی' }}
               </span>
               <span v-if="durationMs > 0">{{ durationMs }}ms</span>
+              <RouterLink
+                v-if="engine !== 'onnx-rapidocr'"
+                to="/settings#ai-ocr"
+                class="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline mr-1"
+                @click="emit('close')"
+              >
+                (ارتقا به مدل RapidOCR)
+              </RouterLink>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useIngredientPreferences } from '../composables/useIngredientPreference
 import AppIcon from '../components/AppIcon.vue'
 import CloudBackupCard from '../components/cloud/CloudBackupCard.vue'
 import DataManagementCard from '../components/DataManagementCard.vue'
+import AiOcrSettingsCard from '../components/AiOcrSettingsCard.vue'
 
 var store = useChecklistStore()
 var { avoidedCount, clearAvoided } = useIngredientPreferences()
@@ -43,6 +44,11 @@ var currentYear = new Date().getFullYear()
     <section class="space-y-3" aria-labelledby="data-title">
       <h2 id="data-title" class="text-sm font-semibold text-slate-500">مدیریت داده</h2>
       <DataManagementCard />
+    </section>
+
+    <section id="ai-ocr" class="space-y-3" aria-labelledby="ai-ocr-title">
+      <h2 id="ai-ocr-title" class="text-sm font-semibold text-slate-500">هوش مصنوعی و اسکن (OCR)</h2>
+      <AiOcrSettingsCard />
     </section>
 
     <section class="space-y-3" aria-labelledby="prefs-title">

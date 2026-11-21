@@ -9,6 +9,7 @@
 
 import { cropRoi, enhanceAndBinarize, prepareRapidOcrTensor } from './imagePreprocessor.js'
 import { toEnglishDigits, toPersianDigits, extractNumberCandidates, classifyNumberKind } from './digitNormalizer.js'
+import { ocrModelManager } from './OcrModelManager.js'
 
 // Standard characters for digit & packaging code OCR decoding
 var DEFAULT_DIGIT_VOCAB = [
@@ -80,8 +81,48 @@ export class RapidOcrEngine {
   }
 
   /**
-   * Dynamically loads onnxruntime-web script from unpkg/jsdelivr with fallback.
+   * Ensures the ONNX inference session is created from the cached RapidOCR model.
+   * @returns {Promise<boolean>}
    */
+  async ensureOnnxSession() {
+    if (this.onnxSession) return true
+
+    var isCached = await ocrModelManager.isModelDownloaded()
+    if (!isCached) return false
+
+    var ortInstance = this.ort || (typeof window !== 'undefined' ? window.ort : null)
+    if (!ortInstance && typeof window !== 'undefined') {
+      try {
+        ortInstance = await this.loadOrtFromScript()
+      } catch {
+        ortInstance = null
+      }
+    }
+    if (!ortInstance) return false
+    this.ort = ortInstance
+
+    try {
+      var blobUrl = await ocrModelManager.getModelBlobUrl()
+      if (!blobUrl) return false
+      this.onnxSession = await this.ort.InferenceSession.create(blobUrl, {
+        executionProviders: ['wasm'],
+        graphOptimizationLevel: 'all'
+      })
+      this.status = 'ready'
+      return true
+    } catch (err) {
+      console.warn('Failed to initialize RapidOCR ONNX session with cached model:', err)
+      return false
+    }
+  }
+
+  /**
+   * Releases ONNX model session from memory.
+   */
+  releaseSession() {
+    this.onnxSession = null
+    this.status = 'fallback'
+  }
   async loadOrtFromScript() {
     if (typeof window === 'undefined' || typeof document === 'undefined') return null
     if (window.ort) return window.ort
@@ -166,16 +207,23 @@ export class RapidOcrEngine {
       // ignore dataURL export errors
     }
 
-    // 4. Run Recognition: Try ONNX session if available, else local engine
+    // 4. Run Recognition: Check user's preferred engine in settings
     var rawText = ''
     var engineUsed = 'local-ocr'
+    var preferredEngine = ocrModelManager.getPreferredEngine()
 
-    if (this.onnxSession && this.status === 'ready') {
-      try {
-        rawText = await this.runOnnxInference(croppedCanvas)
-        engineUsed = 'onnx-rapidocr'
-      } catch (e) {
-        console.warn('ONNX inference failed, using local engine:', e)
+    if (preferredEngine === 'rapidocr') {
+      var isReady = await this.ensureOnnxSession()
+      if (isReady && this.onnxSession) {
+        try {
+          rawText = await this.runOnnxInference(croppedCanvas)
+          engineUsed = 'onnx-rapidocr'
+        } catch (e) {
+          console.warn('ONNX inference failed, using local engine:', e)
+          rawText = this.runLocalDigitOcr(croppedCanvas)
+          engineUsed = 'local-ocr'
+        }
+      } else {
         rawText = this.runLocalDigitOcr(croppedCanvas)
         engineUsed = 'local-ocr'
       }
