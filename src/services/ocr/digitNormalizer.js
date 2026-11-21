@@ -63,6 +63,14 @@ export function classifyNumberKind(cleanNum) {
     }
   }
 
+  if (/^\d{1,4}\/\d{3,8}$/.test(s)) {
+    return {
+      kind: 'ifda_permit',
+      labelFa: 'شماره پروانه بهداشتی / سیب سلامت',
+      confidence: 0.95
+    }
+  }
+
   if (/^(13|14)\d{2}[/-]\d{1,2}[/-]\d{1,2}$/.test(s)) {
     return {
       kind: 'date',
@@ -73,7 +81,7 @@ export function classifyNumberKind(cleanNum) {
 
   var digitsOnly = s.replace(/\D/g, '')
 
-  if (digitsOnly.length === 10) {
+  if (digitsOnly.length === 10 && !s.includes('/')) {
     return {
       kind: 'standard_license',
       labelFa: 'شماره پروانه استاندارد (۱۰ رقم)',
@@ -81,7 +89,7 @@ export function classifyNumberKind(cleanNum) {
     }
   }
 
-  if (digitsOnly.length === 9) {
+  if (digitsOnly.length === 9 && !s.includes('/')) {
     return {
       kind: 'standard_license',
       labelFa: 'پروانه استاندارد تشویقی (۹ رقم)',

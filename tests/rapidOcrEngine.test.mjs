@@ -61,3 +61,36 @@ test('RapidOcrEngine pickBestCandidate prioritizes targetKind', () => {
   var bestBarcode = engine.pickBestCandidate(candidates, 'barcode')
   assert.equal(bestBarcode.english, '6260123456789')
 })
+
+test('RapidOcrEngine runLocalLineOcr extracts text lines and recognizes digits from raw image', () => {
+  var engine = new RapidOcrEngine()
+  var w = 120
+  var h = 40
+  var data = new Uint8ClampedArray(w * h * 4)
+
+  // Initialize white background (255)
+  for (var i = 0; i < w * h * 4; i += 4) {
+    data[i] = 255
+    data[i + 1] = 255
+    data[i + 2] = 255
+    data[i + 3] = 255
+  }
+
+  // Draw 5 vertical stroke digits ("1 1 1 1 1") at line Y=15..28
+  // Digits at X=10, 20, 30, 40, 50
+  for (var k = 0; k < 5; k++) {
+    var startX = 15 + k * 15
+    for (var y = 15; y <= 28; y++) {
+      for (var x = startX; x <= startX + 2; x++) {
+        var idx = (y * w + x) * 4
+        data[idx] = 10     // R
+        data[idx + 1] = 10 // G
+        data[idx + 2] = 10 // B
+      }
+    }
+  }
+
+  var lines = engine.runLocalLineOcr({ width: w, height: h, data })
+  assert.ok(lines.length > 0, 'Should extract at least one line')
+  assert.ok(lines[0].text.length >= 4, `Extracted line text "${lines[0].text}" should contain recognized digits`)
+})
