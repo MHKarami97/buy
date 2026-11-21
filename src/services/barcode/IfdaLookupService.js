@@ -27,6 +27,43 @@ export function normalizeIfdaCode(input) {
   }
 }
 
+/**
+ * Auto-formats user input for IFDA codes (e.g. typing "11" -> "11/").
+ * Automatically appends '/' after 2 digits so user does not need to type '/'.
+ * Handles Persian digits, backspacing without trapping, and pasted values.
+ * @param {string} val
+ * @param {string} prevVal
+ * @returns {string}
+ */
+export function formatIfdaInput(val, prevVal = '') {
+  if (!val) return ''
+  var s = String(val)
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1776))
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632))
+    .replace(/[^\d/]/g, '')
+
+  // If user deleted the slash, also remove the digit before it to avoid trapping
+  if (prevVal && prevVal.endsWith('/') && s === prevVal.slice(0, -1)) {
+    return s.slice(0, -1)
+  }
+
+  if (s.includes('/')) {
+    var parts = s.split('/')
+    var p1 = parts[0].slice(0, 4)
+    if (!p1) return ''
+    var p2 = parts.slice(1).join('').slice(0, 8)
+    return p2.length > 0 || s.endsWith('/') ? p1 + '/' + p2 : p1
+  }
+
+  if (s.length === 2) {
+    return s + '/'
+  }
+  if (s.length > 2) {
+    return s.slice(0, 2) + '/' + s.slice(2, 10)
+  }
+  return s
+}
+
 export class IfdaLookupService {
   /**
    * Normalizes an IFDA / health license string (e.g. "۳۲/۱۱۱۵۹" -> "32/11159")

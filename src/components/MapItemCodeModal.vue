@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useChecklistStore } from '../stores/checklistStore'
 import { itemProductCodeRepository } from '../services/barcode/ItemProductCodeRepository'
 import { suggestMatchingItems, flattenTemplateItems } from '../services/barcode/itemMatcher'
+import { formatIfdaInput } from '../services/barcode/IfdaLookupService'
 import AppIcon from './AppIcon.vue'
 
 var props = defineProps({
@@ -52,6 +53,13 @@ var searchResults = computed(() => {
       it.templateTitle.toLowerCase().includes(q)
     )
   }).slice(0, 8)
+})
+
+watch(ifdaCode, (newVal, oldVal) => {
+  var formatted = formatIfdaInput(newVal, oldVal)
+  if (formatted !== newVal) {
+    ifdaCode.value = formatted
+  }
 })
 
 watch(
@@ -263,6 +271,8 @@ function handleSave() {
             <input
               v-model="ifdaCode"
               type="text"
+              inputmode="numeric"
+              maxlength="12"
               placeholder="مثال: 32/11159"
               class="w-full min-h-[38px] rounded-xl border border-slate-200 bg-white px-3 font-mono text-xs dark:border-slate-700 dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-brand-400"
             />

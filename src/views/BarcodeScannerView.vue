@@ -7,14 +7,17 @@ import { BarcodeLookupService } from '../services/barcode/BarcodeLookupService'
 import { barcodeHistoryRepository } from '../services/barcode/BarcodeHistoryRepository'
 import { JalaliDate } from '../services/JalaliDate'
 import { PACKAGING_LOGOS, LOGO_CATEGORIES } from '../data/packagingLogos.js'
-import { IfdaLookupService, normalizeIfdaCode } from '../services/barcode/IfdaLookupService'
+import { IfdaLookupService, normalizeIfdaCode, formatIfdaInput } from '../services/barcode/IfdaLookupService'
 import { ifdaHistoryRepository } from '../services/barcode/IfdaHistoryRepository'
 import { standardLookupService, normalizeLicenseNumber } from '../services/barcode/StandardLookupService'
 import { standardHistoryRepository } from '../services/barcode/StandardHistoryRepository'
 import { preferencesRepository } from '../services/PreferencesRepository'
 import { itemProductCodeRepository } from '../services/barcode/ItemProductCodeRepository'
+import { rapidOcrEngine } from '../services/ocr/RapidOcrEngine'
+import { toEnglishDigits, toPersianDigits } from '../services/ocr/digitNormalizer'
 import MapItemCodeModal from '../components/MapItemCodeModal.vue'
 import ItemCodeDetailsModal from '../components/ItemCodeDetailsModal.vue'
+import OcrResultModal from '../components/OcrResultModal.vue'
 import AppIcon from '../components/AppIcon.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useConfirm } from '../composables/useConfirm'
@@ -82,6 +85,14 @@ var selectedTemplateId = ref('')
 var selectedCategoryId = ref('')
 var itemToAddTitle = ref('')
 
+// OCR (RapidOCR) state
+var scanMode = ref('barcode') // 'barcode' | 'ocr'
+var ocrContext = ref('scanner') // 'scanner' | 'standard' | 'ifda'
+var isOcrProcessing = ref(false)
+var isOcrModalOpen = ref(false)
+var ocrResultData = ref(null)
+var ocrNotice = ref(null)
+
 // Manual input state
 var isManualModalOpen = ref(false)
 var manualCodeInput = ref('')
@@ -144,6 +155,12 @@ watch([historyQuery, historyFilter], loadHistory)
 watch([ifdaHistoryQuery, ifdaHistoryStatusFilter], loadIfdaHistory)
 watch([standardHistoryQuery, standardHistoryStatusFilter], loadStandardHistory)
 watch([mappedQuery, mappedFilter], loadMappedItems)
+watch(ifdaInput, (newVal, oldVal) => {
+  var formatted = formatIfdaInput(newVal, oldVal)
+  if (formatted !== newVal) {
+    ifdaInput.value = formatted
+  }
+})
 
 async function submitStandardInquiry(sampleCode) {
   var targetCode = (sampleCode || standardInput.value || '').trim()
@@ -444,7 +461,7 @@ var pendingCandidate = null
 var candidateStreak = 0
 
 async function runScanningLoop() {
-  if (!isScanning.value || currentResult.value) return
+  if (!isScanning.value || currentResult.value || scanMode.value === 'ocr') return
 
   var now = Date.now()
   // Throttle scanning to every 100ms
@@ -578,13 +595,103 @@ async function onFileSelected(event) {
   var file = event.target?.files?.[0]
   if (!file) return
 
-  var detected = await barcodeScannerEngine.detectFromFile(file)
-  if (detected && detected.rawValue) {
-    handleSuccessfulScan(detected.rawValue, detected.format)
+  if (scanMode.value === 'ocr') {
+    isOcrProcessing.value = true
+    ocrNotice.value = null
+    try {
+      var res = await rapidOcrEngine.recognize(file, { targetKind: ocrContext.value })
+      if (res && res.ok && (res.bestNumber || (res.candidates && res.candidates.length > 0))) {
+        ocrResultData.value = res
+        isOcrModalOpen.value = true
+      } else {
+        alert('عددی در این تصویر تشخیص داده نشد. لطفاً زاویه و کیفیت تصویر را بررسی کنید.')
+      }
+    } catch (err) {
+      console.error('File OCR failed:', err)
+      alert('خطا در پردازش تصویر. لطفاً مجدداً امتحان کنید.')
+    } finally {
+      isOcrProcessing.value = false
+    }
   } else {
-    alert('بارکد یا کد QR واضحی در این تصویر یافت نشد. لطفاً زاویه یا نور تصویر را بررسی کنید.')
+    var detected = await barcodeScannerEngine.detectFromFile(file)
+    if (detected && detected.rawValue) {
+      handleSuccessfulScan(detected.rawValue, detected.format)
+    } else {
+      alert('بارکد یا کد QR واضحی در این تصویر یافت نشد. لطفاً زاویه یا نور تصویر را بررسی کنید.')
+    }
   }
   event.target.value = ''
+}
+
+function startOcrForContext(context = 'scanner') {
+  ocrContext.value = context
+  scanMode.value = 'ocr'
+  activeTab.value = 'scanner'
+  ocrNotice.value = null
+  startCamera()
+}
+
+function switchScanMode(mode) {
+  scanMode.value = mode
+  ocrNotice.value = null
+  if (mode === 'barcode') {
+    runScanningLoop()
+  }
+}
+
+async function captureAndRecognizeOcr() {
+  if (!videoRef.value || isOcrProcessing.value) return
+  isOcrProcessing.value = true
+  ocrNotice.value = null
+
+  try {
+    // Focused horizontal box in center of viewport: 80% width, 30% height
+    var roi = { x: 0.1, y: 0.35, width: 0.8, height: 0.3 }
+    var res = await rapidOcrEngine.recognize(videoRef.value, {
+      roi,
+      targetKind: ocrContext.value
+    })
+
+    if (res && res.ok && (res.bestNumber || (res.candidates && res.candidates.length > 0))) {
+      ocrResultData.value = res
+      isOcrModalOpen.value = true
+    } else {
+      ocrNotice.value = 'عددی در کادر مشخص‌شده یافت نشد. لطفاً دوربین را روی شماره تنظیم کرده و دوباره دکمه را بزنید.'
+      setTimeout(() => {
+        ocrNotice.value = null
+      }, 4000)
+    }
+  } catch (err) {
+    console.error('Camera OCR recognition error:', err)
+    ocrNotice.value = 'خطایی در تشخیص عدد رخ داد. لطفاً مجدداً تلاش کنید.'
+  } finally {
+    isOcrProcessing.value = false
+  }
+}
+
+function handleOcrConfirm({ code, destination }) {
+  isOcrModalOpen.value = false
+  var cleanCode = toEnglishDigits(code).trim()
+  if (!cleanCode) return
+
+  if (destination === 'standard') {
+    standardInput.value = cleanCode
+    activeTab.value = 'standard'
+    submitStandardInquiry(cleanCode)
+  } else if (destination === 'ifda') {
+    ifdaInput.value = cleanCode
+    activeTab.value = 'ifda'
+    submitIfdaInquiry(cleanCode)
+  } else {
+    handleSuccessfulScan(cleanCode, 'ocr')
+  }
+}
+
+function handleOcrRescan() {
+  isOcrModalOpen.value = false
+  scanMode.value = 'ocr'
+  activeTab.value = 'scanner'
+  startCamera()
 }
 
 function handleManualSubmit() {
@@ -665,6 +772,7 @@ watch(activeTab, (tab) => {
 })
 
 onMounted(() => {
+  rapidOcrEngine.init().catch(() => {})
   loadHistory()
   loadIfdaHistory()
   loadStandardHistory()
@@ -790,6 +898,29 @@ onBeforeUnmount(() => {
 
     <!-- TAB 1: SCANNER -->
     <div v-show="activeTab === 'scanner'" class="space-y-4">
+      <!-- Mode Switcher: Barcode Scanner vs Number OCR -->
+      <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl text-xs font-bold">
+        <button
+          type="button"
+          class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl transition-all"
+          :class="scanMode === 'barcode' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+          @click="switchScanMode('barcode')"
+        >
+          <AppIcon name="scan" :size="16" />
+          <span>اسکن بارکد و QR</span>
+        </button>
+
+        <button
+          type="button"
+          class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl transition-all"
+          :class="scanMode === 'ocr' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+          @click="switchScanMode('ocr')"
+        >
+          <AppIcon name="sparkle" :size="16" />
+          <span>تشخیص عدد کالا (OCR)</span>
+        </button>
+      </div>
+
       <!-- Camera Viewport Card -->
       <div class="relative overflow-hidden rounded-3xl bg-slate-950 text-white shadow-xl aspect-[4/3] sm:aspect-[16/9] max-h-[480px] flex items-center justify-center">
         <!-- Live Video Element -->
@@ -802,7 +933,8 @@ onBeforeUnmount(() => {
 
         <!-- Camera overlay / Scanning box -->
         <div v-if="!cameraError && !currentResult" class="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-          <div class="relative h-48 w-64 sm:h-56 sm:w-80 rounded-2xl border-2 border-brand-400/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
+          <!-- Barcode Mode Viewfinder -->
+          <div v-if="scanMode === 'barcode'" class="relative h-48 w-64 sm:h-56 sm:w-80 rounded-2xl border-2 border-brand-400/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
             <!-- Animated Scan Line -->
             <div class="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-brand-400 to-transparent shadow-[0_0_12px_#38bdf8] animate-pulse" style="animation: scanline 2s ease-in-out infinite;" />
             <!-- Corner Accents -->
@@ -810,6 +942,21 @@ onBeforeUnmount(() => {
             <div class="absolute -top-1 -right-1 size-4 border-t-2 border-r-2 border-brand-300 rounded-tr" />
             <div class="absolute -bottom-1 -left-1 size-4 border-b-2 border-l-2 border-brand-300 rounded-bl" />
             <div class="absolute -bottom-1 -right-1 size-4 border-b-2 border-r-2 border-brand-300 rounded-br" />
+          </div>
+
+          <!-- OCR Mode Number Viewfinder -->
+          <div v-else class="relative h-24 w-72 sm:w-96 rounded-2xl border-2 border-indigo-400 shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] flex items-center justify-center">
+            <!-- Glowing line -->
+            <div class="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-indigo-400 to-transparent shadow-[0_0_12px_#818cf8] animate-pulse" />
+            <!-- Corner Accents -->
+            <div class="absolute -top-1 -left-1 size-4 border-t-2 border-l-2 border-indigo-300 rounded-tl" />
+            <div class="absolute -top-1 -right-1 size-4 border-t-2 border-r-2 border-indigo-300 rounded-tr" />
+            <div class="absolute -bottom-1 -left-1 size-4 border-b-2 border-l-2 border-indigo-300 rounded-bl" />
+            <div class="absolute -bottom-1 -right-1 size-4 border-b-2 border-r-2 border-indigo-300 rounded-br" />
+            <!-- Contextual instruction pill -->
+            <span class="absolute -bottom-7 rounded-full bg-slate-900/90 px-3 py-0.5 text-[11px] font-semibold text-indigo-200 backdrop-blur whitespace-nowrap shadow-sm">
+              {{ ocrContext === 'standard' ? 'کادر را روی شماره پروانه استاندارد بگیرید' : ocrContext === 'ifda' ? 'کادر را روی شماره پروانه بهداشتی بگیرید' : 'کادر را روی شماره پروانه یا بارکد کالا بگیرید' }}
+            </span>
           </div>
         </div>
 
@@ -837,8 +984,9 @@ onBeforeUnmount(() => {
 
         <!-- Camera floating controls toolbar -->
         <div v-if="!cameraError" class="absolute top-3 inset-x-3 flex items-center justify-between text-xs">
-          <span class="rounded-full bg-slate-900/70 px-3 py-1 font-medium backdrop-blur text-slate-200">
-            {{ isScanning && !currentResult ? 'در حال اسکن...' : 'اسکن متوقف است' }}
+          <span class="rounded-full bg-slate-900/70 px-3 py-1 font-medium backdrop-blur text-slate-200 flex items-center gap-1.5">
+            <span class="size-2 rounded-full" :class="scanMode === 'ocr' ? 'bg-indigo-400 animate-pulse' : 'bg-emerald-400 animate-pulse'" />
+            <span>{{ scanMode === 'ocr' ? 'حالت خواندن عدد (RapidOCR)' : (isScanning && !currentResult ? 'در حال اسکن بارکد...' : 'اسکن متوقف است') }}</span>
           </span>
 
           <div class="flex items-center gap-2">
@@ -864,6 +1012,27 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
+      <!-- Dedicated OCR Action Button when in OCR Mode -->
+      <div v-if="scanMode === 'ocr'" class="space-y-2">
+        <button
+          type="button"
+          class="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-6 font-bold text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition-colors disabled:opacity-50 text-sm sm:text-base"
+          :disabled="isOcrProcessing"
+          @click="captureAndRecognizeOcr"
+        >
+          <div v-if="isOcrProcessing" class="size-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          <AppIcon v-else name="sparkle" :size="20" />
+          <span>{{ isOcrProcessing ? 'در حال پردازش با هوش مصنوعی (RapidOCR)...' : 'خواندن عدد از روی کالا 📷' }}</span>
+        </button>
+
+        <div
+          v-if="ocrNotice"
+          class="rounded-xl bg-amber-50 p-3 text-center text-xs font-semibold text-amber-800 dark:bg-amber-950/40 dark:text-amber-200 border border-amber-200 dark:border-amber-800 animate-fade-in"
+        >
+          {{ ocrNotice }}
+        </div>
+      </div>
+
       <!-- Quick Action Buttons under Camera -->
       <div class="grid grid-cols-2 gap-2">
         <button
@@ -872,7 +1041,7 @@ onBeforeUnmount(() => {
           @click="fileInputRef?.click()"
         >
           <AppIcon name="image" :size="18" class="text-brand-500" />
-          <span>اسکن از عکس گالری</span>
+          <span>{{ scanMode === 'ocr' ? 'خواندن عدد از عکس گالری' : 'اسکن از عکس گالری' }}</span>
         </button>
         <button
           type="button"
@@ -880,7 +1049,7 @@ onBeforeUnmount(() => {
           @click="isManualModalOpen = true"
         >
           <AppIcon name="keyboard" :size="18" class="text-brand-500" />
-          <span>ورود دستی بارکد</span>
+          <span>{{ scanMode === 'ocr' ? 'ورود دستی شماره' : 'ورود دستی بارکد' }}</span>
         </button>
         <input
           ref="fileInputRef"
@@ -1145,12 +1314,24 @@ onBeforeUnmount(() => {
             <input
               v-model="ifdaInput"
               type="text"
+              inputmode="numeric"
+              maxlength="12"
               dir="ltr"
               placeholder="مثال: 32/11159 یا ۳۲/۱۱۱۵۹"
               class="w-full min-h-[44px] rounded-2xl border border-slate-200 bg-slate-50 px-4 text-center font-mono text-base font-bold tracking-wider text-slate-800 shadow-inner dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
               @keydown.enter="submitIfdaInquiry()"
             />
           </div>
+
+          <button
+            type="button"
+            class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-emerald-300 bg-emerald-50 px-3.5 text-xs sm:text-sm font-bold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 transition-colors shrink-0 shadow-sm"
+            title="اسکن شماره پروانه بهداشتی از روی بسته کالا با هوش مصنوعی"
+            @click="startOcrForContext('ifda')"
+          >
+            <AppIcon name="camera" :size="16" />
+            <span>اسکن از کالا (OCR)</span>
+          </button>
 
           <button
             type="button"
@@ -1419,6 +1600,17 @@ onBeforeUnmount(() => {
                 @keydown.enter="submitStandardInquiry()"
               />
             </div>
+
+            <!-- Scan from Product Button -->
+            <button
+              type="button"
+              class="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl border border-sky-300 bg-sky-50 px-3.5 text-xs sm:text-sm font-bold text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-300 transition-colors shrink-0 shadow-sm"
+              title="اسکن شماره پروانه ۱۰ رقمی از روی بسته کالا با هوش مصنوعی"
+              @click="startOcrForContext('standard')"
+            >
+              <AppIcon name="camera" :size="16" />
+              <span>اسکن از کالا (OCR)</span>
+            </button>
 
             <!-- Submit Button -->
             <button
@@ -2288,24 +2480,49 @@ onBeforeUnmount(() => {
           @keydown.enter="handleManualSubmit"
         />
 
-        <div class="flex items-center justify-end gap-2 pt-2">
+        <div class="flex items-center justify-between gap-2 pt-2">
           <button
             type="button"
-            class="min-h-[40px] px-4 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs sm:text-sm"
-            @click="isManualModalOpen = false"
+            class="min-h-[40px] px-3 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300 text-xs font-bold transition-colors flex items-center gap-1"
+            @click="startOcrForContext('scanner'); isManualModalOpen = false"
           >
-            انصراف
+            <AppIcon name="camera" :size="16" />
+            <span>اسکن با دوربین (OCR)</span>
           </button>
-          <button
-            type="button"
-            class="min-h-[40px] px-4 rounded-xl bg-brand-500 text-white text-xs sm:text-sm font-semibold hover:bg-brand-600 transition-colors"
-            @click="handleManualSubmit"
-          >
-            استعلام بارکد
-          </button>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="min-h-[40px] px-3.5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs sm:text-sm"
+              @click="isManualModalOpen = false"
+            >
+              انصراف
+            </button>
+            <button
+              type="button"
+              class="min-h-[40px] px-4 rounded-xl bg-brand-500 text-white text-xs sm:text-sm font-semibold hover:bg-brand-600 transition-colors"
+              @click="handleManualSubmit"
+            >
+              استعلام بارکد
+            </button>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- OCR Result Review & Edit Modal -->
+    <OcrResultModal
+      :is-open="isOcrModalOpen"
+      :initial-number="ocrResultData?.bestNumber || ''"
+      :candidates="ocrResultData?.candidates || []"
+      :snapshot-url="ocrResultData?.snapshotDataUrl || ''"
+      :engine="ocrResultData?.engine || 'onnx-rapidocr'"
+      :duration-ms="ocrResultData?.durationMs || 0"
+      :context="ocrContext"
+      @close="isOcrModalOpen = false"
+      @confirm="handleOcrConfirm"
+      @rescan="handleOcrRescan"
+    />
 
     <!-- Map Item Code Modal -->
     <MapItemCodeModal

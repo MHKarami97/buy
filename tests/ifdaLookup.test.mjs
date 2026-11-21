@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { normalizeIfdaCode, IfdaLookupService } from '../src/services/barcode/IfdaLookupService.js'
+import { normalizeIfdaCode, formatIfdaInput, IfdaLookupService } from '../src/services/barcode/IfdaLookupService.js'
 import { IfdaHistoryRepository } from '../src/services/barcode/IfdaHistoryRepository.js'
 
 test('normalizeIfdaCode converts Persian digits, slashes and whitespace', () => {
@@ -20,6 +20,29 @@ test('normalizeIfdaCode converts Persian digits, slashes and whitespace', () => 
 
   var invalid = normalizeIfdaCode('invalid-code')
   assert.equal(invalid.valid, false)
+})
+
+test('formatIfdaInput automatically appends slash after 2 digits', () => {
+  assert.equal(formatIfdaInput('1'), '1')
+  assert.equal(formatIfdaInput('11'), '11/')
+  assert.equal(formatIfdaInput('112'), '11/2')
+  assert.equal(formatIfdaInput('11/'), '11/')
+  assert.equal(formatIfdaInput('11/12345'), '11/12345')
+})
+
+test('formatIfdaInput converts Persian digits and formats pastes', () => {
+  assert.equal(formatIfdaInput('۱'), '1')
+  assert.equal(formatIfdaInput('۱۱'), '11/')
+  assert.equal(formatIfdaInput('۳۲۱۱۱۵۹'), '32/11159')
+  assert.equal(formatIfdaInput('۳۲/۱۱۱۵۹'), '32/11159')
+})
+
+test('formatIfdaInput handles backspace deletion without trapping user', () => {
+  // When user is at "11/" and hits backspace, browser provides "11"
+  assert.equal(formatIfdaInput('11', '11/'), '1')
+  // Deleting in the second part behaves normally
+  assert.equal(formatIfdaInput('11/1', '11/12'), '11/1')
+  assert.equal(formatIfdaInput('11/', '11/1'), '11/')
 })
 
 test('IfdaLookupService.parseCerfoodHtml extracts product data from JSON-LD', () => {
