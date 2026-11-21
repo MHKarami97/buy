@@ -11,7 +11,6 @@ export const DEFAULT_RAPIDOCR_MODEL_URL =
 
 export const OCR_CACHE_NAME = 'rapidocr-models-v1'
 export const STORAGE_KEY_ENGINE_PREF = 'buy_ocr_preferred_engine'
-export const STORAGE_KEY_CUSTOM_URL = 'buy_ocr_custom_model_url'
 
 export class OcrModelManager {
   constructor(storage = null) {
@@ -47,32 +46,11 @@ export class OcrModelManager {
   }
 
   /**
-   * Gets the configured model download URL.
+   * Gets the official model download URL (fixed).
    * @returns {string}
    */
   getModelUrl() {
-    try {
-      return this.storage?.getItem(STORAGE_KEY_CUSTOM_URL) || DEFAULT_RAPIDOCR_MODEL_URL
-    } catch {
-      return DEFAULT_RAPIDOCR_MODEL_URL
-    }
-  }
-
-  /**
-   * Sets a custom model download URL.
-   * @param {string} url
-   */
-  setModelUrl(url) {
-    try {
-      if (url && url.trim()) {
-        this.storage?.setItem(STORAGE_KEY_CUSTOM_URL, url.trim())
-      } else {
-        this.storage?.removeItem(STORAGE_KEY_CUSTOM_URL)
-      }
-    } catch {
-      // ignore
-    }
-    this.notifyChange()
+    return DEFAULT_RAPIDOCR_MODEL_URL
   }
 
   /**

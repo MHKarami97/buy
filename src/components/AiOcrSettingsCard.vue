@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { ocrModelManager, DEFAULT_RAPIDOCR_MODEL_URL } from '../services/ocr/OcrModelManager'
+import { ocrModelManager } from '../services/ocr/OcrModelManager'
 import AppIcon from './AppIcon.vue'
 
 var selectedEngine = ref(ocrModelManager.getPreferredEngine())
@@ -9,15 +9,12 @@ var cachedSize = ref(null)
 var isDownloading = ref(false)
 var downloadProgress = ref(0)
 var downloadError = ref(null)
-var showCustomUrl = ref(false)
-var customUrlInput = ref(ocrModelManager.getModelUrl())
 var isDeleting = ref(false)
 
 async function refreshStatus() {
   isDownloaded.value = await ocrModelManager.isModelDownloaded()
   cachedSize.value = await ocrModelManager.getCachedModelSize()
   selectedEngine.value = ocrModelManager.getPreferredEngine()
-  customUrlInput.value = ocrModelManager.getModelUrl()
 }
 
 function handleEngineChange(engine) {
@@ -52,17 +49,6 @@ async function handleDelete() {
   await ocrModelManager.deleteModel()
   isDeleting.value = false
   await refreshStatus()
-}
-
-function saveCustomUrl() {
-  ocrModelManager.setModelUrl(customUrlInput.value)
-  refreshStatus()
-}
-
-function resetCustomUrl() {
-  customUrlInput.value = DEFAULT_RAPIDOCR_MODEL_URL
-  ocrModelManager.setModelUrl(DEFAULT_RAPIDOCR_MODEL_URL)
-  refreshStatus()
 }
 
 onMounted(() => {
@@ -229,44 +215,6 @@ onBeforeUnmount(() => {
           <AppIcon name="trash" :size="16" />
           <span>{{ isDeleting ? 'در حال حذف...' : 'حذف مدل از حافظه' }}</span>
         </button>
-
-        <button
-          type="button"
-          class="text-[11px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 underline mr-auto"
-          @click="showCustomUrl = !showCustomUrl"
-        >
-          {{ showCustomUrl ? 'بستن تنظیمات پیشرفته آدرس' : 'تنظیمات آدرس دانلود مدل ⚙' }}
-        </button>
-      </div>
-
-      <!-- Custom URL Accordion -->
-      <div v-if="showCustomUrl" class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-2">
-        <label class="block text-[11px] text-slate-500 dark:text-slate-400">
-          آدرس مستقیم مدل ONNX (در صورت مسدود بودن گیت‌هاب/هاگینگ‌فیس می‌توانید از لینک مستقیم استفاده کنید):
-        </label>
-        <div class="flex items-center gap-2">
-          <input
-            v-model="customUrlInput"
-            type="text"
-            dir="ltr"
-            class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-mono dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
-          <button
-            type="button"
-            class="rounded-xl bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200"
-            @click="saveCustomUrl"
-          >
-            ذخیره
-          </button>
-          <button
-            type="button"
-            class="rounded-xl border border-slate-300 px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-400"
-            title="بازنشانی به لینک رسمی"
-            @click="resetCustomUrl"
-          >
-            پیش‌فرض
-          </button>
-        </div>
       </div>
     </div>
   </div>

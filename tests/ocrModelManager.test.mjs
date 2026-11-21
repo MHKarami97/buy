@@ -20,17 +20,14 @@ test('OcrModelManager defaults to local engine and default model url', () => {
   assert.equal(manager.getModelUrl(), DEFAULT_RAPIDOCR_MODEL_URL)
 })
 
-test('OcrModelManager updates preferred engine and custom url', () => {
+test('OcrModelManager updates preferred engine and keeps fixed official model url', () => {
   var storage = new MockStorage()
   var manager = new OcrModelManager(storage)
 
   manager.setPreferredEngine('rapidocr')
   assert.equal(manager.getPreferredEngine(), 'rapidocr')
 
-  manager.setModelUrl('https://example.com/custom.onnx')
-  assert.equal(manager.getModelUrl(), 'https://example.com/custom.onnx')
-
-  manager.setModelUrl('')
+  // Model URL is fixed to official default URL and cannot be altered by users
   assert.equal(manager.getModelUrl(), DEFAULT_RAPIDOCR_MODEL_URL)
 })
 
